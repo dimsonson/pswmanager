@@ -47,7 +47,7 @@ func (rdb *StorageNoSQL) Close() {
 }
 
 func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg models.UserConfig) error {
-
+log.Print("testNoSQL")
 	err := rdb.RedisNoSQL.HSet(ctx, "login", login, uid).Err()
 	if err != nil {
 		log.Print("login set to redis error: ", err)

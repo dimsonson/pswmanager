@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"sync"
 
@@ -196,10 +195,7 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 
 	servUserCreate := services.NewUserData(nosqlstorage, cfg.Rabbitmq)
 
-	fmt.Println(servUserCreate.CreateUser(ctx, "testlogin", "passwtest"))
-
-	log.Print("test")
-
+	servUserCreate.Create(ctx, "testlogin", "passwtest")
 	fmt.Println(servUserCreate)
 
 	sqlstorage := sqlstorage.New(cfg.Postgree.Dsn)

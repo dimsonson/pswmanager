@@ -28,7 +28,7 @@ func NewUserData(s UserStorageProviver, cfg models.RabbitmqSrv) *UserServices {
 }
 
 // CreateUser.
-func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string) (*models.UserConfig, error) {
+func (sr *UserServices) Create(ctx context.Context, login string, psw string) (*models.UserConfig, error) {
 	var err error
 	// проверка что логин не существует
 
@@ -47,6 +47,7 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 	// bindings
 
 	// сохраняем в хранилище
+	sr.storage.CreateUser(ctx, login, psw, usercfg.UserID, *usercfg)
 
 	// возращаем приложению клиента
 
