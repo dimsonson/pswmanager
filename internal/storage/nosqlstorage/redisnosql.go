@@ -2,6 +2,7 @@ package nosqlstorage
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
@@ -47,7 +48,7 @@ func (rdb *StorageNoSQL) Close() {
 }
 
 func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg models.UserConfig) error {
-log.Print("testNoSQL")
+	log.Print("testNoSQL")
 	err := rdb.RedisNoSQL.HSet(ctx, "login", login, uid).Err()
 	if err != nil {
 		log.Print("login set to redis error: ", err)
@@ -60,7 +61,13 @@ log.Print("testNoSQL")
 		return err
 	}
 
-	err = rdb.RedisNoSQL.HSet(ctx, "usercfg", uid, usercfg).Err()
+	bytes, err := json.Marshal(usercfg)
+	if err != nil {
+		log.Print("usercfg encoding error: ", err)
+		return err
+	}
+
+	err = rdb.RedisNoSQL.HSet(ctx, "usercfg", uid, bytes).Err()
 	if err != nil {
 		log.Print("login set to redis error: ", err)
 		return err
@@ -68,3 +75,4 @@ log.Print("testNoSQL")
 
 	return err
 }
+
