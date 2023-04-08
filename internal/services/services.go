@@ -5,5 +5,4 @@ type StorageProvider interface {
 	TextStorageProviver
 	BinaryStorageProviver
 	LoginStorageProviver
-	//ReadUserRecStorageProviver
 }

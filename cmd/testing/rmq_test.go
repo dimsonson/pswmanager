@@ -112,7 +112,7 @@ func TestServer_Consume(t *testing.T) {
 		}
 	}
 
-	routerGroup.Route("all.create", fooController)
+	routerGroup.Route("all.*", fooController)
 	routerGroup.Route("all.update", barController)
 
 	server := rabbitmq.NewServer(conn, router)
