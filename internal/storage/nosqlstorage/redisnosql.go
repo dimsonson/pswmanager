@@ -107,3 +107,12 @@ func (rdb *StorageNoSQL) ReadUser(ctx context.Context, login string) (string, st
 
 	return uid, psw, bytesUserCfg, err
 }
+
+func (rdb *StorageNoSQL) CheckPsw(ctx context.Context, uid string, psw string) (bool, error) {
+	pswStorage, err := rdb.RedisNoSQL.HGet(ctx, "psw", uid).Result()
+	if err != nil {
+		log.Print("psw check redis error: ", err)
+		return false, err
+	}
+	return psw == pswStorage, err
+}
