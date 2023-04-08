@@ -76,36 +76,14 @@ func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw strin
 	return err
 }
 
-func (rdb *StorageNoSQL) ReadUser(ctx context.Context, login string) (string, string, []byte, error) {
-
-	pipe := rdb.RedisNoSQL.Pipeline()
-
-	uid, err := pipe.HGet(ctx, "login", login).Result()
-	if err != nil {
-		log.Print("login get from redis error: ", err)
-		return "", "", nil, err
-	}
-
-	psw, err := pipe.HGet(ctx, "psw", uid).Result()
-	if err != nil {
-		log.Print("psw get from redis error: ", err)
-		return "", "", nil, err
-	}
-
-	cmd := pipe.HGet(ctx, "usercfg", uid)
+func (rdb *StorageNoSQL) ReadUserCfg(ctx context.Context, uid string) ([]byte, error) {
+	cmd := rdb.RedisNoSQL.HGet(ctx, "usercfg", uid)
 	bytesUserCfg, err := cmd.Bytes()
 	if err != nil {
 		log.Print("usercfg get from redis error: ", err)
-		return "", "", nil, err
+		return nil, err
 	}
-
-	_, err = pipe.Exec(ctx)
-	if err != nil {
-		log.Print("pipe redis error: ", err)
-		return "", "", nil, err
-	}
-
-	return uid, psw, bytesUserCfg, err
+	return bytesUserCfg, err
 }
 
 func (rdb *StorageNoSQL) CheckPsw(ctx context.Context, uid string, psw string) (bool, error) {
@@ -115,4 +93,13 @@ func (rdb *StorageNoSQL) CheckPsw(ctx context.Context, uid string, psw string) (
 		return false, err
 	}
 	return psw == pswStorage, err
+}
+
+func (rdb *StorageNoSQL) UpdateUser(ctx context.Context, uid string, bytesUserCfg []byte) error {
+	err := rdb.RedisNoSQL.HSet(ctx, "usercfg", uid, bytesUserCfg).Err()
+	if err != nil {
+		log.Print("usercfg set to redis error: ", err)
+		return err
+	}
+	return err
 }

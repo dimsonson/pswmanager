@@ -194,7 +194,7 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 
 	servUserCreate := services.NewUserData(nosqlstorage, cfg.Rabbitmq)
 
-	servUserCreate.Create(ctx, "testlogin", "passwtest")
+	servUserCreate.CreateUser(ctx, "testlogin", "passwtest")
 
 	sqlstorage := sqlstorage.New(cfg.Postgree.Dsn)
 	servLoginRec := services.NewLoginRec(sqlstorage)
