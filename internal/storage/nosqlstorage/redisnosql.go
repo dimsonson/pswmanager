@@ -2,12 +2,10 @@ package nosqlstorage
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 
-	"github.com/dimsonson/pswmanager/internal/models"
 	"github.com/dimsonson/pswmanager/internal/settings"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -47,7 +45,7 @@ func (rdb *StorageNoSQL) Close() {
 	rdb.RedisNoSQL.Close()
 }
 
-func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg models.UserConfig) error {
+func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg []byte) error {
 
 	pipe := rdb.RedisNoSQL.Pipeline()
 
@@ -63,15 +61,9 @@ func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw strin
 		return err
 	}
 
-	bytes, err := json.Marshal(usercfg)
+	err = pipe.HSet(ctx, "usercfg", uid, usercfg).Err()
 	if err != nil {
-		log.Print("usercfg encoding error: ", err)
-		return err
-	}
-
-	err = pipe.HSet(ctx, "usercfg", uid, bytes).Err()
-	if err != nil {
-		log.Print("login set to redis error: ", err)
+		log.Print("usercfg set to redis error: ", err)
 		return err
 	}
 
@@ -82,4 +74,36 @@ func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw strin
 	}
 
 	return err
+}
+
+func (rdb *StorageNoSQL) ReadUser(ctx context.Context, login string) (string, string, []byte, error) {
+
+	pipe := rdb.RedisNoSQL.Pipeline()
+
+	uid, err := pipe.HGet(ctx, "login", login).Result()
+	if err != nil {
+		log.Print("login get from redis error: ", err)
+		return "", "", nil, err
+	}
+
+	psw, err := pipe.HGet(ctx, "psw", uid).Result()
+	if err != nil {
+		log.Print("psw get from redis error: ", err)
+		return "", "", nil, err
+	}
+
+	cmd := pipe.HGet(ctx, "usercfg", uid)
+	bytesUserCfg, err := cmd.Bytes()
+	if err != nil {
+		log.Print("usercfg get from redis error: ", err)
+		return "", "", nil, err
+	}
+
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		log.Print("pipe redis error: ", err)
+		return "", "", nil, err
+	}
+
+	return uid, psw, bytesUserCfg, err
 }
