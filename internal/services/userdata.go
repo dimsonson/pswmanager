@@ -26,13 +26,14 @@ type UserStorageProviver interface {
 type UserServices struct {
 	storage UserStorageProviver
 	Cfg     models.RabbitmqSrv
+	conn    *amqp.Connection
 }
 
 // New.
 func NewUserData(s UserStorageProviver, cfg models.RabbitmqSrv) *UserServices {
 	return &UserServices{
-		s,
-		cfg,
+		storage: s,
+		Cfg:     cfg,
 	}
 }
 
@@ -48,13 +49,32 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 	// создание конфигурации rmq
 	userapp := new(models.App)
 	userapp.AppID = uuid.New().String()
-	userapp.RoutingKey = fmt.Sprintf("%s.%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.ConsumeQueue = fmt.Sprintf("%s%s%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.ConsumerName = fmt.Sprintf("%s%s%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	userapp.ExchangeBindings = []string{} // одно приложение - нет rk
 
 	usercfg.Apps = append(usercfg.Apps, *userapp)
 	// bindings отсутвует, т.к. одно приложение
+
+	ch, err := sr.RabbitMQconn(ctx)
+	defer sr.conn.Close()
+	if err != nil {
+		log.Print("rabbitmq chanel creation error: ", err)
+		return models.UserConfig{}, err
+	}
+	_, err = ch.QueueDeclare(
+		userapp.ConsumeQueue, // name
+		true,                 // durable
+		false,                // delete when unused
+		false,                // exclusive
+		false,                // no-wait
+		nil,                  // arguments
+	)
+	if err != nil {
+		log.Print("rabbitmq queue creation error: ", err)
+		return models.UserConfig{}, err
+	}
 
 	// сериализация для хранения в Redis
 	bytesUserCfg, err := json.Marshal(usercfg)
@@ -100,24 +120,12 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	userapp := models.App{}
 	userapp.AppID = uuid.New().String()
 	// генерируем очередь и routingkey
-	userapp.ConsumeQueue = fmt.Sprintf("%s%s%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.ConsumerName = fmt.Sprintf("%s%s%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.RoutingKey = fmt.Sprintf("%s.%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	// добавляем очередь для нового приложения пользователя
-	rabbitConnURL := fmt.Sprintf(
-		"amqp://%s:%s@%s:%s/",
-		sr.Cfg.User,
-		sr.Cfg.Psw,
-		sr.Cfg.Host,
-		sr.Cfg.Port,
-	)
-	conn, err := amqp.Dial(rabbitConnURL)
-	if err != nil {
-		log.Print("rabbitmq connection error: ", err)
-		return "", models.UserConfig{}, err
-	}
-	defer conn.Close()
-	ch, err := conn.Channel()
+	ch, err := sr.RabbitMQconn(ctx)
+	defer sr.conn.Close()
 	if err != nil {
 		log.Print("rabbitmq chanel creation error: ", err)
 		return "", models.UserConfig{}, err
@@ -181,4 +189,27 @@ func (sr *UserServices) RegUser(ctx context.Context, login string, psw string) {
 }
 
 func (sr *UserServices) AuthUser(ctx context.Context, login string, psw string) {
+}
+
+func (sr *UserServices) RabbitMQconn(ctx context.Context) (*amqp.Channel, error) {
+	var err error
+	rabbitConnURL := fmt.Sprintf(
+		"amqp://%s:%s@%s:%s/",
+		sr.Cfg.User,
+		sr.Cfg.Psw,
+		sr.Cfg.Host,
+		sr.Cfg.Port,
+	)
+	sr.conn, err = amqp.Dial(rabbitConnURL)
+	if err != nil {
+		log.Print("rabbitmq connection error: ", err)
+		return nil, err
+	}
+
+	ch, err := sr.conn.Channel()
+	if err != nil {
+		log.Print("rabbitmq chanel creation error: ", err)
+		return nil, err
+	}
+	return ch, err
 }
