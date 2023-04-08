@@ -12,8 +12,8 @@ import (
 	"github.com/dimsonson/pswmanager/internal/servers/grpc"
 	"github.com/dimsonson/pswmanager/internal/servers/rabbitmq"
 	"github.com/dimsonson/pswmanager/internal/services"
-	"github.com/dimsonson/pswmanager/internal/storage/nosqlstorage"
-	"github.com/dimsonson/pswmanager/internal/storage/sqlstorage"
+	"github.com/dimsonson/pswmanager/internal/storage/nosql"
+	"github.com/dimsonson/pswmanager/internal/storage/sql"
 )
 
 // Константы по умолчанию.
@@ -191,7 +191,7 @@ func (cfg *ServiceConfig) Parse() {
 
 func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
 
-	nosqlstorage := nosqlstorage.New("test")
+	nosqlstorage := nosql.New("test")
 
 	servUserCreate := services.NewUserData(nosqlstorage, cfg.Rabbitmq)
 
@@ -199,7 +199,7 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 
 	fmt.Println(servUserCreate.CreateApp(ctx, ucfg.UserID, "passwtest"))
 
-	sqlstorage := sqlstorage.New(cfg.Postgree.Dsn)
+	sqlstorage := sql.New(cfg.Postgree.Dsn)
 	servLoginRec := services.NewLoginRec(sqlstorage)
 	servTextRec := services.NewTextRec(sqlstorage)
 	servCardRec := services.NewCardRec(sqlstorage)
