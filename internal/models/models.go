@@ -164,5 +164,5 @@ type App struct {
 	RoutingKey   string   `redis:"routingkey"`
 	ConsumeQueue string   `redis:"consumequeue"`
 	ConsumerName string   `redis:"consumername"`
-	Bindings     []string `redis:"bindings"`
+	ExchangeBindings     []string `redis:"bindings"`
 }
