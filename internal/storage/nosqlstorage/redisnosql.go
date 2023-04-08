@@ -48,14 +48,16 @@ func (rdb *StorageNoSQL) Close() {
 }
 
 func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg models.UserConfig) error {
-	log.Print("testNoSQL")
-	err := rdb.RedisNoSQL.HSet(ctx, "login", login, uid).Err()
+
+	pipe := rdb.RedisNoSQL.Pipeline()
+
+	err := pipe.HSet(ctx, "login", login, uid).Err()
 	if err != nil {
 		log.Print("login set to redis error: ", err)
 		return err
 	}
 
-	err = rdb.RedisNoSQL.HSet(ctx, "psw", uid, psw).Err()
+	err = pipe.HSet(ctx, "psw", uid, psw).Err()
 	if err != nil {
 		log.Print("psw set to redis error: ", err)
 		return err
@@ -67,12 +69,17 @@ func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw strin
 		return err
 	}
 
-	err = rdb.RedisNoSQL.HSet(ctx, "usercfg", uid, bytes).Err()
+	err = pipe.HSet(ctx, "usercfg", uid, bytes).Err()
 	if err != nil {
 		log.Print("login set to redis error: ", err)
 		return err
 	}
 
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		log.Print("pipe redis error: ", err)
+		return err
+	}
+
 	return err
 }
-
