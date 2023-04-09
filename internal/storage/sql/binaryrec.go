@@ -17,7 +17,7 @@ func (ms *StorageSQL) CreateBinary(ctx context.Context, record models.BinaryRec)
 			$4,
 			$5			
 			)`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.Metadata, record.Binary, record.UID, record.AppID, record.RecordID)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.Metadata, record.Binary, record.UID, record.AppID, record.RecordID)
 	return err
 }
 
@@ -28,7 +28,7 @@ func (ms *StorageSQL) UpdateBinary(ctx context.Context, record models.BinaryRec)
 	SET metadata = $3, "binary" = $4
 	WHERE recordid = $1 
 	AND uid = $2`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.RecordID, record.UID, record.Metadata, record.Binary)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.RecordID, record.UID, record.Metadata, record.Binary)
 	return err
 }
 
@@ -39,6 +39,6 @@ func (ms *StorageSQL) DeleteBinary(ctx context.Context, record models.BinaryRec)
 	SET  deleted = true 
 	WHERE recordid = $1 
 	AND uid = $2`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.RecordID, record.UID)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.RecordID, record.UID)
 	return err
 }

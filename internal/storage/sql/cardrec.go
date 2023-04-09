@@ -20,7 +20,7 @@ func (ms *StorageSQL) CreateCard(ctx context.Context, record models.CardRec) err
 			$7,
 			$8			
 			)`
-	_, err := ms.PostgreSQL.ExecContext(
+	_, err := ms.PostgreConn.ExecContext(
 		ctx, 
 		q, 
 		record.Metadata, 
@@ -41,7 +41,7 @@ func (ms *StorageSQL) UpdateCard(ctx context.Context, record models.CardRec) err
 	SET  metadata = $3, brand = $4, num = $5, date = $6, code = $7
 	WHERE recordid = $1 
 	AND uid = $2`
-	_, err := ms.PostgreSQL.ExecContext(
+	_, err := ms.PostgreConn.ExecContext(
 		ctx, 
 		q,
 		record.RecordID,
@@ -62,6 +62,6 @@ func (ms *StorageSQL) DeleteCard(ctx context.Context, record models.CardRec) err
 	SET  deleted = true 
 	WHERE recordid = $1 
 	AND uid = $2`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.RecordID, record.UID)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.RecordID, record.UID)
 	return err
 }

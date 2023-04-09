@@ -16,6 +16,6 @@ func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) error 
 			$5			
 			)`
 	// записываем в хранилице userid, id, URL PostgreSQL.
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, userID)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, userID)
 	return err
 }

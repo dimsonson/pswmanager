@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/MashinIvan/rabbitmq"
@@ -72,7 +73,8 @@ type Redis struct {
 }
 
 type PostgreSQL struct {
-	Dsn string `json:"postgre_dsn"`
+	Dsn  string `json:"postgre_dsn"`
+	Conn *sql.DB
 }
 
 // MsgType тип исплльзуемый для проставления признака типа сообщения / операции.
@@ -160,9 +162,9 @@ type UserConfig struct {
 
 // App .
 type App struct {
-	AppID        string   `redis:"appid"`
-	RoutingKey   string   `redis:"routingkey"`
-	ConsumeQueue string   `redis:"consumequeue"`
-	ConsumerName string   `redis:"consumername"`
-	ExchangeBindings     []string `redis:"bindings"`
+	AppID            string   `redis:"appid"`
+	RoutingKey       string   `redis:"routingkey"`
+	ConsumeQueue     string   `redis:"consumequeue"`
+	ConsumerName     string   `redis:"consumername"`
+	ExchangeBindings []string `redis:"bindings"`
 }

@@ -17,7 +17,7 @@ func (ms *StorageSQL) CreateText(ctx context.Context, record models.TextRec) err
 			$4,
 			$5			
 			)`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.Metadata, record.Text, record.UID, record.AppID, record.RecordID)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.Metadata, record.Text, record.UID, record.AppID, record.RecordID)
 	return err
 }
 
@@ -28,7 +28,7 @@ func (ms *StorageSQL) UpdateText(ctx context.Context, record models.TextRec) err
 	SET  metadata = $3, textdata = $4
 	WHERE recordid = $1 
 	AND uid = $2`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.RecordID, record.UID, record.Metadata, record.Text)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.RecordID, record.UID, record.Metadata, record.Text)
 	return err
 }
 
@@ -39,6 +39,6 @@ func (ms *StorageSQL) DeleteText(ctx context.Context, record models.TextRec) err
 	SET  deleted = true 
 	WHERE recordid = $1 
 	AND uid = $2`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.RecordID, record.UID)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.RecordID, record.UID)
 	return err
 }

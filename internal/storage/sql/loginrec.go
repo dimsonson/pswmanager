@@ -18,7 +18,7 @@ func (ms *StorageSQL) CreateLogin(ctx context.Context, record models.LoginRec) e
 			$5,
 			$6			
 			)`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.Metadata, record.Login, record.Psw, record.UID, record.AppID, record.RecordID)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.Metadata, record.Login, record.Psw, record.UID, record.AppID, record.RecordID)
 	return err
 }
 
@@ -29,7 +29,7 @@ func (ms *StorageSQL) UpdateLogin(ctx context.Context, record models.LoginRec) e
 	SET  metadata = $3, login = $4, psw = $5 
 	WHERE recordid = $1 
 	AND uid = $2`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.RecordID, record.UID, record.Metadata, record.Login, record.Psw)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.RecordID, record.UID, record.Metadata, record.Login, record.Psw)
 	return err
 }
 
@@ -40,6 +40,6 @@ func (ms *StorageSQL) DeleteLogin(ctx context.Context, record models.LoginRec) e
 	SET  deleted = true 
 	WHERE recordid = $1 
 	AND uid = $2`
-	_, err := ms.PostgreSQL.ExecContext(ctx, q, record.RecordID, record.UID)
+	_, err := ms.PostgreConn.ExecContext(ctx, q, record.RecordID, record.UID)
 	return err
 }

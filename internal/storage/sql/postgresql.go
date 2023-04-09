@@ -12,7 +12,7 @@ import (
 
 // StorageSQL структура хранилища PostgreSQL.
 type StorageSQL struct {
-	PostgreSQL *sql.DB
+	PostgreConn *sql.DB
 }
 
 // NewSQLStorage конструктор нового хранилища PostgreSQL.
@@ -79,10 +79,10 @@ func New(p string) *StorageSQL {
 		log.Print("request NewSQLStorage to sql db returned error:", settings.ColorRed, err, settings.ColorReset)
 	}
 	return &StorageSQL{
-		PostgreSQL: db,
+		PostgreConn: db,
 	}
 }
 
 func (ms *StorageSQL) Close() {
-	ms.PostgreSQL.Close()
+	ms.PostgreConn.Close()
 }

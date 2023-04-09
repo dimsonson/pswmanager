@@ -199,7 +199,11 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 
 	fmt.Println(servUserCreate.CreateApp(ctx, ucfg.UserID, "passwtest"))
 
+
+
 	sqlstorage := sql.New(cfg.Postgree.Dsn)
+	cfg.Postgree.Conn = sqlstorage.PostgreConn
+
 	servLoginRec := services.NewLoginRec(sqlstorage)
 	servTextRec := services.NewTextRec(sqlstorage)
 	servCardRec := services.NewCardRec(sqlstorage)
@@ -222,4 +226,8 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	wg.Add(1)
 	rmqSrv.Start(ctx, rmqRouter)
 
+}
+
+func (cfg *ServiceConfig) ConnClose(ctx context.Context) {
+	cfg.Postgree.Conn.Close()
 }
