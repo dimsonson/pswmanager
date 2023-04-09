@@ -38,7 +38,10 @@ type ServiceConfig struct {
 	Postgree        models.PostgreSQL
 	GRPC            models.GRPC
 	Wg              sync.WaitGroup
+
 }
+
+
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
 func New() *ServiceConfig {

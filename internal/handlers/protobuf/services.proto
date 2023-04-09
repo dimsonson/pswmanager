@@ -1,0 +1,127 @@
+syntax = "proto3";
+import "google/protobuf/timestamp.proto";
+
+package proto;
+
+option go_package = "internal/handlers/grpc/";
+
+service UserService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  rpc CreateApp(CreateAppRequest) returns (CreateAppResponse);
+  rpc ReadUser(ReadUserRequest) returns (ReadUserResponse);
+}
+
+// CreateUser
+
+message CreateUserRequest {
+  string login = 1;
+  string psw = 2;
+}
+
+message CreateUserResponse {
+  string UserID = 1;
+  string RmqHost = 2;
+  string RmqPort = 3;
+  string RmqUID = 4;
+  string RmqPsw = 5;
+  string ExchangeName = 6;
+  string ExchangeKind = 7;
+  repeated App Apps = 8;
+  string error = 9; // ошибка
+}
+
+message App {
+  string AppID = 1;
+  string RoutingKey = 2;
+  string ConsumeQueue = 3;
+  string ConsumerName = 4;
+}
+
+// CreateApp
+
+message CreateAppRequest {
+  string uid = 1;
+  string psw = 2;
+}
+
+message CreateAppResponse {
+  string Appid = 1;
+  string UserID = 2;
+  string RmqHost = 3;
+  string RmqPort = 4;
+  string RmqUID = 5;
+  string RmqPsw = 6;
+  string ExchangeName = 7;
+  string ExchangeKind = 8;
+  repeated App Apps = 9;
+  string error = 10; // ошибка
+}
+
+// message App {
+//   string AppID = 1;
+//   string RoutingKey = 2;
+//   string ConsumeQueue = 3;
+//   string ConsumerName = 4;
+// }
+
+// ReadUser
+
+message ReadUserRequest { string uid = 1; }
+
+message ReadUserResponse {
+  repeated LoginRec SetLoginRec = 1;
+  repeated TextRec SetTextRec = 2;
+  repeated BinaryRec SetBinaryRec = 3;
+  repeated CardRec SetCardRec = 4;
+  string error = 5; // ошибка
+}
+
+message LoginRec {
+  string RecordID = 1;
+  google.protobuf.Timestamp ChngTime = 2;
+  string UID = 3;
+  string AppID = 4;
+  string Login = 5;
+  string Psw = 6;
+  string Metadata = 7;
+}
+
+// LoginRec структура сообщния для опараций с текстовыми данными пользователя.
+message TextRec {
+  string RecordID = 1;
+  google.protobuf.Timestamp ChngTime = 2;
+  string UID = 3;
+  string AppID = 4;
+  string Text = 5;
+  string Metadata = 6;
+}
+
+// BinaryRec структура сообщния для опараций с бинарными данными пользователя.
+message BinaryRec {
+  string RecordID = 1;
+  google.protobuf.Timestamp ChngTime = 2;
+  string UID = 3;
+  string AppID = 4;
+  string Binary = 5;
+  string Metadata = 6;
+}
+
+// CardRec структура сообщния для опараций с данными карт пользователя.
+message CardRec {
+  string RecordID = 1;
+  google.protobuf.Timestamp ChngTime = 2;
+  string UID = 3;
+  string AppID = 4;
+  int64 Brand = 5;
+  string Number = 6;
+  string ValidDate = 7;
+  int64 Code = 8;
+  string Holder = 9;
+  string Metadata = 10;
+}
+
+/*
+protoc --go_out=. --go_opt=paths=source_relative \
+  --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+  services.proto
+*/

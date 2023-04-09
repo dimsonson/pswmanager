@@ -21,7 +21,6 @@ type UserStorageProviver interface {
 	UpdateUser(ctx context.Context, uid string, bytesUserCfg []byte) error
 	CheckPsw(ctx context.Context, uid string, psw string) (bool, error)
 	IsUserLoginExist(ctx context.Context, login string) (bool, error)
-	//ReadUserRecords(ctx context.Context, userID string) (models.SetRecords, error)
 }
 
 type ClientRMQProvider interface {

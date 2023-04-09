@@ -28,7 +28,7 @@ type RabbitmqSrv struct {
 	Controllers    []ControllerParams
 	RoutingWorkers int
 }
-
+ 
 // ExchangeParams generalizes amqp exchange settings
 type ExchangeParams struct {
 	Name       string
