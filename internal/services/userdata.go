@@ -51,7 +51,7 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 	// проверка существования пользователя
 	err := sr.storage.IsUserLoginExist(ctx, login)
 	if err != nil {
-		log.Print("check login error or uid not found: ", err)
+		log.Print("check login error or login not found: ", err)
 		return models.UserConfig{}, err
 	}	
 	// создание uidcfg
