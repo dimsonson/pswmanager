@@ -41,3 +41,8 @@ func NewClientRMQ(cfg models.RabbitmqSrv) *ClientRMQ {
 		Ch:   ch,
 	}
 }
+
+
+func (r *ClientRMQ) Close() {
+	r.Conn.Close()
+}
