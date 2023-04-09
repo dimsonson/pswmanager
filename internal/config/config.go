@@ -43,7 +43,7 @@ type ServiceConfig struct {
 
 type ServicesGRPC struct {
 	User     *services.UserServices
-	ReadUser *services.ReadUserServices
+	ReadUsers *services.ReadUserServices
 }
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
