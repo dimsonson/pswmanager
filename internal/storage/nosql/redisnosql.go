@@ -34,7 +34,7 @@ func New(p string) *StorageNoSQL {
 		//},
 	})
 
-	log.Print(rdb.Ping(ctx))
+	log.Print("redisDB ", rdb.Ping(ctx))
 
 	return &StorageNoSQL{
 		RedisNoSQL: rdb,

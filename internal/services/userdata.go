@@ -48,8 +48,8 @@ func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg models.
 // CreateUser.
 func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string) (models.UserConfig, error) {
 	var err error
-
 	// проверка существования пользователя
+	
 
 	// создание uidcfg
 	usercfg := models.UserConfig{}
@@ -157,31 +157,3 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	return userapp.AppID, usercfg, err
 }
 
-// func (sr *UserServices) RegUser(ctx context.Context, login string, psw string) {
-// }
-
-// func (sr *UserServices) AuthUser(ctx context.Context, login string, psw string) {
-// }
-
-// func (sr *UserServices) RabbitMQconn(ctx context.Context) (*amqp.Channel, error) {
-// 	var err error
-// 	rabbitConnURL := fmt.Sprintf(
-// 		"amqp://%s:%s@%s:%s/",
-// 		sr.Cfg.User,
-// 		sr.Cfg.Psw,
-// 		sr.Cfg.Host,
-// 		sr.Cfg.Port,
-// 	)
-// 	sr.Conn, err = amqp.Dial(rabbitConnURL)
-// 	if err != nil {
-// 		log.Print("rabbitmq connection error: ", err)
-// 		return nil, err
-// 	}
-
-// 	ch, err := sr.Conn.Channel()
-// 	if err != nil {
-// 		log.Print("rabbitmq chanel creation error: ", err)
-// 		return nil, err
-// 	}
-// 	return ch, err
-// }

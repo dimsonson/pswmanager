@@ -60,6 +60,6 @@ func main() {
 	// ожидаем выполнение горутин
 	wg.Wait()
 	// логирование закрытия сервера без ошибок
-	log.Print("rmq&grpc servers gracefully shutdown")
+	log.Print("rmq & grpc servers gracefully shutdown")
 
 }
