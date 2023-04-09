@@ -42,7 +42,43 @@ func NewClientRMQ(cfg models.RabbitmqSrv) *ClientRMQ {
 	}
 }
 
-
 func (r *ClientRMQ) Close() {
+	r.Ch.Close()
 	r.Conn.Close()
+}
+
+func (r *ClientRMQ) ExchangeDeclare(exchName string) error {
+	err := r.Ch.ExchangeDeclare(
+		exchName,            // name
+		r.Cfg.Exchange.Kind, // kind
+		true,                // durable
+		false,               // delete when unused
+		false,               // internal
+		false,               // no-wait
+		nil,                 // arguments
+	)
+	return err
+}
+
+func (r *ClientRMQ) QueueDeclare(queueName string) (amqp.Queue, error) {
+	q, err := r.Ch.QueueDeclare(
+		queueName, // name
+		true,      // durable
+		false,     // delete when unused
+		false,     // exclusive
+		false,     // no-wait
+		nil,       // arguments
+	)
+	return q, err
+}
+
+func (r *ClientRMQ) QueueBind(queueName string, routingKey string) error {
+	err := r.Ch.QueueBind(
+		queueName,           // queue name
+		routingKey,          // routing key
+		r.Cfg.Exchange.Name, // exchange
+		false,               // no-wait
+		nil,                 // arguments
+	)
+	return err
 }

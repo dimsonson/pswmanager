@@ -22,18 +22,26 @@ type UserStorageProviver interface {
 	CheckPsw(ctx context.Context, uid string, psw string) (bool, error)
 }
 
+type ClientRMQProvider interface {
+	Close()
+	ExchangeDeclare(exchName string) error
+	QueueDeclare(queueName string) (amqp.Queue, error)
+	QueueBind(queueName string, routingKey string) error
+}
+
 // Services структура конструктора бизнес логики.
 type UserServices struct {
-	storage UserStorageProviver
-	Cfg     models.RabbitmqSrv
-	conn    *amqp.Connection
+	storage   UserStorageProviver
+	clientRMQ ClientRMQProvider
+	Cfg       models.RabbitmqSrv
 }
 
 // New.
-func NewUserData(s UserStorageProviver, cfg models.RabbitmqSrv) *UserServices {
+func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg models.RabbitmqSrv) *UserServices {
 	return &UserServices{
-		storage: s,
-		Cfg:     cfg,
+		storage:   s,
+		clientRMQ: clientrmq,
+		Cfg:       cfg,
 	}
 }
 
@@ -56,26 +64,13 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 
 	usercfg.Apps = append(usercfg.Apps, *userapp)
 	// bindings отсутвует, т.к. одно приложение
-
-	ch, err := sr.RabbitMQconn(ctx)
-	defer sr.conn.Close()
-	if err != nil {
-		log.Print("rabbitmq chanel creation error: ", err)
-		return models.UserConfig{}, err
-	}
-	_, err = ch.QueueDeclare(
+	_, err = sr.clientRMQ.QueueDeclare(
 		userapp.ConsumeQueue, // name
-		true,                 // durable
-		false,                // delete when unused
-		false,                // exclusive
-		false,                // no-wait
-		nil,                  // arguments
 	)
 	if err != nil {
 		log.Print("rabbitmq queue creation error: ", err)
 		return models.UserConfig{}, err
 	}
-
 	// сериализация для хранения в Redis
 	bytesUserCfg, err := json.Marshal(usercfg)
 	if err != nil {
@@ -124,31 +119,12 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	// добавляем очередь для нового приложения пользователя
-	ch, err := sr.RabbitMQconn(ctx)
-	defer sr.conn.Close()
-	if err != nil {
-		log.Print("rabbitmq chanel creation error: ", err)
-		return "", models.UserConfig{}, err
-	}
-	q, err := ch.QueueDeclare(
-		userapp.ConsumeQueue, // name
-		true,                 // durable
-		false,                // delete when unused
-		false,                // exclusive
-		false,                // no-wait
-		nil,                  // arguments
-	)
+	q, err := sr.clientRMQ.QueueDeclare(userapp.ConsumeQueue)
 	if err != nil {
 		log.Print("rabbitmq queue creation error: ", err)
 		return "", models.UserConfig{}, err
 	}
-	err = ch.QueueBind(
-		q.Name,               // queue name
-		userapp.RoutingKey,   // routing key
-		sr.Cfg.Exchange.Name, // exchange
-		false,
-		nil,
-	)
+	err = sr.clientRMQ.QueueBind(q.Name, userapp.RoutingKey)
 	if err != nil {
 		log.Print("rabbitmq queue bindings error: ", err)
 		return "", models.UserConfig{}, err
@@ -157,19 +133,15 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	// добавление routingkey в очереди rabbit (bindings)
 	for _, v := range usercfg.Apps {
 		v.ExchangeBindings = append(v.ExchangeBindings, userapp.RoutingKey)
-		err = ch.QueueBind(
+		err = sr.clientRMQ.QueueBind(
 			v.ConsumeQueue,       // queue name
 			userapp.RoutingKey,   // routing key
-			sr.Cfg.Exchange.Name, // exchange
-			false,
-			nil,
 		)
 		if err != nil {
 			log.Print("rabbitmq queue bindings error: ", err)
 			return "", models.UserConfig{}, err
 		}
 	}
-
 	// добавлем новое приложение в структуру конфигурации
 	usercfg.Apps = append(usercfg.Apps, userapp)
 	// сохраняем обновленную конфигурацию в хранилище
@@ -185,31 +157,31 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	return userapp.AppID, usercfg, err
 }
 
-func (sr *UserServices) RegUser(ctx context.Context, login string, psw string) {
-}
+// func (sr *UserServices) RegUser(ctx context.Context, login string, psw string) {
+// }
 
-func (sr *UserServices) AuthUser(ctx context.Context, login string, psw string) {
-}
+// func (sr *UserServices) AuthUser(ctx context.Context, login string, psw string) {
+// }
 
-func (sr *UserServices) RabbitMQconn(ctx context.Context) (*amqp.Channel, error) {
-	var err error
-	rabbitConnURL := fmt.Sprintf(
-		"amqp://%s:%s@%s:%s/",
-		sr.Cfg.User,
-		sr.Cfg.Psw,
-		sr.Cfg.Host,
-		sr.Cfg.Port,
-	)
-	sr.conn, err = amqp.Dial(rabbitConnURL)
-	if err != nil {
-		log.Print("rabbitmq connection error: ", err)
-		return nil, err
-	}
+// func (sr *UserServices) RabbitMQconn(ctx context.Context) (*amqp.Channel, error) {
+// 	var err error
+// 	rabbitConnURL := fmt.Sprintf(
+// 		"amqp://%s:%s@%s:%s/",
+// 		sr.Cfg.User,
+// 		sr.Cfg.Psw,
+// 		sr.Cfg.Host,
+// 		sr.Cfg.Port,
+// 	)
+// 	sr.Conn, err = amqp.Dial(rabbitConnURL)
+// 	if err != nil {
+// 		log.Print("rabbitmq connection error: ", err)
+// 		return nil, err
+// 	}
 
-	ch, err := sr.conn.Channel()
-	if err != nil {
-		log.Print("rabbitmq chanel creation error: ", err)
-		return nil, err
-	}
-	return ch, err
-}
+// 	ch, err := sr.Conn.Channel()
+// 	if err != nil {
+// 		log.Print("rabbitmq chanel creation error: ", err)
+// 		return nil, err
+// 	}
+// 	return ch, err
+// }

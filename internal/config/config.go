@@ -6,6 +6,7 @@ import (
 	"net"
 	"sync"
 
+	"github.com/dimsonson/pswmanager/internal/clientrmq"
 	"github.com/dimsonson/pswmanager/internal/handlers/rmqhandlers"
 	"github.com/dimsonson/pswmanager/internal/models"
 	"github.com/dimsonson/pswmanager/internal/router"
@@ -191,23 +192,23 @@ func (cfg *ServiceConfig) Parse() {
 
 func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
 
-	nosqlstorage := nosql.New("test")
+	noSQLstorage := nosql.New("test")
 
-	servUserCreate := services.NewUserData(nosqlstorage, cfg.Rabbitmq)
+	clientRMQ := clientrmq.NewClientRMQ(cfg.Rabbitmq)
+
+	servUserCreate := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
 
 	ucfg, _ := servUserCreate.CreateUser(ctx, "testlogin", "passwtest")
 
 	fmt.Println(servUserCreate.CreateApp(ctx, ucfg.UserID, "passwtest"))
 
+	SQLstorage := sql.New(cfg.Postgree.Dsn)
+	cfg.Postgree.Conn = SQLstorage.PostgreConn
 
-
-	sqlstorage := sql.New(cfg.Postgree.Dsn)
-	cfg.Postgree.Conn = sqlstorage.PostgreConn
-
-	servLoginRec := services.NewLoginRec(sqlstorage)
-	servTextRec := services.NewTextRec(sqlstorage)
-	servCardRec := services.NewCardRec(sqlstorage)
-	servBinaryRec := services.NewBinaryRec(sqlstorage)
+	servLoginRec := services.NewLoginRec(SQLstorage)
+	servTextRec := services.NewTextRec(SQLstorage)
+	servCardRec := services.NewCardRec(SQLstorage)
+	servBinaryRec := services.NewBinaryRec(SQLstorage)
 
 	handlers := rmqhandlers.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
 
