@@ -11,7 +11,7 @@ import (
 	"github.com/dimsonson/pswmanager/internal/models"
 	"github.com/dimsonson/pswmanager/internal/router"
 	"github.com/dimsonson/pswmanager/internal/servers/grpc"
-	"github.com/dimsonson/pswmanager/internal/servers/rabbitmq"
+	"github.com/dimsonson/pswmanager/internal/servers/rmq"
 	"github.com/dimsonson/pswmanager/internal/services"
 	"github.com/dimsonson/pswmanager/internal/storage/nosql"
 	"github.com/dimsonson/pswmanager/internal/storage/sql"
@@ -211,6 +211,13 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	servTextRec := services.NewTextRec(SQLstorage)
 	servCardRec := services.NewCardRec(SQLstorage)
 	servBinaryRec := services.NewBinaryRec(SQLstorage)
+
+	servUserRec := services.NewReadUser(SQLstorage)
+
+	setRec, _ := servUserRec.ReadUser(ctx, "user12345")
+
+	fmt.Println(setRec)
+
 
 	handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
 

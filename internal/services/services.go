@@ -5,4 +5,5 @@ type StorageProvider interface {
 	TextStorageProviver
 	BinaryStorageProviver
 	LoginStorageProviver
+	ReadUserStorageProviver
 }

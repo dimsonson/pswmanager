@@ -20,7 +20,8 @@ type UserStorageProviver interface {
 	ReadUserCfg(ctx context.Context, uid string) ([]byte, error)
 	UpdateUser(ctx context.Context, uid string, bytesUserCfg []byte) error
 	CheckPsw(ctx context.Context, uid string, psw string) (bool, error)
-	IsUserLoginExist(ctx context.Context, login string) (bool, error) 
+	IsUserLoginExist(ctx context.Context, login string) (bool, error)
+	//ReadUserRecords(ctx context.Context, userID string) (models.SetRecords, error)
 }
 
 type ClientRMQProvider interface {
@@ -47,9 +48,9 @@ func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg models.
 }
 
 // CreateUser.
-func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string) (models.UserConfig, error) {
+func (s *UserServices) CreateUser(ctx context.Context, login string, psw string) (models.UserConfig, error) {
 	// проверка существования пользователя
-	ok, err := sr.storage.IsUserLoginExist(ctx, login)
+	ok, err := s.storage.IsUserLoginExist(ctx, login)
 	if ok {
 		log.Printf("login \"%s\" already exist:", login)
 		return models.UserConfig{}, err
@@ -57,7 +58,7 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 	if err != nil {
 		log.Print("check login error: ", err)
 		return models.UserConfig{}, err
-	}	
+	}
 	// создание uidcfg
 	usercfg := models.UserConfig{}
 	usercfg.UserID = uuid.New().String()
@@ -71,7 +72,7 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 
 	usercfg.Apps = append(usercfg.Apps, *userapp)
 	// bindings отсутвует, т.к. одно приложение
-	_, err = sr.clientRMQ.QueueDeclare(
+	_, err = s.clientRMQ.QueueDeclare(
 		userapp.ConsumeQueue, // name
 	)
 	if err != nil {
@@ -85,7 +86,7 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 		return models.UserConfig{}, err
 	}
 	// сохраняем в хранилище
-	err = sr.storage.CreateUser(ctx, login, psw, usercfg.UserID, bytesUserCfg)
+	err = s.storage.CreateUser(ctx, login, psw, usercfg.UserID, bytesUserCfg)
 	if err != nil {
 		log.Print("usercfg creating in storage error: ", err)
 		return models.UserConfig{}, err
@@ -95,9 +96,9 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 }
 
 // CreateUser получаем psw хешированный base64 и .
-func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (string, models.UserConfig, error) {
+func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (string, models.UserConfig, error) {
 	// проекрка логина и пароля пользователя
-	ok, err := sr.storage.CheckPsw(ctx, uid, psw)
+	ok, err := s.storage.CheckPsw(ctx, uid, psw)
 	if !ok {
 		log.Print("uid or psw incorret")
 		return "", models.UserConfig{}, errors.New("uid or psw incorret")
@@ -108,7 +109,7 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	}
 	// получаем конфигурацию из хранилища
 	usercfg := models.UserConfig{}
-	bytesUserCfg, err := sr.storage.ReadUserCfg(ctx, uid)
+	bytesUserCfg, err := s.storage.ReadUserCfg(ctx, uid)
 	if err != nil {
 		log.Print("read usercfg from storage error: ", err)
 		return "", models.UserConfig{}, err
@@ -126,12 +127,12 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	// добавляем очередь для нового приложения пользователя
-	q, err := sr.clientRMQ.QueueDeclare(userapp.ConsumeQueue)
+	q, err := s.clientRMQ.QueueDeclare(userapp.ConsumeQueue)
 	if err != nil {
 		log.Print("rabbitmq queue creation error: ", err)
 		return "", models.UserConfig{}, err
 	}
-	err = sr.clientRMQ.QueueBind(q.Name, userapp.RoutingKey)
+	err = s.clientRMQ.QueueBind(q.Name, userapp.RoutingKey)
 	if err != nil {
 		log.Print("rabbitmq queue bindings error: ", err)
 		return "", models.UserConfig{}, err
@@ -140,7 +141,7 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	// добавление routingkey в очереди rabbit (bindings)
 	for _, v := range usercfg.Apps {
 		v.ExchangeBindings = append(v.ExchangeBindings, userapp.RoutingKey)
-		err = sr.clientRMQ.QueueBind(
+		err = s.clientRMQ.QueueBind(
 			v.ConsumeQueue,     // queue name
 			userapp.RoutingKey, // routing key
 		)
@@ -159,7 +160,8 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 		return "", models.UserConfig{}, err
 	}
 	// сохраняем в хранилище
-	sr.storage.UpdateUser(ctx, uid, bytesUserCfg)
+	s.storage.UpdateUser(ctx, uid, bytesUserCfg)
 	// возвращаем AppID и конфигурацию приложению клиента
 	return userapp.AppID, usercfg, err
 }
+
