@@ -1,4 +1,4 @@
-package rmqhandlers
+package rmq
 
 import (
 	"context"

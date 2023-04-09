@@ -98,13 +98,13 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (string, models.UserConfig, error) {
 	// проекрка логина и пароля пользователя
 	ok, err := sr.storage.CheckPsw(ctx, uid, psw)
-	if err != nil {
-		log.Print("check psw error: ", err)
-		return "", models.UserConfig{}, err
-	}
 	if !ok {
 		log.Print("uid or psw incorret")
 		return "", models.UserConfig{}, errors.New("uid or psw incorret")
+	}
+	if err != nil {
+		log.Print("check psw error: ", err)
+		return "", models.UserConfig{}, err
 	}
 	// получаем конфигурацию из хранилища
 	usercfg := models.UserConfig{}

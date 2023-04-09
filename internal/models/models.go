@@ -105,6 +105,14 @@ const (
 	AmEx
 )
 
+// SetRecords .
+type SetRecords struct {
+	SetLoginRec  []LoginRec
+	SetTextRec   []TextRec
+	SetBinaryRec []BinaryRec
+	SetCardRec   []CardRec
+}
+
 // LoginRec структура сообщния для опараций с парами логин/пароль.
 type LoginRec struct {
 	RecordID  string
