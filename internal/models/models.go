@@ -20,6 +20,7 @@ type RabbitmqSrv struct {
 	Psw            string
 	Host           string
 	Port           string
+	ClientRMQ      ClientRMQ
 	Exchange       ExchangeParams
 	Queue          QueueParams
 	QoS            QualityOfService
@@ -75,6 +76,11 @@ type Redis struct {
 type PostgreSQL struct {
 	Dsn  string `json:"postgre_dsn"`
 	Conn *sql.DB
+}
+
+type ClientRMQ struct {
+	Conn *amqp.Connection
+	Ch   *amqp.Channel
 }
 
 // MsgType тип исплльзуемый для проставления признака типа сообщения / операции.

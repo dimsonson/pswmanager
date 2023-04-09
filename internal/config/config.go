@@ -195,6 +195,8 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	noSQLstorage := nosql.New("test")
 
 	clientRMQ := clientrmq.NewClientRMQ(cfg.Rabbitmq)
+	cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
+	cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn 
 
 	servUserCreate := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
 
@@ -231,4 +233,6 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 
 func (cfg *ServiceConfig) ConnClose(ctx context.Context) {
 	cfg.Postgree.Conn.Close()
+	cfg.Rabbitmq.ClientRMQ.Ch.Close()
+	cfg.Rabbitmq.ClientRMQ.Conn.Close()
 }
