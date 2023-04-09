@@ -13,7 +13,7 @@ import (
 )
 
 type GRPChandlers struct {
-	config.ServiceConfig
+	config.ServicesGRPC
 	pb.UnimplementedUserServiceServer
 }
 

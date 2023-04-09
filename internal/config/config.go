@@ -11,7 +11,7 @@ import (
 	"github.com/dimsonson/pswmanager/internal/models"
 	"github.com/dimsonson/pswmanager/internal/router"
 	"github.com/dimsonson/pswmanager/internal/servers/grpc"
-	"github.com/dimsonson/pswmanager/internal/servers/rmq"
+	rabbitmq "github.com/dimsonson/pswmanager/internal/servers/rmq"
 	"github.com/dimsonson/pswmanager/internal/services"
 	"github.com/dimsonson/pswmanager/internal/storage/nosql"
 	"github.com/dimsonson/pswmanager/internal/storage/sql"
@@ -38,10 +38,13 @@ type ServiceConfig struct {
 	Postgree        models.PostgreSQL
 	GRPC            models.GRPC
 	Wg              sync.WaitGroup
-
+	ServicesGRPC
 }
 
-
+type ServicesGRPC struct {
+	User     *services.UserServices
+	ReadUser *services.ReadUserServices
+}
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
 func New() *ServiceConfig {
@@ -199,13 +202,12 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 
 	clientRMQ := clientrmq.NewClientRMQ(cfg.Rabbitmq)
 	cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
-	cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn 
+	cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn
 
-	servUserCreate := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
+	cfg.User = services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
 
-	ucfg, _ := servUserCreate.CreateUser(ctx, "testlogin", "passwtest")
-
-	fmt.Println(servUserCreate.CreateApp(ctx, ucfg.UserID, "passwtest"))
+	ucfg, _ := cfg.User.CreateUser(ctx, "testlogin", "passwtest")
+	fmt.Println(cfg.User.CreateApp(ctx, ucfg.UserID, "passwtest"))
 
 	SQLstorage := sql.New(cfg.Postgree.Dsn)
 	cfg.Postgree.Conn = SQLstorage.PostgreConn
@@ -215,12 +217,11 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	servCardRec := services.NewCardRec(SQLstorage)
 	servBinaryRec := services.NewBinaryRec(SQLstorage)
 
-	servUserRec := services.NewReadUser(SQLstorage)
+	cfg.ReadUser = services.NewReadUser(SQLstorage)
 
-	setRec, _ := servUserRec.ReadUser(ctx, "user12345")
+	setRec, _ := cfg.ReadUser.ReadUser(ctx, "user12345")
 
 	fmt.Println(setRec)
-
 
 	handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
 
