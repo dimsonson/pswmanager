@@ -109,7 +109,7 @@ func (rdb *StorageNoSQL) IsUserLoginExist(ctx context.Context, login string) (bo
 	if err != nil {
 		if err == redis.Nil {
 			log.Print("login key doenst exist: ", err)
-			return false, err
+			return false, nil
 		}
 		log.Print("login check redis error: ", err)
 		return true, err
