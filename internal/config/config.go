@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/dimsonson/pswmanager/internal/clientrmq"
+
+	"github.com/dimsonson/pswmanager/internal/handlers/grpchandle"
 	"github.com/dimsonson/pswmanager/internal/handlers/rmq"
 	"github.com/dimsonson/pswmanager/internal/models"
 	"github.com/dimsonson/pswmanager/internal/router"
@@ -15,6 +17,7 @@ import (
 	"github.com/dimsonson/pswmanager/internal/services"
 	"github.com/dimsonson/pswmanager/internal/storage/nosql"
 	"github.com/dimsonson/pswmanager/internal/storage/sql"
+	pb "github.com/dimsonson/pswmanager/internal/handlers/protobuf"
 )
 
 // Константы по умолчанию.
@@ -42,8 +45,9 @@ type ServiceConfig struct {
 }
 
 type ServicesGRPC struct {
-	User     *services.UserServices
+	User      *services.UserServices
 	ReadUsers *services.ReadUserServices
+	pb.UnimplementedUserServicesServer
 }
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
@@ -225,7 +229,9 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 
 	handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
 
-	grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, wg)
+	handlerGRPC := grpchandle.NewUserServices(ctx)
+
+	grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, handlerGRPC, wg)
 	grpcSrv.InitGRPCservice()
 	wg.Add(1)
 	grpcSrv.GrpcGracefullShotdown()

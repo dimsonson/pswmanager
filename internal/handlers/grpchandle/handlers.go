@@ -5,22 +5,39 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/dimsonson/pswmanager/internal/config"
 	pb "github.com/dimsonson/pswmanager/internal/handlers/protobuf"
+	"github.com/dimsonson/pswmanager/internal/models"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-type GRPChandlers struct {
-	config.ServicesGRPC
-	pb.UnimplementedUserServiceServer
+type ReadUserServicesProvider interface {
+	ReadUser(ctx context.Context, uid string) (models.SetRecords, error)
 }
 
-func (s *GRPChandlers) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+type UserServicesProvider interface {
+	CreateUser(ctx context.Context, login string, psw string) (models.UserConfig, error)
+	CreateApp(ctx context.Context, uid string, psw string) (string, models.UserConfig, error)
+}
+
+type UserServices struct {
+	Ctx context.Context
+	ReadUserServicesProvider
+	UserServicesProvider
+	//pb.UnimplementedUserServicesServer
+}
+
+func NewUserServices(ctx context.Context) *UserServices {
+	return &UserServices{
+		Ctx: ctx,
+	}
+}
+
+func (s *UserServices) CreateUsers(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	var out pb.CreateUserResponse
 	var err error
-	usercfg, err := s.User.CreateUser(ctx, in.Login, in.Psw)
+	usercfg, err := s.UserServicesProvider.CreateUser(ctx, in.Login, in.Psw)
 	out.UserID = usercfg.UserID
 	out.RmqHost = usercfg.RmqHost
 	out.RmqPort = usercfg.RmqPort
@@ -47,11 +64,10 @@ func (s *GRPChandlers) CreateUser(ctx context.Context, in *pb.CreateUserRequest)
 	return &out, err
 }
 
-
-func (s *GRPChandlers) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
+func (s *UserServices) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
 	var out pb.CreateAppResponse
 	var err error
-	appid, usercfg, err := s.User.CreateApp(ctx, in.Uid, in.Psw)
+	appid, usercfg, err := s.UserServicesProvider.CreateApp(ctx, in.Uid, in.Psw)
 	out.Appid = appid
 	out.UserID = usercfg.UserID
 	out.RmqHost = usercfg.RmqHost
@@ -79,64 +95,64 @@ func (s *GRPChandlers) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (
 	return &out, err
 }
 
-func (s *GRPChandlers) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
+func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
 	var out pb.ReadUserResponse
 	var err error
-	setrecords, err := s.ReadUsers.ReadUser(ctx, in.Uid)
+	setrecords, err := s.ReadUserServicesProvider.ReadUser(ctx, in.Uid)
 
-	for _, v := range setrecords.SetTextRec  {
+	for _, v := range setrecords.SetTextRec {
 		strout := &pb.TextRec{
 			RecordID: v.RecordID,
 			//ChngTime: v.ChngTime,
-			UID: v.UID,
-			AppID: v.AppID,
-			Text: v.Text,
+			UID:      v.UID,
+			AppID:    v.AppID,
+			Text:     v.Text,
 			Metadata: v.Metadata,
 		}
 		out.SetTextRec = append(out.SetTextRec, strout)
 	}
-	
-	for _, v := range setrecords.SetBinaryRec  {
+
+	for _, v := range setrecords.SetBinaryRec {
 		strout := &pb.BinaryRec{
 			RecordID: v.RecordID,
 			//ChngTime: v.ChngTime,
-			UID: v.UID,
-			AppID: v.AppID,
-			Binary: v.Binary,
+			UID:      v.UID,
+			AppID:    v.AppID,
+			Binary:   v.Binary,
 			Metadata: v.Metadata,
 		}
 		out.SetBinaryRec = append(out.SetBinaryRec, strout)
 	}
 
-	for _, v := range setrecords.SetLoginRec  {
+	for _, v := range setrecords.SetLoginRec {
 		strout := &pb.LoginRec{
 			RecordID: v.RecordID,
 			//ChngTime: v.ChngTime,
-			UID: v.UID,
-			AppID: v.AppID,
-			Login: v.Login,
-			Psw: v.Psw,
+			UID:      v.UID,
+			AppID:    v.AppID,
+			Login:    v.Login,
+			Psw:      v.Psw,
 			Metadata: v.Metadata,
 		}
 		out.SetLoginRec = append(out.SetLoginRec, strout)
 	}
 
-	for _, v := range setrecords.SetCardRec  {
+	for _, v := range setrecords.SetCardRec {
 		strout := &pb.CardRec{
 			RecordID: v.RecordID,
 			//ChngTime: v.ChngTime,
-			UID: v.UID,
-			AppID: v.AppID,
-			Brand: int64(v.Brand),
-			Number: v.Number,
+			UID:       v.UID,
+			AppID:     v.AppID,
+			Brand:     int64(v.Brand),
+			Number:    v.Number,
 			ValidDate: v.ValidDate,
-			Code: int64(v.Code),
-			Holder: v.Holder,
-			Metadata: v.Metadata,
+			Code:      int64(v.Code),
+			Holder:    v.Holder,
+			Metadata:  v.Metadata,
 		}
 		out.SetCardRec = append(out.SetCardRec, strout)
 	}
-	
+
 	if err != nil {
 		log.Printf("call Put error: %v", err)
 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
