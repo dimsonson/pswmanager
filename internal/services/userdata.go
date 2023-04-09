@@ -20,6 +20,7 @@ type UserStorageProviver interface {
 	ReadUserCfg(ctx context.Context, uid string) ([]byte, error)
 	UpdateUser(ctx context.Context, uid string, bytesUserCfg []byte) error
 	CheckPsw(ctx context.Context, uid string, psw string) (bool, error)
+	IsUserLoginExist(ctx context.Context, login string) error
 }
 
 type ClientRMQProvider interface {
@@ -47,10 +48,12 @@ func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg models.
 
 // CreateUser.
 func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string) (models.UserConfig, error) {
-	var err error
 	// проверка существования пользователя
-	
-
+	err := sr.storage.IsUserLoginExist(ctx, login)
+	if err != nil {
+		log.Print("check login error or uid not found: ", err)
+		return models.UserConfig{}, err
+	}	
 	// создание uidcfg
 	usercfg := models.UserConfig{}
 	usercfg.UserID = uuid.New().String()
@@ -134,8 +137,8 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	for _, v := range usercfg.Apps {
 		v.ExchangeBindings = append(v.ExchangeBindings, userapp.RoutingKey)
 		err = sr.clientRMQ.QueueBind(
-			v.ConsumeQueue,       // queue name
-			userapp.RoutingKey,   // routing key
+			v.ConsumeQueue,     // queue name
+			userapp.RoutingKey, // routing key
 		)
 		if err != nil {
 			log.Print("rabbitmq queue bindings error: ", err)
@@ -156,4 +159,3 @@ func (sr *UserServices) CreateApp(ctx context.Context, uid string, psw string) (
 	// возвращаем AppID и конфигурацию приложению клиента
 	return userapp.AppID, usercfg, err
 }
-
