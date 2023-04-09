@@ -51,7 +51,7 @@ func (sr *UserServices) CreateUser(ctx context.Context, login string, psw string
 	// проверка существования пользователя
 	ok, err := sr.storage.IsUserLoginExist(ctx, login)
 	if ok {
-		log.Printf("login %s already exist: %s ", login, err)
+		log.Printf("login \"%s\" already exist:", login)
 		return models.UserConfig{}, err
 	}
 	if err != nil {
