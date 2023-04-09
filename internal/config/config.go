@@ -217,9 +217,9 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	servCardRec := services.NewCardRec(SQLstorage)
 	servBinaryRec := services.NewBinaryRec(SQLstorage)
 
-	cfg.ReadUser = services.NewReadUser(SQLstorage)
+	cfg.ReadUsers = services.NewReadUser(SQLstorage)
 
-	setRec, _ := cfg.ReadUser.ReadUser(ctx, "user12345")
+	setRec, _ := cfg.ReadUsers.ReadUser(ctx, "user12345")
 
 	fmt.Println(setRec)
 
