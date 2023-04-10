@@ -25,7 +25,7 @@ type UserServices struct {
 	Ctx context.Context
 	ReadUserServicesProvider
 	UserServicesProvider
-	//pb.UnimplementedUserServicesServer
+	pb.UnimplementedUserServicesServer
 }
 
 func NewUserServices(ctx context.Context) *UserServices {

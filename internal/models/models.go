@@ -1,6 +1,7 @@
 package models
 
 import (
+	"crypto/tls"
 	"database/sql"
 	"time"
 
@@ -28,7 +29,7 @@ type RabbitmqSrv struct {
 	Controllers    []ControllerParams
 	RoutingWorkers int
 }
- 
+
 // ExchangeParams generalizes amqp exchange settings
 type ExchangeParams struct {
 	Name       string
@@ -70,7 +71,13 @@ type ControllerParams struct {
 }
 
 type Redis struct {
-	Dsn string `json:"redis_dsn"`
+	Dsn       string `json:"redis_dsn"`
+	Username  string
+	Password  string
+	Network   string 
+	Addr      string // host:port address.
+	DB        int
+	TLSConfig *tls.Config
 }
 
 type PostgreSQL struct {

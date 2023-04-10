@@ -39,14 +39,7 @@ type ServiceConfig struct {
 	Postgree        models.PostgreSQL
 	GRPC            models.GRPC
 	Wg              sync.WaitGroup
-	//ServicesGRPC
 }
-
-// type ServicesGRPC struct {
-// 	User      *services.UserServices
-// 	ReadUsers *services.ReadUserServices
-// 	pb.UnimplementedUserServicesServer
-// }
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
 func New() *ServiceConfig {
@@ -85,6 +78,10 @@ func (cfg *ServiceConfig) Parse() {
 
 	cfg.GRPC.Network = "tcp"
 	cfg.GRPC.Port = ":8080"
+
+	cfg.Redis.Addr = "localhost:6379"
+	cfg.Redis.DB = 0
+	cfg.Redis.Network = "tcp"
 
 	//cfg.RedisDsn = "redis"
 	//cfg.PostgreDsn = "redis"
@@ -200,7 +197,7 @@ func (cfg *ServiceConfig) Parse() {
 
 func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
 
-	noSQLstorage := nosql.New("test")
+	noSQLstorage := nosql.New(cfg.Redis)
 
 	clientRMQ := clientrmq.NewClientRMQ(cfg.Rabbitmq)
 	cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
@@ -222,7 +219,6 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	cfgReadUsers := services.NewReadUser(SQLstorage)
 
 	//setRec, _ := cfg.ReadUsers.ReadUser(ctx, "user12345")
-
 	//fmt.Println(setRec)
 
 	handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)

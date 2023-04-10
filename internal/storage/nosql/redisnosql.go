@@ -6,17 +6,18 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 
+	"github.com/dimsonson/pswmanager/internal/models"
 	"github.com/dimsonson/pswmanager/internal/settings"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-// StorageSQL структура хранилища PostgreSQL.
+// StorageNoSQL структура хранилища Redis.
 type StorageNoSQL struct {
 	RedisNoSQL *redis.Client
 }
 
 // NewNoSQLStorage конструктор нового хранилища PostgreSQL.
-func New(p string) *StorageNoSQL {
+func New(cfg models.Redis) *StorageNoSQL {
 	//redis.SetLogger(internal.Logger)
 
 	// создаем контекст и оснащаем его таймаутом
@@ -25,9 +26,10 @@ func New(p string) *StorageNoSQL {
 	defer cancel()
 
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     cfg.Addr,
+		Password: cfg.Password, // no password set
+		DB:       cfg.DB,  // use default DB
+		Username: cfg.Username,
 		//TLSConfig: &tls.Config{
 		//	MinVersion: tls.VersionTLS12,
 		//Certificates: []tls.Certificate{cert}

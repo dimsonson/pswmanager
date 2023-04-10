@@ -28,15 +28,6 @@ type Server struct {
 	UserService *UserServices
 }
 
-type ReadUserServicesProvider interface {
-	ReadUser(ctx context.Context, uid string) (models.SetRecords, error)
-}
-
-type UserServicesProvider interface {
-	CreateUser(ctx context.Context, login string, psw string) (models.UserConfig, error)
-	CreateApp(ctx context.Context, uid string, psw string) (string, models.UserConfig, error)
-}
-
 type UserServices struct {
 	user *services.UserServices
 	read *services.ReadUserServices
