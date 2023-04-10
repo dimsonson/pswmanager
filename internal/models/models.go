@@ -16,7 +16,7 @@ type GRPC struct {
 
 // RabbitmqSrv обобщающая структура конфигурации RabbitMq server.
 type RabbitmqSrv struct {
-	Dsn            string `json:"rabbitmq_dsn"`
+	//Dsn            string `json:"rabbitmq_dsn"`
 	User           string
 	Psw            string
 	Host           string

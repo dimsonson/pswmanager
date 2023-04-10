@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"net"
 	"sync"
 
 	"github.com/dimsonson/pswmanager/internal/clientrmq"
@@ -28,17 +27,14 @@ const (
 // ServiceConfig структура конфигурации сервиса, при запуске сервиса с флагом -c/config
 // и отсутствии иных флагов и переменных окружения заполняется из файла указанного в этом флаге или переменной окружения CONFIG.
 type ServiceConfig struct {
-	ServerAddress   string     `json:"server_address"`
-	FileStoragePath string     `json:"file_storage_path"`
-	EnableTLS       bool       `json:"enable_https"`
-	TrustedSubnet   string     `json:"trusted_subnet"`
-	TrustedCIDR     *net.IPNet `json:"-"`
-	ConfigJSONpath  string     `json:"-"`
-	Rabbitmq        models.RabbitmqSrv
-	Redis           models.Redis
-	Postgree        models.PostgreSQL
-	GRPC            models.GRPC
-	Wg              sync.WaitGroup
+	ServerAddress  string             `json:"server_address"`
+	EnableTLS      bool               `json:"enable_https"`
+	ConfigJSONpath string             `json:"-"`
+	Rabbitmq       models.RabbitmqSrv `json:"rabbitmq"`
+	Redis          models.Redis       `json:"redis"`
+	Postgree       models.PostgreSQL  `json:"postgre"`
+	GRPC           models.GRPC        `json:"grpc"`
+	Wg             sync.WaitGroup     `json:"-"`
 }
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
@@ -53,13 +49,15 @@ func (cfg *ServiceConfig) Parse() {
 
 	cfg.Rabbitmq.RoutingWorkers = 8
 	cfg.Rabbitmq.Controllers = make([]models.ControllerParams, 10)
-	cfg.Rabbitmq.Controllers[0].RoutingKey = "all.text.*"
-	cfg.Rabbitmq.Controllers[1].RoutingKey = "all.login.*"
-	cfg.Rabbitmq.Controllers[2].RoutingKey = "all.binary.*"
-	cfg.Rabbitmq.Controllers[3].RoutingKey = "all.card.*"
+	cfg.Rabbitmq.Controllers[0].RoutingKey = "all.*.*.text"
+	cfg.Rabbitmq.Controllers[1].RoutingKey = "all.*.*.login"
+	cfg.Rabbitmq.Controllers[2].RoutingKey = "all.*.*.binary"
+	cfg.Rabbitmq.Controllers[3].RoutingKey = "all.*.*.card"
 
 	cfg.Rabbitmq.User = "rmuser"
 	cfg.Rabbitmq.Psw = "rmpassword"
+	cfg.Rabbitmq.Host = "localhost"
+	cfg.Rabbitmq.Port = "5672"
 
 	cfg.Rabbitmq.Exchange.Kind = "topic"
 	cfg.Rabbitmq.Exchange.Name = "records"
@@ -71,10 +69,7 @@ func (cfg *ServiceConfig) Parse() {
 	cfg.Rabbitmq.Queue.AutoDelete = true
 
 	cfg.Rabbitmq.Consumer.ConsumerName = "master"
-	// cfg.Rabbitmq.Consumer.AutoAck = true
 	cfg.Rabbitmq.Consumer.ConsumerArgs = nil
-
-	//cfg.Rabbitmq.
 
 	cfg.GRPC.Network = "tcp"
 	cfg.GRPC.Port = ":8080"
@@ -83,11 +78,9 @@ func (cfg *ServiceConfig) Parse() {
 	cfg.Redis.DB = 0
 	cfg.Redis.Network = "tcp"
 
-	//cfg.RedisDsn = "redis"
-	//cfg.PostgreDsn = "redis"
 	// описываем флаги
-	//addrFlag := flag.String("a", "", "master server address")
-	// baseFlag := flag.String("b", "", "dase URL")
+	// addrFlag := flag.String("a", "", "grpc master server address")
+	// rmqFlag := flag.String("r", "", "rmq URL")
 	// //pathFlag := flag.String("f", "", "File storage path")
 	// //dlinkFlag := flag.String("d", "", "database DSN link")
 	// tlsFlag := flag.Bool("s", false, "run as HTTPS server")
