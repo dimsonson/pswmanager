@@ -93,7 +93,7 @@ func main() {
 	ctx := context.Background()
 
 	newuser := &pb.CreateUserRequest{
-		Login: "dimabo8888888",
+		Login: "dimabo88888888",
 		Psw:   "passw123test",
 	}
 
@@ -125,7 +125,7 @@ func main() {
 	defer connRMQ.Close()
 
 	msgText := models.TextRec{
-		RecordID:  "1234567890123456789",
+		RecordID:  "12345678901234567890",
 		ChngTime:  time.Now(),
 		UID:       newUserCfg.UserID,
 		AppID:     newAppCfg.Appid,
@@ -398,7 +398,7 @@ func main() {
 	// // }
 
 	// // wait for messages to arrive
-	time.Sleep(3 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	newread := &pb.ReadUserRequest{
 		Uid: newAppCfg.UserID,
