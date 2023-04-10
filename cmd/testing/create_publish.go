@@ -11,6 +11,7 @@ import (
 	"github.com/MashinIvan/rabbitmq/pkg/backoff"
 	pb "github.com/dimsonson/pswmanager/internal/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/models"
+	"github.com/dimsonson/pswmanager/internal/settings"
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
@@ -218,8 +219,8 @@ func main() {
 			Equal(msgText.ChngTime.UTC().Round(time.Second)) {
 		//fmt.Println(newRead.SetTextRec[0].ChngTime.AsTime().Round(time.Second))
 		//fmt.Println(msgText.ChngTime.UTC().Round(time.Second))
-		fmt.Println(">>>>>>>> integration TextTest ERROR")
+		fmt.Println(">>>>>>>> integration TextTest", settings.ColorRed, "ERROR", settings.ColorReset)
 		return
 	}
-	fmt.Println(">>>>>>>> integration TextTest OK")
+	fmt.Println(">>>>>>>> integration TextTest", settings.ColorGreen, "OK", settings.ColorReset)
 }
