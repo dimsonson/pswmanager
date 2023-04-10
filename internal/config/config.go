@@ -2,11 +2,15 @@ package config
 
 import (
 	"context"
+	"encoding/json"
+	"flag"
+	"os"
 	"sync"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/dimsonson/pswmanager/internal/clientrmq"
 
-	//pb "github.com/dimsonson/pswmanager/internal/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/handlers/rmq"
 	"github.com/dimsonson/pswmanager/internal/models"
 	"github.com/dimsonson/pswmanager/internal/router"
@@ -28,7 +32,7 @@ const (
 // и отсутствии иных флагов и переменных окружения заполняется из файла указанного в этом флаге или переменной окружения CONFIG.
 type ServiceConfig struct {
 	ServerAddress  string             `json:"server_address"`
-	EnableTLS      bool               `json:"enable_https"`
+	EnableTLS      bool               `json:"enable_tls"`
 	ConfigJSONpath string             `json:"-"`
 	Rabbitmq       models.RabbitmqSrv `json:"rabbitmq"`
 	Redis          models.Redis       `json:"redis"`
@@ -44,162 +48,76 @@ func New() *ServiceConfig {
 
 // Parse метод парсинга и получения значений из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
 func (cfg *ServiceConfig) Parse() {
-
-	cfg.Postgree.Dsn = "postgres://postgres:1818@localhost:5432/pswm"
-
-	cfg.Rabbitmq.RoutingWorkers = 8
-	cfg.Rabbitmq.Controllers = make([]models.ControllerParams, 10)
-	cfg.Rabbitmq.Controllers[0].RoutingKey = "all.*.*.text"
-	cfg.Rabbitmq.Controllers[1].RoutingKey = "all.*.*.login"
-	cfg.Rabbitmq.Controllers[2].RoutingKey = "all.*.*.binary"
-	cfg.Rabbitmq.Controllers[3].RoutingKey = "all.*.*.card"
-
-	cfg.Rabbitmq.User = "rmuser"
-	cfg.Rabbitmq.Psw = "rmpassword"
-	cfg.Rabbitmq.Host = "localhost"
-	cfg.Rabbitmq.Port = "5672"
-
-	cfg.Rabbitmq.Exchange.Kind = "topic"
-	cfg.Rabbitmq.Exchange.Name = "records"
-	cfg.Rabbitmq.Exchange.AutoDelete = false
-	cfg.Rabbitmq.Exchange.Durable = true
-
-	cfg.Rabbitmq.Queue.Name = "master"
-	cfg.Rabbitmq.Queue.Durable = true
-	cfg.Rabbitmq.Queue.AutoDelete = true
-
-	cfg.Rabbitmq.Consumer.ConsumerName = "master"
-	cfg.Rabbitmq.Consumer.ConsumerArgs = nil
-
-	cfg.GRPC.Network = "tcp"
-	cfg.GRPC.Port = ":8080"
-
-	cfg.Redis.Addr = "localhost:6379"
-	cfg.Redis.DB = 0
-	cfg.Redis.Network = "tcp"
+	// cfg.Postgree.Dsn = "postgres://postgres:1818@localhost:5432/pswm"
+	// cfg.ServerAddress = "localhost:8080"
+	// cfg.Rabbitmq.RoutingWorkers = 8
+	// cfg.Rabbitmq.Controllers = make([]models.ControllerParams, 4)
+	// cfg.Rabbitmq.Controllers[0].RoutingKey = "all.*.*.text"
+	// cfg.Rabbitmq.Controllers[1].RoutingKey = "all.*.*.login"
+	// cfg.Rabbitmq.Controllers[2].RoutingKey = "all.*.*.binary"
+	// cfg.Rabbitmq.Controllers[3].RoutingKey = "all.*.*.card"
+	// cfg.Rabbitmq.User = "rmuser"
+	// cfg.Rabbitmq.Psw = "rmpassword"
+	// cfg.Rabbitmq.Host = "localhost"
+	// cfg.Rabbitmq.Port = "5672"
+	// cfg.Rabbitmq.Exchange.Kind = "topic"
+	// cfg.Rabbitmq.Exchange.Name = "records"
+	// cfg.Rabbitmq.Exchange.AutoDelete = false
+	// cfg.Rabbitmq.Exchange.Durable = true
+	// cfg.Rabbitmq.Queue.Name = "master"
+	// cfg.Rabbitmq.Queue.Durable = true
+	// cfg.Rabbitmq.Queue.AutoDelete = true
+	// cfg.Rabbitmq.Consumer.ConsumerName = "master"
+	// cfg.Rabbitmq.Consumer.ConsumerArgs = nil
+	// cfg.GRPC.Network = "tcp"
+	// cfg.GRPC.Port = ":8080"
+	// cfg.Redis.Addr = "localhost:6379"
+	// cfg.Redis.DB = 0
+	// cfg.Redis.Network = "tcp"
 
 	// описываем флаги
-	// addrFlag := flag.String("a", "", "grpc master server address")
-	// rmqFlag := flag.String("r", "", "rmq URL")
-	// //pathFlag := flag.String("f", "", "File storage path")
-	// //dlinkFlag := flag.String("d", "", "database DSN link")
-	// tlsFlag := flag.Bool("s", false, "run as HTTPS server")
-	// cfgFlag := flag.String("c", "", "config json path")
-	// trustFlag := flag.String("t", "", "trusted subnet CIDR for /api/internal/stats")
-	// grpcFlag := flag.Bool("g", false, "run as GRPC server")
-	// // парсим флаги в переменные
-	// flag.Parse()
-	// var ok bool
-	// // используем структуру cfg models.Config для хранения параментров необходимых для запуска сервера
-	// // проверяем наличие переменной окружения, если ее нет или она не валидна, то используем значение из флага
-	// cfg.ConfigJSONpath, ok = os.LookupEnv("CONFIG")
-	// if !ok && *cfgFlag != "" {
-	// 	log.Print("eviroment variable CONFIG is empty or has wrong value ", cfg.ConfigJSONpath)
-	// 	cfg.ConfigJSONpath = *cfgFlag
+	cfgFlag := flag.String("c", "", "config json path")
+	// парсим флаги в переменные
+	flag.Parse()
+	cfg.ConfigJSONpath = *cfgFlag
+	// используем структуру cfg models.Config для хранения параментров необходимых для запуска сервера
+	// читаем конфигурвационный файл и парксим в стркутуру
+	if cfg.ConfigJSONpath != "" {
+		configFile, err := os.ReadFile(*cfgFlag)
+		if err != nil {
+			log.Print("reading config file error:", err)
+		}
+		if err == nil {
+			err = json.Unmarshal(configFile, &cfg) //Indent(cfg, configFile, "", "  ") //Unmarshal(configFile, &cfg)
+			if err != nil {
+				log.Printf("unmarshal config file error: %s", err)
+			}
+		}
+	}
+	// сохранение congig.json
+
+	// configFile, err := json.MarshalIndent(cfg, "", "  ")
+	// if err != nil {
+	// 	log.Printf("marshal config file error: %s", err)
 	// }
-	// // читаем конфигурвационный файл и парксим в стркутуру
-	// if cfg.ConfigJSONpath != "" {
-	// 	configFile, err := os.ReadFile(*cfgFlag)
-	// 	if err != nil {
-	// 		log.Print("reading config file error:", err)
-	// 	}
-	// 	if err == nil {
-	// 		err = json.Unmarshal(configFile, &cfg)
-	// 		if err != nil {
-	// 			log.Printf("unmarshal config file error: %s", err)
-	// 		}
-	// 	}
+	// err = os.WriteFile("config.json", configFile, 0666)
+	// if err != nil {
+	// 	log.Printf("write config file error: %s", err)
 	// }
-	// // проверяем наличие флага или пременной окружения для CIDR доверенной сети эндпойнта /api/internal/stats
-	// TrustedSubnet, ok := os.LookupEnv("TRUSTED_SUBNET")
-	// if ok {
-	// 	cfg.TrustedSubnet = TrustedSubnet
-	// }
-	// if *trustFlag != "" {
-	// 	cfg.TrustedSubnet = *trustFlag
-	// }
-	// if cfg.TrustedSubnet != "" {
-	// 	var err error
-	// 	_, cfg.TrustedCIDR, err = net.ParseCIDR(cfg.TrustedSubnet)
-	// 	if err != nil {
-	// 		log.Print("parse CIDR error: ", err)
-	// 	}
-	// }
-	// // проверяем наличие переменной окружения, если ее нет или она не валидна, то используем значение из флага
-	// ServerAddress, ok := os.LookupEnv("SERVER_ADDRESS")
-	// if ok {
-	// 	cfg.ServerAddress = ServerAddress
-	// }
-	// //if (!ok || !govalidator.IsURL(cfg.ServerAddress) || cfg.ServerAddress == "") && *addrFlag != "" {
-	// //	log.Print("eviroment variable SERVER_ADDRESS is empty or has wrong value ")
-	// //cfg.ServerAddress = *addrFlag
-	// //}
-	// // если нет флага или переменной окружения используем переменную по умолчанию
-	// //if !ok && *addrFlag == "" {
-	// cfg.ServerAddress = settings.DefServAddr
-	// //}
-	// // проверяем наличие переменной окружения, если ее нет или она не валидна, то используем значение из флага
-	// //BaseURL, ok := os.LookupEnv("BASE_URL")
-	// if ok {
-	// 	//cfg.BaseURL = BaseURL
-	// }
-	// //if (!ok || !govalidator.IsURL(cfg.BaseURL) || cfg.BaseURL == "") && *baseFlag != "" {
-	// log.Print("eviroment variable BASE_URL is empty or has wrong value ")
-	// //	cfg.BaseURL = *baseFlag
-	// //}
-	// // если нет флага или переменной окружения используем переменную по умолчанию
-	// if !ok && *baseFlag == "" {
-	// 	//	cfg.BaseURL = settings.DefBaseURL
-	// }
-	// // проверяем наличие переменной окружения, если ее нет или она не валидна, то используем значение из флага
-	// // DatabaseDsn, ok := os.LookupEnv("DATABASE_DSN")
-	// // if ok {
-	// // 	cfg.DatabaseDsn = DatabaseDsn
-	// // }
-	// // if !ok && *dlinkFlag != "" {
-	// // 	log.Print("eviroment variable DATABASE_DSN is not exist")
-	// // 	cfg.DatabaseDsn = *dlinkFlag
-	// // }
-	// // проверяем наличие переменной окружения, если ее нет или она не валидна, то используем значение из флага
-	// FileStoragePath, ok := os.LookupEnv("FILE_STORAGE_PATH")
-	// if ok {
-	// 	cfg.FileStoragePath = FileStoragePath
-	// }
-	// if !ok || (cfg.FileStoragePath == "" || !govalidator.IsUnixFilePath(cfg.FileStoragePath) || govalidator.IsWinFilePath(cfg.FileStoragePath)) {
-	// 	log.Print("eviroment variable FILE_STORAGE_PATH is empty or has wrong value ")
-	// 	//cfg.FileStoragePath = *pathFlag
-	// }
-	// // проверяем наличие переменной окружения, если ее нет или она не валидна, то используем значение из флага
-	// EnableGRPC, ok := os.LookupEnv("ENABLE_GRPC")
-	// if ok && EnableGRPC == "true" || *grpcFlag {
-	// 	//cfg.EnableGRPC = true
-	// }
-	// if !ok {
-	// 	log.Print("eviroment variable ENABLE_GRPC is empty or has wrong value ")
-	// }
-	// // проверяем наличие флага или пременной окружения для старта в https (tls)
-	// EnableHTTPS, ok := os.LookupEnv("ENABLE_HTTPS")
-	// if ok && EnableHTTPS == "true" || *tlsFlag {
-	// 	cfg.EnableTLS = true
-	// 	return
-	// }
-	// // если нет флага или переменной окружения используем переменную по умолчанию
-	// cfg.EnableTLS = settings.DefHTTPS
-	// log.Print("eviroment variable ENABLE_HTTPS is empty or has wrong value ")
 }
 
 func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
 
 	noSQLstorage := nosql.New(cfg.Redis)
 
-	clientRMQ := clientrmq.NewClientRMQ(cfg.Rabbitmq)
-	cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
+	clientRMQ, err := clientrmq.NewClientRMQ(cfg.Rabbitmq)
+	if err != nil {
+		log.Printf("new client error: %s", err)
+		return
+	}
 	cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn
-
+	cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
 	cfgUser := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
-
-	//ucfg, _ := cfg.User.CreateUser(ctx, "testlogin", "passwtest")
-	//fmt.Println(cfg.User.CreateApp(ctx, ucfg.UserID, "passwtest"))
 
 	SQLstorage := sql.New(cfg.Postgree.Dsn)
 	cfg.Postgree.Conn = SQLstorage.PostgreConn
@@ -210,9 +128,6 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	servBinaryRec := services.NewBinaryRec(SQLstorage)
 
 	cfgReadUsers := services.NewReadUser(SQLstorage)
-
-	//setRec, _ := cfg.ReadUsers.ReadUser(ctx, "user12345")
-	//fmt.Println(setRec)
 
 	handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
 
@@ -234,7 +149,13 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 }
 
 func (cfg *ServiceConfig) ConnClose(ctx context.Context) {
-	cfg.Postgree.Conn.Close()
-	cfg.Rabbitmq.ClientRMQ.Ch.Close()
-	cfg.Rabbitmq.ClientRMQ.Conn.Close()
+	if cfg.Postgree.Conn != nil {
+		cfg.Postgree.Conn.Close()
+	}
+	if cfg.Rabbitmq.ClientRMQ.Conn != nil {
+		cfg.Rabbitmq.ClientRMQ.Conn.Close()
+	}
+	if cfg.Rabbitmq.ClientRMQ.Ch != nil {
+		cfg.Rabbitmq.ClientRMQ.Ch.Close()
+	}
 }

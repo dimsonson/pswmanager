@@ -16,7 +16,6 @@ type GRPC struct {
 
 // RabbitmqSrv обобщающая структура конфигурации RabbitMq server.
 type RabbitmqSrv struct {
-	//Dsn            string `json:"rabbitmq_dsn"`
 	User           string
 	Psw            string
 	Host           string
@@ -67,27 +66,26 @@ type ConsumerParams struct {
 // ControllerParams generalizes rmq server controllers settings
 type ControllerParams struct {
 	RoutingKey string
-	Controller rabbitmq.ControllerFunc
+	Controller rabbitmq.ControllerFunc `json:"-"`
 }
 
 type Redis struct {
-	Dsn       string `json:"redis_dsn"`
 	Username  string
 	Password  string
-	Network   string 
+	Network   string
 	Addr      string // host:port address.
 	DB        int
-	TLSConfig *tls.Config
+	TLSConfig *tls.Config `json:"-"`
 }
 
 type PostgreSQL struct {
-	Dsn  string `json:"postgre_dsn"`
-	Conn *sql.DB
+	Dsn  string  `json:"postgre_dsn"`
+	Conn *sql.DB `json:"-"`
 }
 
 type ClientRMQ struct {
-	Conn *amqp.Connection
-	Ch   *amqp.Channel
+	Conn *amqp.Connection `json:"-"`
+	Ch   *amqp.Channel    `json:"-"`
 }
 
 // MsgType тип исплльзуемый для проставления признака типа сообщения / операции.

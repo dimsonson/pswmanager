@@ -56,12 +56,6 @@ func (rmqs *Server) Init() {
 func (rmqs *Server) Start(ctx context.Context, router *rabbitmq.Router) {
 
 	rmqs.RabbitSrv = rabbitmq.NewServer(rmqs.RabbitConn, router)
-
-	// log.Printf("rmqs.Cfg.Consumer: %v\n", rmqs.Cfg.Consumer)
-	// log.Printf("rmqs.Cfg.Controllers: %v\n", rmqs.Cfg.Controllers)
-	// log.Printf("rmqs.Cfg.Exchange: %v\n", rmqs.Cfg.Exchange)
-	// log.Printf("rmqs.Cfg.Queue: %v\n", rmqs.Cfg.Queue)
-
 	err := rmqs.RabbitSrv.ListenAndServe(rmqs.Ctx)
 	if err != nil {
 		log.Print("rabbitmq server starting error:", settings.ColorRed, err, settings.ColorReset)

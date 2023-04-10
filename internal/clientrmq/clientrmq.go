@@ -16,7 +16,7 @@ type ClientRMQ struct {
 }
 
 // New.
-func NewClientRMQ(cfg models.RabbitmqSrv) *ClientRMQ {
+func NewClientRMQ(cfg models.RabbitmqSrv) (*ClientRMQ, error) {
 	var err error
 	rabbitConnURL := fmt.Sprintf(
 		"amqp://%s:%s@%s:%s/",
@@ -28,18 +28,18 @@ func NewClientRMQ(cfg models.RabbitmqSrv) *ClientRMQ {
 	conn, err := amqp.Dial(rabbitConnURL)
 	if err != nil {
 		log.Print("rabbitmq connection error: ", err)
-		return nil
+		return nil, err
 	}
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Print("rabbitmq chanel creation error: ", err)
-		return nil
+		return nil, err
 	}
 	return &ClientRMQ{
 		Cfg:  cfg,
 		Conn: conn,
 		Ch:   ch,
-	}
+	}, err
 }
 
 func (r *ClientRMQ) Close() {
