@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,57 +12,57 @@ import (
 	"github.com/streadway/amqp"
 )
 
-var exchangeParams = rabbitmq.ExchangeParams{
-	Name:       "records",
-	Kind:       "topic",
-	AutoDelete: false,
-	Durable:    true,
-}
+// var exchangeParams = rabbitmq.ExchangeParams{
+// 	Name:       "records",
+// 	Kind:       "topic",
+// 	AutoDelete: false,
+// 	Durable:    true,
+// }
 
-var queueParams = rabbitmq.QueueParams{
-	Name:       "master",
-	AutoDelete: false,
-	Durable:    true,
-}
+// var queueParams = rabbitmq.QueueParams{
+// 	Name:       "master",
+// 	AutoDelete: false,
+// 	Durable:    true,
+// }
 
-var qos = rabbitmq.QualityOfService{
-	PrefetchCount: 5,
-}
+// var qos = rabbitmq.QualityOfService{
+// 	PrefetchCount: 5,
+// }
 
-var consumer = rabbitmq.ConsumerParams{
-	ConsumerName: "master",
-	AutoAck:      true,
-	ConsumerArgs: nil,
-}
+// var consumer = rabbitmq.ConsumerParams{
+// 	ConsumerName: "master",
+// 	AutoAck:      true,
+// 	ConsumerArgs: nil,
+// }
 
-func startServerAsync(server *rabbitmq.Server) error {
-	errChan := make(chan error)
-	go func() {
-		err := server.ListenAndServe(context.Background())
-		if err != nil {
-			errChan <- err
-		}
-	}()
+// func startServerAsync(server *rabbitmq.Server) error {
+// 	errChan := make(chan error)
+// 	go func() {
+// 		err := server.ListenAndServe(context.Background())
+// 		if err != nil {
+// 			errChan <- err
+// 		}
+// 	}()
 
-	// wait for server startup
-	time.Sleep(1 * time.Second)
+// 	// wait for server startup
+// 	time.Sleep(1 * time.Second)
 
-	// check for ListenAndServe error
-	select {
-	case err := <-errChan:
-		return err
-	default:
-		return nil
-	}
-}
+// 	// check for ListenAndServe error
+// 	select {
+// 	case err := <-errChan:
+// 		return err
+// 	default:
+// 		return nil
+// 	}
+// }
 
-const (
-	user string = "rmuser"
-	psw  string = "rmpassword"
-	host string = "localhost"
-)
+// const (
+// 	user string = "rmuser"
+// 	psw  string = "rmpassword"
+// 	host string = "localhost"
+// )
 
-func connFactory() (*amqp.Connection, error) {
+func connFactory0() (*amqp.Connection, error) {
 	connUrl := fmt.Sprintf(
 		"amqp://%s:%s@%s:%s/",
 		user,
@@ -75,7 +74,7 @@ func connFactory() (*amqp.Connection, error) {
 	return amqp.Dial(connUrl)
 }
 
-func main() {
+func main0() {
 	conn, err := rabbitmq.NewConnection(connFactory, backoff.NewDefaultSigmoidBackoff())
 	if err != nil {
 		log.Fatal(err)
@@ -120,7 +119,7 @@ func main() {
 		Brand:     models.MasterCard,
 		ValidDate: "01/03",
 		Code:      234,
-		Number: "2202443565854455",
+		Number:    "2202443565854455",
 		Metadata:  "meta data description",
 		Operation: models.Create,
 	}
