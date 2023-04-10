@@ -11,6 +11,7 @@ import (
 	"github.com/MashinIvan/rabbitmq/pkg/backoff"
 	pb "github.com/dimsonson/pswmanager/internal/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/models"
+	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -93,7 +94,7 @@ func main() {
 	ctx := context.Background()
 
 	newuser := &pb.CreateUserRequest{
-		Login: "dimabo88888888",
+		Login: uuid.NewString(),
 		Psw:   "passw123test",
 	}
 
@@ -102,8 +103,6 @@ func main() {
 		log.Print("create user error: ", err)
 		return
 	}
-
-	fmt.Println(newUserCfg)
 
 	newapp := &pb.CreateAppRequest{
 		Uid: newUserCfg.UserID,
@@ -116,8 +115,6 @@ func main() {
 		return
 	}
 
-	fmt.Println(newAppCfg)
-
 	connRMQ, err := rabbitmq.NewConnection(connFactory, backoff.NewDefaultSigmoidBackoff())
 	if err != nil {
 		log.Fatal(err)
@@ -125,7 +122,7 @@ func main() {
 	defer connRMQ.Close()
 
 	msgText := models.TextRec{
-		RecordID:  "12345678901234567890",
+		RecordID:  uuid.NewString(),
 		ChngTime:  time.Now(),
 		UID:       newUserCfg.UserID,
 		AppID:     newAppCfg.Appid,
@@ -173,11 +170,6 @@ func main() {
 		log.Print(err)
 	}
 
-	// msgText.RecordID = "3984c07c-4d41-493b-882a-e59fb1831606"   //uuid.New().String()
-	// msgBinary.RecordID = "3984c07c-4d41-493b-882a-e59fb1831603" //uuid.New().String()
-	// msgLogin.RecordID = "3984c07c-4d41-493b-882a-e59fb1831604"  //uuid.New().String()
-	// msgCard.RecordID = "3984c07c-4d41-493b-882a-e59fb1831605"   //uuid.New().String()
-
 	// //msgText
 	// //Create
 
@@ -185,8 +177,6 @@ func main() {
 	if err != nil {
 		log.Print("marshall error", err)
 	}
-
-	fmt.Println(string(msgTextJSON))
 
 	var routingKey string
 	for _, v := range newAppCfg.Apps {
@@ -206,197 +196,6 @@ func main() {
 		log.Print(err)
 	}
 
-	// //Update
-	// msgText.Operation = models.Update
-	// msgText.Metadata = fmt.Sprintf("test meta data : %v", 8)
-	// msgTextJSON, err = json.Marshal(msgText)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.text", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgTextJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-	// //Delete
-	// msgText.Operation = models.Delete
-	// msgTextJSON, err = json.Marshal(msgText)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.text", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgTextJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-
-	// //msgBinary
-	// //Create
-	// msgBinaryJSON, err := json.Marshal(msgBinary)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.binary", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgBinaryJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-	// //Update
-	// msgBinary.Operation = models.Update
-	// msgBinary.Metadata = "test meta data : update"
-	// msgBinary.Binary = "binary data"
-	// msgBinaryJSON, err = json.Marshal(msgBinary)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.binary", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgBinaryJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-	// //Delete
-	// msgBinary.Operation = models.Delete
-	// msgBinaryJSON, err = json.Marshal(msgBinary)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.binary", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgBinaryJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-
-	// //msgLogin
-	// //Create
-	// msgLoginJSON, err := json.Marshal(msgLogin)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.login", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgLoginJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-	// //Update
-	// msgLogin.Operation = models.Update
-	// msgLogin.Metadata = fmt.Sprintf("test meta data : %v", 8)
-	// msgLoginJSON, err = json.Marshal(msgLogin)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.login", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgLoginJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-	// //Delete
-	// msgLogin.Operation = models.Delete
-	// msgLoginJSON, err = json.Marshal(msgLogin)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.login", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgLoginJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-
-	// //msgCard
-	// //Create
-	// msgCardJSON, err := json.Marshal(msgCard)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.card", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgCardJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-	// //Update
-	// msgCard.Operation = models.Update
-	// msgCard.Metadata = fmt.Sprintf("test meta data : %v", 8)
-	// msgCardJSON, err = json.Marshal(msgCard)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.login", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgCardJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-	// //Delete
-	// msgCard.Operation = models.Delete
-	// msgCardJSON, err = json.Marshal(msgCard)
-	// if err != nil {
-	// 	log.Print("marshall error", err)
-	// }
-	// err = publisherCh.Publish(exchangeParams.Name, "all.card", false, false, amqp.Publishing{
-	// 	ContentType:  "application/json",
-	// 	Body:         msgCardJSON,
-	// 	DeliveryMode: 1,
-	// })
-	// if err != nil {
-	// 	log.Print(err)
-	// }
-
-	// // for i := 0; i < 10; i++ {
-
-	// //msg.Metadata = fmt.Sprintf("test meta data : %v", i)
-	// // 	updateJSON, err := json.Marshal(msg)
-	// // 	if err != nil {
-	// // 		log.Print("marshall error", err)
-	// // 	}
-	// // 	err = publisherCh.Publish(exchangeParams.Name, "all.text", false, false, amqp.Publishing{
-	// // 		ContentType:  "application/json",
-	// // 		Body:         updateJSON,
-	// // 		DeliveryMode: 1,
-	// // 	})
-	// // 	if err != nil {
-	// // 		log.Print(err)
-	// // 	}
-	// // }
-
-	// // for i := 0; i < 10; i++ {
-	// // 	err = publisherCh.Publish(exchangeParams.Name, "all.update", false, false, amqp.Publishing{
-	// // 		ContentType:  "text/plain",
-	// // 		Body:         updateJSON,
-	// // 		DeliveryMode: 1,
-	// // 	})
-	// // 	if err != nil {
-	// // 		t.Error(err)
-	// // 	}
-	// // }
-
 	// // wait for messages to arrive
 	time.Sleep(1 * time.Second)
 
@@ -410,6 +209,17 @@ func main() {
 		return
 	}
 
-	fmt.Println("newRead", newRead)
-
+	if newRead.SetTextRec[0].UID != msgText.UID ||
+		newRead.SetTextRec[0].AppID != msgText.AppID ||
+		newRead.SetTextRec[0].Metadata != msgText.Metadata ||
+		newRead.SetTextRec[0].RecordID != msgText.RecordID ||
+		newRead.SetTextRec[0].Text != msgText.Text ||
+		!newRead.SetTextRec[0].ChngTime.AsTime().Round(time.Second).
+			Equal(msgText.ChngTime.UTC().Round(time.Second)) {
+		//fmt.Println(newRead.SetTextRec[0].ChngTime.AsTime().Round(time.Second))
+		//fmt.Println(msgText.ChngTime.UTC().Round(time.Second))
+		fmt.Println(">>>>>>>> integration TextTest ERROR")
+		return
+	}
+	fmt.Println(">>>>>>>> integration TextTest OK")
 }

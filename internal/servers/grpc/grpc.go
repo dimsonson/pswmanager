@@ -16,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Server структура для хранения серверов.
@@ -164,7 +165,7 @@ func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*p
 	for _, v := range setrecords.SetTextRec {
 		strout := &pb.TextRec{
 			RecordID: v.RecordID,
-			//ChngTime: v.ChngTime,
+			ChngTime: timestamppb.New(v.ChngTime),
 			UID:      v.UID,
 			AppID:    v.AppID,
 			Text:     v.Text,
@@ -176,7 +177,7 @@ func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*p
 	for _, v := range setrecords.SetBinaryRec {
 		strout := &pb.BinaryRec{
 			RecordID: v.RecordID,
-			//ChngTime: v.ChngTime,
+			ChngTime: timestamppb.New(v.ChngTime),
 			UID:      v.UID,
 			AppID:    v.AppID,
 			Binary:   v.Binary,
@@ -188,7 +189,7 @@ func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*p
 	for _, v := range setrecords.SetLoginRec {
 		strout := &pb.LoginRec{
 			RecordID: v.RecordID,
-			//ChngTime: v.ChngTime,
+			ChngTime: timestamppb.New(v.ChngTime),
 			UID:      v.UID,
 			AppID:    v.AppID,
 			Login:    v.Login,
@@ -200,8 +201,8 @@ func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*p
 
 	for _, v := range setrecords.SetCardRec {
 		strout := &pb.CardRec{
-			RecordID: v.RecordID,
-			//ChngTime: v.ChngTime,
+			RecordID:  v.RecordID,
+			ChngTime:  timestamppb.New(v.ChngTime),
 			UID:       v.UID,
 			AppID:     v.AppID,
 			Brand:     int64(v.Brand),
