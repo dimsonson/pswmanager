@@ -2,13 +2,12 @@ package config
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"sync"
 
 	"github.com/dimsonson/pswmanager/internal/clientrmq"
 
-	"github.com/dimsonson/pswmanager/internal/handlers/grpchandle"
+	//pb "github.com/dimsonson/pswmanager/internal/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/handlers/rmq"
 	"github.com/dimsonson/pswmanager/internal/models"
 	"github.com/dimsonson/pswmanager/internal/router"
@@ -17,7 +16,6 @@ import (
 	"github.com/dimsonson/pswmanager/internal/services"
 	"github.com/dimsonson/pswmanager/internal/storage/nosql"
 	"github.com/dimsonson/pswmanager/internal/storage/sql"
-	pb "github.com/dimsonson/pswmanager/internal/handlers/protobuf"
 )
 
 // Константы по умолчанию.
@@ -41,14 +39,14 @@ type ServiceConfig struct {
 	Postgree        models.PostgreSQL
 	GRPC            models.GRPC
 	Wg              sync.WaitGroup
-	ServicesGRPC
+	//ServicesGRPC
 }
 
-type ServicesGRPC struct {
-	User      *services.UserServices
-	ReadUsers *services.ReadUserServices
-	pb.UnimplementedUserServicesServer
-}
+// type ServicesGRPC struct {
+// 	User      *services.UserServices
+// 	ReadUsers *services.ReadUserServices
+// 	pb.UnimplementedUserServicesServer
+// }
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
 func New() *ServiceConfig {
@@ -208,10 +206,10 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
 	cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn
 
-	cfg.User = services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
+	cfgUser := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
 
-	ucfg, _ := cfg.User.CreateUser(ctx, "testlogin", "passwtest")
-	fmt.Println(cfg.User.CreateApp(ctx, ucfg.UserID, "passwtest"))
+	//ucfg, _ := cfg.User.CreateUser(ctx, "testlogin", "passwtest")
+	//fmt.Println(cfg.User.CreateApp(ctx, ucfg.UserID, "passwtest"))
 
 	SQLstorage := sql.New(cfg.Postgree.Dsn)
 	cfg.Postgree.Conn = SQLstorage.PostgreConn
@@ -221,18 +219,16 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	servCardRec := services.NewCardRec(SQLstorage)
 	servBinaryRec := services.NewBinaryRec(SQLstorage)
 
-	cfg.ReadUsers = services.NewReadUser(SQLstorage)
+	cfgReadUsers := services.NewReadUser(SQLstorage)
 
-	setRec, _ := cfg.ReadUsers.ReadUser(ctx, "user12345")
+	//setRec, _ := cfg.ReadUsers.ReadUser(ctx, "user12345")
 
-	fmt.Println(setRec)
+	//fmt.Println(setRec)
 
 	handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
 
-	handlerGRPC := grpchandle.NewUserServices(ctx)
-
-	grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, handlerGRPC, wg)
-	grpcSrv.InitGRPCservice()
+	grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, wg)
+	grpcSrv.InitGRPCservice(cfgReadUsers, cfgUser)
 	wg.Add(1)
 	grpcSrv.GrpcGracefullShotdown()
 	wg.Add(1)
