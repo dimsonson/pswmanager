@@ -110,9 +110,6 @@ func NewReadUser(ctx context.Context, c pb.UserServicesClient, newAppCfg *pb.Cre
 	return newRead, err
 }
 
-func TextMsgTest() {
-
-}
 
 func main() {
 	ctx := context.Background()
@@ -133,6 +130,7 @@ func main() {
 
 	msgTextTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
 	msgBinaryTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
+	msgLoginTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
 
 }
 
@@ -385,26 +383,134 @@ func msgBinaryTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAp
 	}
 }
 
-// msgBinary := models.BinaryRec{
-// 	RecordID:  "12345",
-// 	ChngTime:  time.Now(),
-// 	UID:       "user12345",
-// 	AppID:     "app 12345",
-// 	Binary:    "secured binary",
-// 	Metadata:  "meta data description",
-// 	Operation: models.Create,
-// }
+func msgLoginTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppCfg *pb.CreateAppResponse, publisherCh *amqp.Channel, c pb.UserServicesClient) {
+	// msgLogin
+	// Create
+	msgLogin := models.LoginRec{
+		RecordID:  uuid.NewString(),
+		ChngTime:  time.Now(),
+		UID:       newUserCfg.UserID,
+		AppID:     newAppCfg.Appid,
+		Login:     "login0001",
+		Psw:       "password001",
+		Metadata:  "meta data description sample",
+		Operation: models.Create,
+	}
+	msgLoginJSON, err := json.Marshal(msgLogin)
+	if err != nil {
+		log.Print("marshall error", err)
+	}
+	var routingKey string
+	for _, v := range newAppCfg.Apps {
+		if v.AppID == newAppCfg.Appid {
+			routingKey = v.RoutingKey
+			break
+		}
+	}
+	err = publisherCh.Publish(exchangeParams.Name, routingKey+".login", false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		Body:         msgLoginJSON,
+		DeliveryMode: 1,
+	})
+	if err != nil {
+		log.Print(err)
+	}
+	// // wait for messages to arrive
+	time.Sleep(1 * time.Second)
 
-// msgLogin := models.LoginRec{
-// 	RecordID:  "12345",
-// 	ChngTime:  time.Now(),
-// 	UID:       "user12345",
-// 	AppID:     "app 12345",
-// 	Login:     "userlog@ya.ru",
-// 	Psw:       "pasword123",
-// 	Metadata:  "meta data description",
-// 	Operation: models.Create,
-// }
+	newReadData, err := NewReadUser(ctx, c, newAppCfg)
+	if err != nil {
+		log.Print("read records error: ", err)
+		return
+	}
+
+	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
+	if newReadData.SetLoginRec[0].UID != msgLogin.UID ||
+		newReadData.SetLoginRec[0].AppID != msgLogin.AppID ||
+		newReadData.SetLoginRec[0].Metadata != msgLogin.Metadata ||
+		newReadData.SetLoginRec[0].RecordID != msgLogin.RecordID ||
+		newReadData.SetLoginRec[0].Login != msgLogin.Login ||
+		newReadData.SetLoginRec[0].Psw != msgLogin.Psw ||
+		!newReadData.SetLoginRec[0].ChngTime.AsTime().Round(time.Second).
+			Equal(msgLogin.ChngTime.UTC().Round(time.Second)) {
+		fmt.Println(">>>>>>>> integration LoginCreate_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)
+	} else {
+		fmt.Println(">>>>>>>> integration LoginCreate_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
+	}
+	// msgText
+	// Update
+	msgLogin.Operation = models.Update
+	msgLogin.ChngTime = time.Now()
+	msgLogin.Login = "updated" + msgLogin.Login
+	msgLogin.Metadata = "updated" + msgLogin.Metadata
+	msgLoginUpdateJSON, err := json.Marshal(msgLogin)
+	if err != nil {
+		log.Print("marshall error", err)
+	}
+	err = publisherCh.Publish(exchangeParams.Name, routingKey+".login", false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		Body:         msgLoginUpdateJSON,
+		DeliveryMode: 1,
+	})
+	if err != nil {
+		log.Print(err)
+	}
+	// wait for messages to arrive
+	time.Sleep(1 * time.Second)
+
+	// запрос всех записей пользователя
+	newReadUpdate, err := NewReadUser(ctx, c, newAppCfg)
+	if err != nil {
+		log.Print("read records error: ", err)
+		return
+	}
+	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
+	if newReadUpdate.SetLoginRec[0].UID != msgLogin.UID ||
+		newReadUpdate.SetLoginRec[0].AppID != msgLogin.AppID ||
+		newReadUpdate.SetLoginRec[0].Metadata != msgLogin.Metadata ||
+		newReadUpdate.SetLoginRec[0].RecordID != msgLogin.RecordID ||
+		newReadUpdate.SetLoginRec[0].Login != msgLogin.Login ||
+		newReadData.SetLoginRec[0].Psw != msgLogin.Psw ||
+		!newReadUpdate.SetLoginRec[0].ChngTime.AsTime().Round(time.Minute).
+			Equal(msgLogin.ChngTime.UTC().Round(time.Minute)) {
+		fmt.Println(">>>>>>>> integration LoginUpdate_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)
+	} else {
+		fmt.Println(">>>>>>>> integration LoginUpdate_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
+	}
+	// msgText
+	// Delete
+	msgLogin.Operation = models.Delete
+	msgLogin.ChngTime = time.Now()
+	msgLoginDeleteJSON, err := json.Marshal(msgLogin)
+	if err != nil {
+		log.Print("marshall error", err)
+
+	}
+	err = publisherCh.Publish(exchangeParams.Name, routingKey+".login", false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		Body:         msgLoginDeleteJSON,
+		DeliveryMode: 1,
+	})
+	if err != nil {
+		log.Print(err)
+	}
+	// wait for messages to arrive
+	time.Sleep(1 * time.Second)
+	// запрос всех записей пользователя
+	newReadDelete, err := NewReadUser(ctx, c, newAppCfg)
+	if err != nil {
+		log.Print("read records error: ", err)
+		return
+	}
+	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
+	if len(newReadDelete.SetTextRec) > 0 {
+		fmt.Println(">>>>>>>> integration LoginDelete_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)
+	} else {
+		fmt.Println(">>>>>>>> integration LoginDelete_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
+	}
+}
+
+
 
 // msgCard := models.CardRec{
 // 	RecordID:  "12345",
