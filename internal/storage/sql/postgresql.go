@@ -65,6 +65,7 @@ func New(p string) *StorageSQL {
 			"num" TEXT,
 			"date" TEXT,
 			"code" DECIMAL,
+			"holder" TEXT,
 			"uid" TEXT NOT NULL,
 			"appid" TEXT NOT NULL,
 			"recordid" TEXT NOT NULL UNIQUE,

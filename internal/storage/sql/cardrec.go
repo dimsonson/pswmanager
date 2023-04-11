@@ -18,7 +18,8 @@ func (ms *StorageSQL) CreateCard(ctx context.Context, record models.CardRec) err
 			$5,
 			$6,
 			$7,
-			$8			
+			$8,
+			$9			
 			)`
 	_, err := ms.PostgreConn.ExecContext(
 		ctx, 
@@ -27,7 +28,8 @@ func (ms *StorageSQL) CreateCard(ctx context.Context, record models.CardRec) err
 		record.Brand, 
 		record.Number, 
 		record.ValidDate, 
-		record.Code, 
+		record.Code,
+		record.Holder, 
 		record.UID, 
 		record.AppID, 
 		record.RecordID)
@@ -38,7 +40,7 @@ func (ms *StorageSQL) CreateCard(ctx context.Context, record models.CardRec) err
 func (ms *StorageSQL) UpdateCard(ctx context.Context, record models.CardRec) error {
 	// создаем текст запроса
 	q := `UPDATE card_records 
-	SET  metadata = $3, brand = $4, num = $5, date = $6, code = $7
+	SET  metadata = $3, brand = $4, num = $5, date = $6, code = $7, holder = $8
 	WHERE recordid = $1 
 	AND uid = $2`
 	_, err := ms.PostgreConn.ExecContext(
@@ -51,6 +53,7 @@ func (ms *StorageSQL) UpdateCard(ctx context.Context, record models.CardRec) err
 		record.Number,
 		record.ValidDate,
 		record.Code,
+		record.Holder,
 	)
 	return err
 }

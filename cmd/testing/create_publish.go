@@ -110,7 +110,6 @@ func NewReadUser(ctx context.Context, c pb.UserServicesClient, newAppCfg *pb.Cre
 	return newRead, err
 }
 
-
 func main() {
 	ctx := context.Background()
 	connGRPC, connRMQ, publisherCh, err := connect()
@@ -131,6 +130,7 @@ func main() {
 	msgTextTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
 	msgBinaryTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
 	msgLoginTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
+	msgCardTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
 
 }
 
@@ -256,7 +256,6 @@ func msgTextTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppC
 	} else {
 		fmt.Println(">>>>>>>> integration TextDelete_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
 	}
-
 }
 
 func msgBinaryTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppCfg *pb.CreateAppResponse, publisherCh *amqp.Channel, c pb.UserServicesClient) {
@@ -376,7 +375,7 @@ func msgBinaryTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAp
 		return
 	}
 	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
-	if len(newReadDelete.SetTextRec) > 0 {
+	if len(newReadDelete.SetBinaryRec) > 0 {
 		fmt.Println(">>>>>>>> integration BinaryDelete_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)
 	} else {
 		fmt.Println(">>>>>>>> integration BinaryDelete_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
@@ -503,24 +502,137 @@ func msgLoginTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newApp
 		return
 	}
 	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
-	if len(newReadDelete.SetTextRec) > 0 {
+	if len(newReadDelete.SetLoginRec) > 0 {
 		fmt.Println(">>>>>>>> integration LoginDelete_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)
 	} else {
 		fmt.Println(">>>>>>>> integration LoginDelete_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
 	}
 }
 
+func msgCardTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppCfg *pb.CreateAppResponse, publisherCh *amqp.Channel, c pb.UserServicesClient) {
+	// Create
+	msgCard := models.CardRec{
+		RecordID:  uuid.NewString(),
+		ChngTime:  time.Now(),
+		UID:       newUserCfg.UserID,
+		AppID:     newAppCfg.Appid,
+		Brand:     1,
+		ValidDate: "01/28",
+		Number:    "2202245445789856",
+		Code:      123,
+		Holder:    "DMTIRY BO",
+		Metadata:  "meta data card description sample",
+		Operation: models.Create,
+	}
+	msgCardJSON, err := json.Marshal(msgCard)
+	if err != nil {
+		log.Print("marshall error", err)
+	}
+	var routingKey string
+	for _, v := range newAppCfg.Apps {
+		if v.AppID == newAppCfg.Appid {
+			routingKey = v.RoutingKey
+			break
+		}
+	}
+	err = publisherCh.Publish(exchangeParams.Name, routingKey+".card", false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		Body:         msgCardJSON,
+		DeliveryMode: 1,
+	})
+	if err != nil {
+		log.Print(err)
+	}
+	// wait for messages to arrive
+	time.Sleep(1 * time.Second)
+	newReadData, err := NewReadUser(ctx, c, newAppCfg)
+	if err != nil {
+		log.Print("read records error: ", err)
+		return
+	}
+	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
+	if newReadData.SetCardRec[0].UID != msgCard.UID ||
+		newReadData.SetCardRec[0].AppID != msgCard.AppID ||
+		newReadData.SetCardRec[0].Metadata != msgCard.Metadata ||
+		newReadData.SetCardRec[0].RecordID != msgCard.RecordID ||
+		newReadData.SetCardRec[0].ValidDate != msgCard.ValidDate ||
+		newReadData.SetCardRec[0].Number != msgCard.Number ||
+		newReadData.SetCardRec[0].Code != int64(msgCard.Code) ||
+		newReadData.SetCardRec[0].Holder != msgCard.Holder ||
+		!newReadData.SetCardRec[0].ChngTime.AsTime().Round(time.Second).
+			Equal(msgCard.ChngTime.UTC().Round(time.Second)) {
+		fmt.Println(">>>>>>>> integration CardCreate_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)
+	} else {
+		fmt.Println(">>>>>>>> integration CardCreate_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
+	}
+	// Update
+	msgCard.Operation = models.Update
+	msgCard.ChngTime = time.Now()
+	msgCard.Holder = "updated" + msgCard.Holder
+	msgCard.Metadata = "updated" + msgCard.Metadata
+	msgCardUpdateJSON, err := json.Marshal(msgCard)
+	if err != nil {
+		log.Print("marshall error", err)
+	}
+	err = publisherCh.Publish(exchangeParams.Name, routingKey+".card", false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		Body:         msgCardUpdateJSON,
+		DeliveryMode: 1,
+	})
+	if err != nil {
+		log.Print(err)
+	}
+	// wait for messages to arrive
+	time.Sleep(1 * time.Second)
+	// запрос всех записей пользователя
+	newReadUpdate, err := NewReadUser(ctx, c, newAppCfg)
+	if err != nil {
+		log.Print("read records error: ", err)
+		return
+	}
+	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
+	if newReadUpdate.SetCardRec[0].UID != msgCard.UID ||
+	newReadUpdate.SetCardRec[0].AppID != msgCard.AppID ||
+	newReadUpdate.SetCardRec[0].Metadata != msgCard.Metadata ||
+	newReadUpdate.SetCardRec[0].RecordID != msgCard.RecordID ||
+	newReadUpdate.SetCardRec[0].ValidDate != msgCard.ValidDate ||
+	newReadUpdate.SetCardRec[0].Number != msgCard.Number ||
+	newReadUpdate.SetCardRec[0].Code != int64(msgCard.Code) ||
+	newReadUpdate.SetCardRec[0].Holder != msgCard.Holder ||
+		!newReadUpdate.SetCardRec[0].ChngTime.AsTime().Round(time.Minute).
+			Equal(msgCard.ChngTime.UTC().Round(time.Minute)) {
+		fmt.Println(">>>>>>>> integration CardUpdate_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)
+	} else {
+		fmt.Println(">>>>>>>> integration CardUpdate_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
+	}
+	// Delete
+	msgCard.Operation = models.Delete
+	msgCard.ChngTime = time.Now()
+	msgCardDeleteJSON, err := json.Marshal(msgCard)
+	if err != nil {
+		log.Print("marshall error", err)
 
-
-// msgCard := models.CardRec{
-// 	RecordID:  "12345",
-// 	ChngTime:  time.Now(),
-// 	UID:       "user12345",
-// 	AppID:     "app 12345",
-// 	Brand:     models.MasterCard,
-// 	ValidDate: "01/03",
-// 	Code:      234,
-// 	Number:    "2202443565854455",
-// 	Metadata:  "meta data description",
-// 	Operation: models.Create,
-// }
+	}
+	err = publisherCh.Publish(exchangeParams.Name, routingKey+".card", false, false, amqp.Publishing{
+		ContentType:  "application/json",
+		Body:         msgCardDeleteJSON,
+		DeliveryMode: 1,
+	})
+	if err != nil {
+		log.Print(err)
+	}
+	// wait for messages to arrive
+	time.Sleep(1 * time.Second)
+	// запрос всех записей пользователя
+	newReadDelete, err := NewReadUser(ctx, c, newAppCfg)
+	if err != nil {
+		log.Print("read records error: ", err)
+		return
+	}
+	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
+	if len(newReadDelete.SetCardRec) > 0 {
+		fmt.Println(">>>>>>>> integration CardDelete_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)
+	} else {
+		fmt.Println(">>>>>>>> integration CardDelete_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
+	}
+}

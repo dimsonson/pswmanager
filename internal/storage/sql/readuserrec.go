@@ -78,7 +78,7 @@ func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) (*mode
 	}
 
 	// создаем текст запроса
-	q = `SELECT metadata, brand, num, date, code, uid, appid, recordid, chng_time FROM card_records WHERE uid = $1 AND deleted <> true`
+	q = `SELECT metadata, brand, num, date, code, holder, uid, appid, recordid, chng_time FROM card_records WHERE uid = $1 AND deleted <> true`
 	// делаем запрос в SQL, получаем строку
 	rows, err = ms.PostgreConn.QueryContext(ctx, q, userID)
 	if err != nil {
@@ -87,7 +87,7 @@ func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) (*mode
 	// пишем результат запроса в структуру
 	for rows.Next() {
 		userCardRecord := new(models.CardRec)
-		err = rows.Scan(&userCardRecord.Metadata, &userCardRecord.Brand, &userCardRecord.Number, &userCardRecord.ValidDate, &userCardRecord.Code, &userCardRecord.UID, &userCardRecord.AppID, &userCardRecord.RecordID, &userCardRecord.ChngTime)
+		err = rows.Scan(&userCardRecord.Metadata, &userCardRecord.Brand, &userCardRecord.Number, &userCardRecord.ValidDate, &userCardRecord.Code, &userCardRecord.Holder, &userCardRecord.UID, &userCardRecord.AppID, &userCardRecord.RecordID, &userCardRecord.ChngTime)
 		if err != nil {
 			log.Print("row by row scan card_records error :", err)
 		}
