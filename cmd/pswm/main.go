@@ -41,28 +41,21 @@ var (
 func main() {
 	// Вывод данных о версии, дате, коммите сборки.
 	log.Printf("version=%s, date=%s, commit=%s", buildVersion, buildDate, buildCommit)
-
 	var wg sync.WaitGroup
-
 	// опередяляем контекст уведомления о сигнале прерывания
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
 	// создание конфигурацию сервера
 	cfg := config.New()
 	// парсинг конфигурации сервера
 	cfg.Parse()
-
+	// старт серверов
 	cfg.ServerStart(ctx, stop, &wg)
-
 	// остановка всех сущностей, куда передан контекст по прерыванию
 	stop()
-
 	// закрываем соединения
 	cfg.ConnClose(ctx)
-
 	// ожидаем выполнение горутин
 	wg.Wait()
 	// логирование закрытия сервера без ошибок
 	log.Print("rmq & grpc servers gracefully shutdown")
-
 }
