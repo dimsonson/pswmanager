@@ -119,19 +119,16 @@ func main() {
 	defer connGRPC.Close()
 	defer connRMQ.Close()
 	defer publisherCh.Close()
-
 	c := pb.NewUserServicesClient(connGRPC)
 	newUserCfg, newAppCfg, err := NewUserApp(ctx, c)
 	if err != nil {
 		log.Print("read records error: ", err)
 		return
 	}
-
 	msgTextTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
 	msgBinaryTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
 	msgLoginTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
 	msgCardTest(ctx, newUserCfg, newAppCfg, publisherCh, c)
-
 }
 
 func msgTextTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppCfg *pb.CreateAppResponse, publisherCh *amqp.Channel, c pb.UserServicesClient) {
