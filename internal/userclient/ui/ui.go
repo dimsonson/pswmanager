@@ -2,12 +2,22 @@ package ui
 
 import (
 	"os"
+	"syscall"
 
-	"github.com/gdamore/tcell/v2"
-	"github.com/rivo/tview"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
+	"github.com/derailed/tcell/v2"
+	//"github.com/rivo/tview"
+	"github.com/derailed/tview"
 )
 
 // var Brand = []string{"MIR", "VISA", "MC", "AMEX"}
+
+type (
+	confirmFunc func()
+	cancelFunc  func()
+)
 
 type ULogin struct {
 	uLogin string
@@ -23,6 +33,7 @@ type UI struct {
 	App
 	Pages
 	TextView
+	ModalForm
 }
 
 type Lists struct {
@@ -56,6 +67,10 @@ type TextView struct {
 	LogWindow *tview.TextView
 }
 
+type ModalForm struct {
+	Confirm *tview.Modal
+}
+
 func New() *UI {
 	return &UI{}
 }
@@ -68,6 +83,7 @@ func (menu *UI) Init() {
 	menu.text = tview.NewTextView()
 	menu.list = tview.NewList()
 	menu.TextView.LogWindow = tview.NewTextView()
+
 }
 
 func (mn *UI) TextConfig() {
@@ -93,8 +109,13 @@ func (mn *UI) ListConfig() {
 			mn.pages.SwitchToPage("Register")
 		}).
 		AddItem("Quit", "", 'q', func() {
-			os.Interrupt.Signal()
+			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 			mn.App.App.Stop()
+			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+			if err != nil {
+				log.Print("stop programm error")
+				return
+			}
 		})
 	mn.list.SetBorder(true)
 	mn.list.SetTitle("Main menu")
@@ -157,9 +178,23 @@ func (mn *UI) loginFrm() *tview.Form {
 	})
 	mn.loginform.AddButton("Login", func() {
 		if loginpsw.uLogin == "1" {
-
+			log.Print("user login 1")
+			mn.ShowConfirm("Wrong password or username", "Do you like try again?", func() {
+				mn.pages.SwitchToPage("Login")
+			}, func() {
+				mn.pages.SwitchToPage("Menu")
+			})
 		}
-		mn.pages.SwitchToPage("Menu")
+		if loginpsw.uLogin == "0" {
+			log.Print("user login 0")
+			mn.ShowOk("Login successful")
+			//mn.loginform.Clear(true)
+			//mn.pages.SwitchToPage("Menu")
+		}
+
+		if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
+			mn.pages.SwitchToPage("Menu")
+		}
 	})
 	mn.loginform.AddButton("Cancel", func() {
 		mn.pages.SwitchToPage("Menu")
@@ -188,6 +223,73 @@ func (ui *UI) UIRun() {
 	if err := ui.App.App.SetRoot(ui.pages, true).EnableMouse(true).Run(); err != nil {
 		panic(err)
 	}
+}
+
+func (ui *UI) ShowConfirm(title, msg string, ack confirmFunc, cancel cancelFunc) {
+	f := tview.NewForm()
+	f.SetItemPadding(0)
+	f.SetButtonsAlign(tview.AlignCenter).
+		SetButtonBackgroundColor(tcell.Color110).
+		SetButtonTextColor(tcell.Color111).
+		SetLabelColor(tcell.Color112.TrueColor()).
+		SetFieldTextColor(tcell.Color114.TrueColor())
+	f.AddButton("Cancel", func() {
+		ui.dismiss(ui.Pages)
+		cancel()
+	})
+	f.AddButton("OK", func() {
+		ack()
+		ui.dismiss(ui.Pages)
+		cancel()
+	})
+	for i := 0; i < 2; i++ {
+		b := f.GetButton(i)
+		if b == nil {
+			continue
+		}
+		b.SetBackgroundColorActivated(tcell.Color116.TrueColor())
+		b.SetLabelColorActivated(tcell.Color117.TrueColor())
+	}
+	f.SetFocus(0)
+	modal := tview.NewModalForm(title, f)
+	modal.SetText(msg)
+	modal.SetTextColor(tcell.Color119.TrueColor())
+	modal.SetDoneFunc(func(int, string) {
+		ui.dismiss(ui.Pages)
+		cancel()
+	})
+	ui.pages.AddPage("dialogKey", modal, false, false)
+	ui.pages.ShowPage("dialogKey")
+}
+
+func (ui *UI) dismiss(pages Pages) {
+	ui.pages.RemovePage("dialogKey")
+}
+
+func (ui *UI) ShowOk(msg string) {
+	f := tview.NewForm()
+	f.SetItemPadding(0)
+	f.SetButtonsAlign(tview.AlignCenter).
+		SetButtonBackgroundColor(tcell.Color110).
+		SetButtonTextColor(tcell.Color111).
+		SetLabelColor(tcell.Color112.TrueColor()).
+		SetFieldTextColor(tcell.Color114.TrueColor())
+	f.AddButton("OK", func() {
+		ui.dismiss(ui.Pages)
+	})
+	if b := f.GetButton(0); b != nil {
+		b.SetBackgroundColorActivated(tcell.Color116.TrueColor())
+		b.SetLabelColorActivated(tcell.Color117.TrueColor())
+	}
+	f.SetFocus(0)
+	modal := tview.NewModalForm("", f)
+	modal.SetText(msg)
+	modal.SetTextColor(tcell.ColorOrangeRed)
+	modal.SetDoneFunc(func(int, string) {
+		ui.dismiss(ui.Pages)
+	})
+	ui.pages.AddPage("dialogKey", modal, false, false)
+	ui.pages.ShowPage("dialogKey")
 }
 
 // func main() {

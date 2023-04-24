@@ -117,21 +117,7 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	rmqSrv.Shutdown()
 	wg.Add(1)
 	log.Print("rmq starting...")
-	//os.Interrupt.Signal()
 	rmqSrv.Start(ctx, rmqRouter)
-
-	// ui := ui.New()
-
-	// ui.Init()
-	// ui.TextConfig()
-
-	// log.Logge				r = log.Output(zerolog.ConsoleWriter{Out: ui.LogWindow})
-
-	// ui.ListConfig()
-	// ui.FlexConfig()
-	// ui.PagesConfig()
-	//ui..UIRun()
-	//os.Interrupt.Signal()
 }
 
 func (cfg *ServiceConfig) ConnClose(ctx context.Context) {

@@ -8,7 +8,6 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/internal/userclient/ui"
 	"github.com/rs/zerolog"
@@ -25,13 +24,10 @@ func init() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{
 		Out:          ui.TextView.LogWindow,
 		TimeFormat:   "2006/01/02 15:04:05",
+		NoColor:      true,
 		FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
-		FormatMessage: func(i interface{}) string {
-			return fmt.Sprintf("%s%s%s:", settings.ColorNewYellow, i, settings.ColorReset)
-		},
-		PartsOrder: []string{zerolog.TimestampFieldName, "level" /*zerolog.LevelFieldName*/, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
+		PartsOrder:   []string{zerolog.TimestampFieldName, zerolog.LevelFieldName, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
 		With().Caller().Logger()
-
 	stdlog.SetFlags(stdlog.Lshortfile)
 	stdlog.SetOutput(log.Logger)
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
