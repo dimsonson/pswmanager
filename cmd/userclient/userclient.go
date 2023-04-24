@@ -4,20 +4,26 @@ import (
 	"context"
 	"fmt"
 	stdlog "log"
-	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
+	"github.com/dimsonson/pswmanager/internal/userclient/config"
+	"github.com/dimsonson/pswmanager/internal/userclient/ui"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func init() {
+	ui := ui.New()
+	ui.Init()
+	ui.TextConfig()
+	ui.ListConfig()
+	ui.FlexConfig()
+	ui.PagesConfig()
 	log.Logger = log.Output(zerolog.ConsoleWriter{
-		Out:          os.Stderr,
+		Out:          ui.TextView.LogWindow,
 		TimeFormat:   "2006/01/02 15:04:05",
 		FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
 		FormatMessage: func(i interface{}) string {
@@ -29,6 +35,7 @@ func init() {
 	stdlog.SetFlags(stdlog.Lshortfile)
 	stdlog.SetOutput(log.Logger)
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	go ui.UIRun()
 }
 
 // Глобальные переменные для использования при сборке - go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(date +'%Y/%m/%d')' -X main.buildCommit=final"  main.go.
@@ -41,7 +48,7 @@ var (
 func main() {
 	// Вывод данных о версии, дате, коммите сборки.
 	log.Printf("version=%s, date=%s, commit=%s", buildVersion, buildDate, buildCommit)
-	
+
 	var wg sync.WaitGroup
 	// опередяляем контекст уведомления о сигнале прерывания
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

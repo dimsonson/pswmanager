@@ -48,33 +48,6 @@ func New() *ServiceConfig {
 
 // Parse метод парсинга и получения значений из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
 func (cfg *ServiceConfig) Parse() {
-	// cfg.Postgree.Dsn = "postgres://postgres:1818@localhost:5432/pswm"
-	// cfg.ServerAddress = "localhost:8080"
-	// cfg.Rabbitmq.RoutingWorkers = 8
-	// cfg.Rabbitmq.Controllers = make([]models.ControllerParams, 4)
-	// cfg.Rabbitmq.Controllers[0].RoutingKey = "all.*.*.text"
-	// cfg.Rabbitmq.Controllers[1].RoutingKey = "all.*.*.login"
-	// cfg.Rabbitmq.Controllers[2].RoutingKey = "all.*.*.binary"
-	// cfg.Rabbitmq.Controllers[3].RoutingKey = "all.*.*.card"
-	// cfg.Rabbitmq.User = "rmuser"
-	// cfg.Rabbitmq.Psw = "rmpassword"
-	// cfg.Rabbitmq.Host = "localhost"
-	// cfg.Rabbitmq.Port = "5672"
-	// cfg.Rabbitmq.Exchange.Kind = "topic"
-	// cfg.Rabbitmq.Exchange.Name = "records"
-	// cfg.Rabbitmq.Exchange.AutoDelete = false
-	// cfg.Rabbitmq.Exchange.Durable = true
-	// cfg.Rabbitmq.Queue.Name = "master"
-	// cfg.Rabbitmq.Queue.Durable = true
-	// cfg.Rabbitmq.Queue.AutoDelete = true
-	// cfg.Rabbitmq.Consumer.ConsumerName = "master"
-	// cfg.Rabbitmq.Consumer.ConsumerArgs = nil
-	// cfg.GRPC.Network = "tcp"
-	// cfg.GRPC.Port = ":8080"
-	// cfg.Redis.Addr = "localhost:6379"
-	// cfg.Redis.DB = 0
-	// cfg.Redis.Network = "tcp"
-
 	// описываем флаги
 	cfgFlag := flag.String("c", "", "config json path")
 	// парсим флаги в переменные
@@ -88,14 +61,13 @@ func (cfg *ServiceConfig) Parse() {
 			log.Print("reading config file error:", err)
 		}
 		if err == nil {
-			err = json.Unmarshal(configFile, &cfg) //Indent(cfg, configFile, "", "  ") //Unmarshal(configFile, &cfg)
+			err = json.Unmarshal(configFile, &cfg)
 			if err != nil {
 				log.Printf("unmarshal config file error: %s", err)
 			}
 		}
 	}
 	// сохранение congig.json
-
 	// configFile, err := json.MarshalIndent(cfg, "", "  ")
 	// if err != nil {
 	// 	log.Printf("marshal config file error: %s", err)
@@ -133,10 +105,10 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 
 	grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, wg)
 	grpcSrv.InitGRPCservice(cfgReadUsers, cfgUser)
-	wg.Add(1)
-	grpcSrv.GrpcGracefullShotdown()
-	wg.Add(1)
-	go grpcSrv.StartGRPC()
+	//wg.Add(1)
+	//grpcSrv.GrpcGracefullShotdown()
+	//wg.Add(1)
+	//go grpcSrv.StartGRPC()
 
 	rmqRouter := router.New(ctx, cfg.Rabbitmq, *handlers)
 	rmqSrv := rabbitmq.NewServer(ctx, stop, cfg.Rabbitmq, wg)
@@ -144,8 +116,22 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	wg.Add(1)
 	rmqSrv.Shutdown()
 	wg.Add(1)
+	log.Print("rmq starting...")
+	//os.Interrupt.Signal()
 	rmqSrv.Start(ctx, rmqRouter)
 
+	// ui := ui.New()
+
+	// ui.Init()
+	// ui.TextConfig()
+
+	// log.Logge				r = log.Output(zerolog.ConsoleWriter{Out: ui.LogWindow})
+
+	// ui.ListConfig()
+	// ui.FlexConfig()
+	// ui.PagesConfig()
+	//ui..UIRun()
+	//os.Interrupt.Signal()
 }
 
 func (cfg *ServiceConfig) ConnClose(ctx context.Context) {
