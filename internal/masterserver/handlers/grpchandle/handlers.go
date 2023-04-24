@@ -5,8 +5,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 
-	pb "github.com/dimsonson/pswmanager/internal/handlers/protobuf"
-	"github.com/dimsonson/pswmanager/internal/models"
+	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
+	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
