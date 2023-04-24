@@ -178,16 +178,24 @@ func (mn *UI) loginFrm() *tview.Form {
 	})
 	mn.loginform.AddButton("Login", func() {
 		if loginpsw.uLogin == "1" {
-			log.Print("user login 1")
-			mn.ShowConfirm("Wrong password or username", "Do you like try again?", func() {
-				mn.pages.SwitchToPage("Login")
-			}, func() {
-				mn.pages.SwitchToPage("Menu")
-			})
+			mn.ShowConfirm("Wrong password or username", "Do you like try again?",
+				func() {
+					log.Print("user login 1")
+
+					//mn.loginform.Clear(true)
+					//mn.loginFrm()
+					mn.loginform.SetFocus(0) //.SetFocus(0)
+					mn.pages.ShowPage("Login")
+				},
+				func() {
+					mn.pages.SwitchToPage("Menu")
+				})
 		}
 		if loginpsw.uLogin == "0" {
 			log.Print("user login 0")
-			mn.ShowOk("Login successful")
+			mn.ShowOk("Login successful", func() {
+				mn.pages.SwitchToPage("Menu")
+			})
 			//mn.loginform.Clear(true)
 			//mn.pages.SwitchToPage("Menu")
 		}
@@ -238,9 +246,8 @@ func (ui *UI) ShowConfirm(title, msg string, ack confirmFunc, cancel cancelFunc)
 		cancel()
 	})
 	f.AddButton("OK", func() {
-		ack()
 		ui.dismiss(ui.Pages)
-		cancel()
+		ack()
 	})
 	for i := 0; i < 2; i++ {
 		b := f.GetButton(i)
@@ -266,7 +273,7 @@ func (ui *UI) dismiss(pages Pages) {
 	ui.pages.RemovePage("dialogKey")
 }
 
-func (ui *UI) ShowOk(msg string) {
+func (ui *UI) ShowOk(msg string, ok confirmFunc) {
 	f := tview.NewForm()
 	f.SetItemPadding(0)
 	f.SetButtonsAlign(tview.AlignCenter).
@@ -276,6 +283,7 @@ func (ui *UI) ShowOk(msg string) {
 		SetFieldTextColor(tcell.Color114.TrueColor())
 	f.AddButton("OK", func() {
 		ui.dismiss(ui.Pages)
+		ok()
 	})
 	if b := f.GetButton(0); b != nil {
 		b.SetBackgroundColorActivated(tcell.Color116.TrueColor())
@@ -287,6 +295,7 @@ func (ui *UI) ShowOk(msg string) {
 	modal.SetTextColor(tcell.ColorOrangeRed)
 	modal.SetDoneFunc(func(int, string) {
 		ui.dismiss(ui.Pages)
+		ok()
 	})
 	ui.pages.AddPage("dialogKey", modal, false, false)
 	ui.pages.ShowPage("dialogKey")
