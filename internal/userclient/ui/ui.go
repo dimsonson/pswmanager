@@ -21,6 +21,7 @@ const (
 	MenuSecond string = "MenuSecond"
 	Create     string = "Create"
 	Read       string = "Read"
+	Select     string = "Select"
 )
 
 type (
@@ -62,6 +63,8 @@ type UserUI struct {
 type CreateReadUI struct {
 	flexCreate *tview.Flex
 	flexRead   *tview.Flex
+	flexSelect *tview.Flex
+	listSelect *tview.List
 	createform *tview.Form
 	readform   *tview.Form
 }
@@ -84,10 +87,12 @@ func (ui *UI) Init() {
 	ui.textMain = tview.NewTextView()
 	ui.listMain = tview.NewList()
 	ui.listSecond = tview.NewList()
+	ui.listSelect = tview.NewList()
 	ui.LogWindow = tview.NewTextView()
 	ui.TextConfig()
 	ui.ListMain()
 	ui.ListSecond()
+	ui.ListSelect()
 	ui.FlexMain()
 	ui.FlexSecond()
 	ui.FlexUsers()
@@ -108,6 +113,7 @@ func (ui *UI) PagesConfig() {
 	ui.pages.AddPage(MenuSecond, ui.flexSecond, true, false)
 	ui.pages.AddPage(Create, ui.flexCreate, true, false)
 	ui.pages.AddPage(Read, ui.flexRead, true, false)
+	ui.pages.AddPage(Select, ui.flexSelect, true, false)
 }
 
 func (ui *UI) FlexMain() {
@@ -155,7 +161,7 @@ func (ui *UI) ListMain() {
 		AddItem("Login", "", 'a', func() {
 			ui.loginform.Clear(true)
 			ui.loginFrm()
-			ui.pages.SwitchToPage("Login")
+			ui.pages.SwitchToPage(Login)
 		}).
 		AddItem("Registration", "", 'b', func() {
 			ui.regform.Clear(true)
