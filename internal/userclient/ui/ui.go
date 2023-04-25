@@ -83,6 +83,11 @@ func (ui *UI) Init() {
 	ui.text = tview.NewTextView()
 	ui.list = tview.NewList()
 	ui.LogWindow = tview.NewTextView()
+	ui.TextConfig()
+	ui.ListConfig()
+	ui.FlexMain()
+	ui.FlexUsers()
+	ui.PagesConfig()
 }
 
 func (ui *UI) TextConfig() {
@@ -124,7 +129,7 @@ func (ui *UI) ListConfig() {
 	ui.MainApp.SetFocus(ui.list)
 }
 
-func (ui *UI) FlexConfig() {
+func (ui *UI) FlexMain() {
 	ui.flexMain = tview.NewFlex().
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
@@ -132,23 +137,6 @@ func (ui *UI) FlexConfig() {
 			AddItem(ui.list, 10, 1, true).
 			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.MainApp.Draw() }), 10, 0, false).
 			AddItem(ui.text, 1, 1, false), 0, 2, true)
-
-	ui.flexLogin = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.text, 2, 1, false).
-			AddItem(ui.loginform, 10, 1, true).
-			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.text, 1, 1, false), 0, 2, true)
-
-	ui.flexReg = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.text, 2, 1, false).
-			AddItem(ui.regform, 10, 1, true).
-			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.text, 1, 1, false), 0, 2, true)
-
 	ui.flexMain.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Rune() == 'q' {
 			ui.MainApp.Stop()
@@ -173,23 +161,3 @@ func (ui *UI) UIRun() {
 	}
 }
 
-// func main() {
-// 	ui := New()
-// 	ui.Init()
-// 	ui.textConfig()
-// 	log.SetOutput(ui.textView)
-// 	ui.listConfig()
-// 	ui.flexConfig()
-// 	ui.pagesConfig()
-
-// 	go func() {
-// 		for n := 0; n < 100; n++ {
-// 			time.Sleep(time.Second * 2)
-// 			fmt.Fprintf(ui.textView, "string %d \n", n)
-// 		}
-// 	}()
-
-// 	if err := ui.App.SetRoot(ui.pages, true).EnableMouse(true).Run(); err != nil {
-// 		panic(err)
-// 	}
-// }

@@ -17,10 +17,6 @@ import (
 func init() {
 	ui := ui.New()
 	ui.Init()
-	ui.TextConfig()
-	ui.ListConfig()
-	ui.FlexConfig()
-	ui.PagesConfig()
 	log.Logger = log.Output(zerolog.ConsoleWriter{
 		Out:          ui.TextView.LogWindow,
 		TimeFormat:   "2006/01/02 15:04:05",

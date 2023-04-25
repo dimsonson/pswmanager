@@ -5,6 +5,33 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+
+func (ui *UI) FlexUsers() {
+	ui.flexMain = tview.NewFlex().
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(ui.text, 2, 1, false).
+			AddItem(ui.list, 10, 1, true).
+			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.MainApp.Draw() }), 10, 0, false).
+			AddItem(ui.text, 1, 1, false), 0, 2, true)
+
+	ui.flexLogin = tview.NewFlex().
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(ui.text, 2, 1, false).
+			AddItem(ui.loginform, 10, 1, true).
+			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.MainApp.Draw() }), 10, 0, false).
+			AddItem(ui.text, 1, 1, false), 0, 2, true)
+
+	ui.flexReg = tview.NewFlex().
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(ui.text, 2, 1, false).
+			AddItem(ui.regform, 10, 1, true).
+			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.MainApp.Draw() }), 10, 0, false).
+			AddItem(ui.text, 1, 1, false), 0, 2, true)
+}
+
 func (ui *UI) loginFrm() *tview.Form {
 	loginpsw := ULogin{}
 	ui.loginform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
