@@ -49,27 +49,27 @@ func (ui *UI) loginFrm() *tview.Form {
 					//ui.loginform.Clear(true)
 					//ui.loginFrm()
 					ui.loginform.SetFocus(0) //.SetFocus(0)
-					ui.pages.ShowPage("Login")
+					ui.pages.ShowPage(Login)
 				},
 				func() {
-					ui.pages.SwitchToPage("Menu")
+					ui.pages.SwitchToPage(Menu)
 				})
 		}
 		if loginpsw.uLogin == "0" {
 			log.Print("user login 0")
 			ui.ShowOk("Login successful", func() {
-				ui.pages.SwitchToPage("Menu")
+				ui.pages.SwitchToPage(Menu)
 			})
 			//ui.loginform.Clear(true)
 			//ui.pages.SwitchToPage("Menu")
 		}
 
 		if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
-			ui.pages.SwitchToPage("Menu")
+			ui.pages.SwitchToPage(Menu)
 		}
 	})
 	ui.loginform.AddButton("Cancel", func() {
-		ui.pages.SwitchToPage("Menu")
+		ui.pages.SwitchToPage(Menu)
 	})
 	return ui.loginform
 }
@@ -83,10 +83,30 @@ func (ui *UI) registerFrm() *tview.Form {
 		loginpsw.uPsw = upsw
 	})
 	ui.regform.AddButton("Register", func() {
-		ui.pages.SwitchToPage("Menu")
+		if loginpsw.uLogin == "0" {
+			log.Print("user reg 0")
+			ui.ShowOk("Registration successful. \n Please, keep your credentials safe.", func() {
+				ui.pages.SwitchToPage(Menu)
+			})
+		}
+		if loginpsw.uLogin == "1" {
+			ui.ShowConfirm("Username already exist", "Do you like try again?",
+				func() {
+					log.Print("user reg 1")
+					ui.regform.SetFocus(0) //.SetFocus(0)
+					ui.pages.ShowPage(Register)
+				},
+				func() {
+					ui.pages.SwitchToPage(Menu)
+				})
+		}
+
+		if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
+			ui.pages.SwitchToPage(Menu)
+		}
 	})
 	ui.regform.AddButton("Cancel", func() {
-		ui.pages.SwitchToPage("Menu")
+		ui.pages.SwitchToPage(Menu)
 	})
 	return ui.regform
 }

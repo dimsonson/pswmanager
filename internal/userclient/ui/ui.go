@@ -14,6 +14,12 @@ import (
 
 // var Brand = []string{"MIR", "VISA", "MC", "AMEX"}
 
+const (
+	Menu     string = "Menu"
+	Login    string = "Login"
+	Register string = "Register"
+)
+
 type (
 	confirmFunc func()
 	cancelFunc  func()
@@ -77,9 +83,9 @@ func (ui *UI) UIRun() {
 }
 
 func (ui *UI) PagesConfig() {
-	ui.pages.AddPage("Menu", ui.flexMain, true, true)
-	ui.pages.AddPage("Login", ui.flexLogin, true, false)
-	ui.pages.AddPage("Register", ui.flexReg, true, false)
+	ui.pages.AddPage(Menu, ui.flexMain, true, true)
+	ui.pages.AddPage(Login, ui.flexLogin, true, false)
+	ui.pages.AddPage(Register, ui.flexReg, true, false)
 }
 
 func (ui *UI) FlexMain() {
@@ -96,7 +102,7 @@ func (ui *UI) FlexMain() {
 		} else if event.Rune() == '1' {
 			ui.loginform.Clear(true)
 			ui.loginFrm()
-			ui.pages.SwitchToPage("Menu")
+			ui.pages.SwitchToPage(Menu)
 		}
 		return event
 	})
@@ -112,7 +118,7 @@ func (ui *UI) ListConfig() {
 		AddItem("Registration", "", 'b', func() {
 			ui.regform.Clear(true)
 			ui.registerFrm()
-			ui.pages.SwitchToPage("Register")
+			ui.pages.SwitchToPage(Register)
 		}).
 		AddItem("Quit", "", 'q', func() {
 			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
