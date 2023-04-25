@@ -46,7 +46,8 @@ func (ui *UI) loginFrm() *tview.Form {
 		if loginpsw.uLogin == "0" {
 			log.Print("user login 0")
 			ui.ShowOk("Login successful", func() {
-				ui.pages.SwitchToPage(Menu)
+			
+				ui.pages.SwitchToPage(MenuSecond)
 			})
 		}
 
