@@ -36,9 +36,7 @@ func (ui *UI) loginFrm() *tview.Form {
 			ui.ShowConfirm("Wrong password or username", "Do you like try again?",
 				func() {
 					log.Print("user login 1")
-					//ui.loginform.Clear(true)
-					//ui.loginFrm()
-					ui.loginform.SetFocus(0) //.SetFocus(0)
+					ui.loginform.SetFocus(0) 
 					ui.pages.ShowPage(Login)
 				},
 				func() {
@@ -50,8 +48,6 @@ func (ui *UI) loginFrm() *tview.Form {
 			ui.ShowOk("Login successful", func() {
 				ui.pages.SwitchToPage(Menu)
 			})
-			//ui.loginform.Clear(true)
-			//ui.pages.SwitchToPage("Menu")
 		}
 
 		if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
