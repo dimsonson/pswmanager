@@ -86,145 +86,145 @@ func (menu *UI) Init() {
 
 }
 
-func (mn *UI) TextConfig() {
-	mn.text.
+func (ui *UI) TextConfig() {
+	ui.text.
 		SetTextColor(tcell.ColorMediumBlue).
 		SetText(" Password & Secrets Manager 2023 *** press (q) to quit")
-	mn.text.SetBackgroundColor(tcell.Color102)
+	ui.text.SetBackgroundColor(tcell.Color102)
 
-	mn.TextView.LogWindow.SetScrollable(false)
-	mn.TextView.LogWindow.SetBackgroundColor(tcell.Color102.TrueColor())
+	ui.TextView.LogWindow.SetScrollable(false)
+	ui.TextView.LogWindow.SetBackgroundColor(tcell.Color102.TrueColor())
 }
 
-func (mn *UI) ListConfig() {
-	mn.list.
+func (ui *UI) ListConfig() {
+	ui.list.
 		AddItem("Login", "", 'a', func() {
-			mn.loginform.Clear(true)
-			mn.loginFrm()
-			mn.pages.SwitchToPage("Login")
+			ui.loginform.Clear(true)
+			ui.loginFrm()
+			ui.pages.SwitchToPage("Login")
 		}).
 		AddItem("Registration", "", 'b', func() {
-			mn.regform.Clear(true)
-			mn.registerFrm()
-			mn.pages.SwitchToPage("Register")
+			ui.regform.Clear(true)
+			ui.registerFrm()
+			ui.pages.SwitchToPage("Register")
 		}).
 		AddItem("Quit", "", 'q', func() {
 			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-			mn.App.App.Stop()
+			ui.App.App.Stop()
 			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 			if err != nil {
 				log.Print("stop programm error")
 				return
 			}
 		})
-	mn.list.SetBorder(true)
-	mn.list.SetTitle("Main menu")
-	mn.list.SetTitleAlign(tview.AlignLeft)
-	mn.list.SetWrapAround(true)
-	mn.list.SetBackgroundColor(tcell.Color108)
-	mn.App.App.SetFocus(mn.list)
+	ui.list.SetBorder(true)
+	ui.list.SetTitle("Main menu")
+	ui.list.SetTitleAlign(tview.AlignLeft)
+	ui.list.SetWrapAround(true)
+	ui.list.SetBackgroundColor(tcell.Color108)
+	ui.App.App.SetFocus(ui.list)
 }
 
-func (mn *UI) FlexConfig() {
-	mn.flexMain = tview.NewFlex().
+func (ui *UI) FlexConfig() {
+	ui.flexMain = tview.NewFlex().
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
-			AddItem(mn.text, 2, 1, false).
-			AddItem(mn.list, 10, 1, true).
-			AddItem(mn.TextView.LogWindow.SetChangedFunc(func() { mn.App.App.Draw() }), 10, 0, false).
-			AddItem(mn.text, 1, 1, false), 0, 2, true)
+			AddItem(ui.text, 2, 1, false).
+			AddItem(ui.list, 10, 1, true).
+			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.App.Draw() }), 10, 0, false).
+			AddItem(ui.text, 1, 1, false), 0, 2, true)
 
-	mn.flexLogin = tview.NewFlex().
+	ui.flexLogin = tview.NewFlex().
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
-			AddItem(mn.text, 2, 1, false).
-			AddItem(mn.loginform, 10, 1, true).
-			AddItem(mn.TextView.LogWindow.SetChangedFunc(func() { mn.App.App.Draw() }), 10, 0, false).
-			AddItem(mn.text, 1, 1, false), 0, 2, true)
+			AddItem(ui.text, 2, 1, false).
+			AddItem(ui.loginform, 10, 1, true).
+			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.App.Draw() }), 10, 0, false).
+			AddItem(ui.text, 1, 1, false), 0, 2, true)
 
-	mn.flexReg = tview.NewFlex().
+	ui.flexReg = tview.NewFlex().
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
-			AddItem(mn.text, 2, 1, false).
-			AddItem(mn.regform, 10, 1, true).
-			AddItem(mn.TextView.LogWindow.SetChangedFunc(func() { mn.App.App.Draw() }), 10, 0, false).
-			AddItem(mn.text, 1, 1, false), 0, 2, true)
+			AddItem(ui.text, 2, 1, false).
+			AddItem(ui.regform, 10, 1, true).
+			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.App.Draw() }), 10, 0, false).
+			AddItem(ui.text, 1, 1, false), 0, 2, true)
 
-	mn.flexMain.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	ui.flexMain.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Rune() == 'q' {
-			mn.App.App.Stop()
+			ui.App.App.Stop()
 		} else if event.Rune() == '1' {
-			mn.loginform.Clear(true)
-			mn.loginFrm()
-			mn.pages.SwitchToPage("Menu")
+			ui.loginform.Clear(true)
+			ui.loginFrm()
+			ui.pages.SwitchToPage("Menu")
 		}
 		return event
 	})
 }
 
-func (mn *UI) PagesConfig() {
-	mn.pages.AddPage("Menu", mn.flexMain, true, true)
-	mn.pages.AddPage("Login", mn.flexLogin, true, false)
-	mn.pages.AddPage("Register", mn.flexReg, true, false)
+func (ui *UI) PagesConfig() {
+	ui.pages.AddPage("Menu", ui.flexMain, true, true)
+	ui.pages.AddPage("Login", ui.flexLogin, true, false)
+	ui.pages.AddPage("Register", ui.flexReg, true, false)
 }
 
-func (mn *UI) loginFrm() *tview.Form {
+func (ui *UI) loginFrm() *tview.Form {
 	loginpsw := ULogin{}
-	mn.loginform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
+	ui.loginform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
 		loginpsw.uLogin = ulogin
 	})
-	mn.loginform.AddPasswordField("Password", "", 20, '*', func(upsw string) {
+	ui.loginform.AddPasswordField("Password", "", 20, '*', func(upsw string) {
 		loginpsw.uPsw = upsw
 	})
-	mn.loginform.AddButton("Login", func() {
+	ui.loginform.AddButton("Login", func() {
 		if loginpsw.uLogin == "1" {
-			mn.ShowConfirm("Wrong password or username", "Do you like try again?",
+			ui.ShowConfirm("Wrong password or username", "Do you like try again?",
 				func() {
 					log.Print("user login 1")
 
-					//mn.loginform.Clear(true)
-					//mn.loginFrm()
-					mn.loginform.SetFocus(0) //.SetFocus(0)
-					mn.pages.ShowPage("Login")
+					//ui.loginform.Clear(true)
+					//ui.loginFrm()
+					ui.loginform.SetFocus(0) //.SetFocus(0)
+					ui.pages.ShowPage("Login")
 				},
 				func() {
-					mn.pages.SwitchToPage("Menu")
+					ui.pages.SwitchToPage("Menu")
 				})
 		}
 		if loginpsw.uLogin == "0" {
 			log.Print("user login 0")
-			mn.ShowOk("Login successful", func() {
-				mn.pages.SwitchToPage("Menu")
+			ui.ShowOk("Login successful", func() {
+				ui.pages.SwitchToPage("Menu")
 			})
-			//mn.loginform.Clear(true)
-			//mn.pages.SwitchToPage("Menu")
+			//ui.loginform.Clear(true)
+			//ui.pages.SwitchToPage("Menu")
 		}
 
 		if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
-			mn.pages.SwitchToPage("Menu")
+			ui.pages.SwitchToPage("Menu")
 		}
 	})
-	mn.loginform.AddButton("Cancel", func() {
-		mn.pages.SwitchToPage("Menu")
+	ui.loginform.AddButton("Cancel", func() {
+		ui.pages.SwitchToPage("Menu")
 	})
-	return mn.loginform
+	return ui.loginform
 }
 
-func (mn *UI) registerFrm() *tview.Form {
+func (ui *UI) registerFrm() *tview.Form {
 	loginpsw := ULogin{}
-	mn.regform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
+	ui.regform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
 		loginpsw.uLogin = ulogin
 	})
-	mn.regform.AddPasswordField("Password", "", 20, '*', func(upsw string) {
+	ui.regform.AddPasswordField("Password", "", 20, '*', func(upsw string) {
 		loginpsw.uPsw = upsw
 	})
-	mn.regform.AddButton("Register", func() {
-		mn.pages.SwitchToPage("Menu")
+	ui.regform.AddButton("Register", func() {
+		ui.pages.SwitchToPage("Menu")
 	})
-	mn.regform.AddButton("Cancel", func() {
-		mn.pages.SwitchToPage("Menu")
+	ui.regform.AddButton("Cancel", func() {
+		ui.pages.SwitchToPage("Menu")
 	})
-	return mn.regform
+	return ui.regform
 }
 
 func (ui *UI) UIRun() {
