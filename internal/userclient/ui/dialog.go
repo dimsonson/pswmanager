@@ -14,11 +14,11 @@ func (ui *UI) ShowConfirm(title, msg string, ack confirmFunc, cancel cancelFunc)
 		SetLabelColor(tcell.Color112.TrueColor()).
 		SetFieldTextColor(tcell.Color114.TrueColor())
 	f.AddButton("Cancel", func() {
-		ui.dismiss(ui.Pages)
+		ui.dismiss(ui.pages)
 		cancel()
 	})
 	f.AddButton("OK", func() {
-		ui.dismiss(ui.Pages)
+		ui.dismiss(ui.pages)
 		ack()
 	})
 	for i := 0; i < 2; i++ {
@@ -34,14 +34,14 @@ func (ui *UI) ShowConfirm(title, msg string, ack confirmFunc, cancel cancelFunc)
 	modal.SetText(msg)
 	modal.SetTextColor(tcell.Color119.TrueColor())
 	modal.SetDoneFunc(func(int, string) {
-		ui.dismiss(ui.Pages)
+		ui.dismiss(ui.pages)
 		cancel()
 	})
 	ui.pages.AddPage("dialogKey", modal, false, false)
 	ui.pages.ShowPage("dialogKey")
 }
 
-func (ui *UI) dismiss(pages Pages) {
+func (ui *UI) dismiss(pages *tview.Pages) {
 	ui.pages.RemovePage("dialogKey")
 }
 
@@ -54,7 +54,7 @@ func (ui *UI) ShowOk(msg string, ok confirmFunc) {
 		SetLabelColor(tcell.Color112.TrueColor()).
 		SetFieldTextColor(tcell.Color114.TrueColor())
 	f.AddButton("OK", func() {
-		ui.dismiss(ui.Pages)
+		ui.dismiss(ui.pages)
 		ok()
 	})
 	if b := f.GetButton(0); b != nil {
@@ -66,7 +66,7 @@ func (ui *UI) ShowOk(msg string, ok confirmFunc) {
 	modal.SetText(msg)
 	modal.SetTextColor(tcell.ColorOrangeRed)
 	modal.SetDoneFunc(func(int, string) {
-		ui.dismiss(ui.Pages)
+		ui.dismiss(ui.pages)
 		ok()
 	})
 	ui.pages.AddPage("dialogKey", modal, false, false)

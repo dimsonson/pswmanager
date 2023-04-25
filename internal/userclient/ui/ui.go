@@ -26,48 +26,28 @@ type ULogin struct {
 }
 
 type UI struct {
-	Lists
-	Flexs
-	Forms
-	Texts
-	App
-	Pages
-	TextView
-	ModalForm
+	UserUI
+	MainUI
+	DialogUI
 }
 
-type Lists struct {
-	list *tview.List
-}
-
-type Flexs struct {
+type MainUI struct {
+	listMain  *tview.List
 	flexMain  *tview.Flex
+	textMain  *tview.TextView
+	LogWindow *tview.TextView
+	pages     *tview.Pages
+	MainApp   *tview.Application
+}
+
+type UserUI struct {
 	flexLogin *tview.Flex
 	flexReg   *tview.Flex
-}
-
-type Forms struct {
 	regform   *tview.Form
 	loginform *tview.Form
 }
 
-type Texts struct {
-	text *tview.TextView
-}
-
-type App struct {
-	MainApp *tview.Application
-}
-
-type Pages struct {
-	pages *tview.Pages
-}
-
-type TextView struct {
-	LogWindow *tview.TextView
-}
-
-type ModalForm struct {
+type DialogUI struct {
 	Confirm *tview.Modal
 }
 
@@ -80,8 +60,8 @@ func (ui *UI) Init() {
 	ui.pages = tview.NewPages()
 	ui.loginform = tview.NewForm()
 	ui.regform = tview.NewForm()
-	ui.text = tview.NewTextView()
-	ui.list = tview.NewList()
+	ui.textMain = tview.NewTextView()
+	ui.listMain = tview.NewList()
 	ui.LogWindow = tview.NewTextView()
 	ui.TextConfig()
 	ui.ListConfig()
@@ -90,18 +70,40 @@ func (ui *UI) Init() {
 	ui.PagesConfig()
 }
 
-func (ui *UI) TextConfig() {
-	ui.text.
-		SetTextColor(tcell.ColorMediumBlue).
-		SetText(" Password & Secrets Manager 2023 *** press (q) to quit")
-	ui.text.SetBackgroundColor(tcell.Color102)
+func (ui *UI) UIRun() {
+	if err := ui.MainApp.SetRoot(ui.pages, true).EnableMouse(true).Run(); err != nil {
+		panic(err)
+	}
+}
 
-	ui.LogWindow.SetScrollable(false)
-	ui.LogWindow.SetBackgroundColor(tcell.Color102.TrueColor())
+func (ui *UI) PagesConfig() {
+	ui.pages.AddPage("Menu", ui.flexMain, true, true)
+	ui.pages.AddPage("Login", ui.flexLogin, true, false)
+	ui.pages.AddPage("Register", ui.flexReg, true, false)
+}
+
+func (ui *UI) FlexMain() {
+	ui.flexMain = tview.NewFlex().
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(ui.textMain, 2, 1, false).
+			AddItem(ui.listMain, 10, 1, true).
+			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+	ui.flexMain.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Rune() == 'q' {
+			ui.MainApp.Stop()
+		} else if event.Rune() == '1' {
+			ui.loginform.Clear(true)
+			ui.loginFrm()
+			ui.pages.SwitchToPage("Menu")
+		}
+		return event
+	})
 }
 
 func (ui *UI) ListConfig() {
-	ui.list.
+	ui.listMain.
 		AddItem("Login", "", 'a', func() {
 			ui.loginform.Clear(true)
 			ui.loginFrm()
@@ -121,43 +123,20 @@ func (ui *UI) ListConfig() {
 				return
 			}
 		})
-	ui.list.SetBorder(true)
-	ui.list.SetTitle("Main menu")
-	ui.list.SetTitleAlign(tview.AlignLeft)
-	ui.list.SetWrapAround(true)
-	ui.list.SetBackgroundColor(tcell.Color108)
-	ui.MainApp.SetFocus(ui.list)
+	ui.listMain.SetBorder(true)
+	ui.listMain.SetTitle("Main menu")
+	ui.listMain.SetTitleAlign(tview.AlignLeft)
+	ui.listMain.SetWrapAround(true)
+	ui.listMain.SetBackgroundColor(tcell.Color108)
+	ui.MainApp.SetFocus(ui.listMain)
 }
 
-func (ui *UI) FlexMain() {
-	ui.flexMain = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.text, 2, 1, false).
-			AddItem(ui.list, 10, 1, true).
-			AddItem(ui.TextView.LogWindow.SetChangedFunc(func() { ui.App.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.text, 1, 1, false), 0, 2, true)
-	ui.flexMain.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Rune() == 'q' {
-			ui.MainApp.Stop()
-		} else if event.Rune() == '1' {
-			ui.loginform.Clear(true)
-			ui.loginFrm()
-			ui.pages.SwitchToPage("Menu")
-		}
-		return event
-	})
-}
+func (ui *UI) TextConfig() {
+	ui.textMain.
+		SetTextColor(tcell.ColorMediumBlue).
+		SetText(" Password & Secrets Manager 2023 *** press (q) to quit")
+	ui.textMain.SetBackgroundColor(tcell.Color102)
 
-func (ui *UI) PagesConfig() {
-	ui.pages.AddPage("Menu", ui.flexMain, true, true)
-	ui.pages.AddPage("Login", ui.flexLogin, true, false)
-	ui.pages.AddPage("Register", ui.flexReg, true, false)
+	ui.LogWindow.SetScrollable(false)
+	ui.LogWindow.SetBackgroundColor(tcell.Color102.TrueColor())
 }
-
-func (ui *UI) UIRun() {
-	if err := ui.App.MainApp.SetRoot(ui.pages, true).EnableMouse(true).Run(); err != nil {
-		panic(err)
-	}
-}
-

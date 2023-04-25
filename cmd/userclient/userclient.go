@@ -18,7 +18,7 @@ func init() {
 	ui := ui.New()
 	ui.Init()
 	log.Logger = log.Output(zerolog.ConsoleWriter{
-		Out:          ui.TextView.LogWindow,
+		Out:          ui.LogWindow,
 		TimeFormat:   "2006/01/02 15:04:05",
 		NoColor:      true,
 		FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
