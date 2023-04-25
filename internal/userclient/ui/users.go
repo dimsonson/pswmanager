@@ -5,16 +5,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-
 func (ui *UI) FlexUsers() {
-	ui.flexMain = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listMain, 10, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
-
 	ui.flexLogin = tview.NewFlex().
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
@@ -45,7 +36,6 @@ func (ui *UI) loginFrm() *tview.Form {
 			ui.ShowConfirm("Wrong password or username", "Do you like try again?",
 				func() {
 					log.Print("user login 1")
-
 					//ui.loginform.Clear(true)
 					//ui.loginFrm()
 					ui.loginform.SetFocus(0) //.SetFocus(0)
