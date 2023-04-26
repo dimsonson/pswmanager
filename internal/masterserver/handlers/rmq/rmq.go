@@ -94,7 +94,7 @@ func (hnd *Handlers) BinaryRec(ctx context.Context, cfg models.RabbitmqSrv) func
 		if err != nil {
 			log.Print(err)
 		}
-		err = hnd.servBinary.BinaryRec(ctx, binaryRec)
+		err = hnd.servBinary.BinaryRecord(ctx, binaryRec)
 		if err != nil {
 			return
 		}
