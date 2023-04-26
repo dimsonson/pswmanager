@@ -15,13 +15,14 @@ import (
 // var Brand = []string{"MIR", "VISA", "MC", "AMEX"}
 
 const (
-	Menu       string = "Menu"
-	Login      string = "Login"
-	Register   string = "Register"
-	MenuSecond string = "MenuSecond"
-	Create     string = "Create"
-	Read       string = "Read"
-	Select     string = "Select"
+	Menu         string = "Menu"
+	Login        string = "Login"
+	Register     string = "Register"
+	MenuSecond   string = "MenuSecond"
+	Create       string = "Create"
+	Read         string = "Read"
+	SelectCreate string = "SelectCreate"
+	SelectRead   string = "SelectRead"
 )
 
 type (
@@ -61,12 +62,13 @@ type UserUI struct {
 }
 
 type CreateReadUI struct {
-	flexCreate *tview.Flex
-	flexRead   *tview.Flex
-	flexSelect *tview.Flex
-	listSelect *tview.List
-	createform *tview.Form
-	readform   *tview.Form
+	flexCreate       *tview.Flex
+	flexRead         *tview.Flex
+	flexSelectCreate *tview.Flex
+	flexSelectRead   *tview.Flex
+	listSelect       *tview.List
+	createform       *tview.Form
+	readform         *tview.Form
 }
 
 type DialogUI struct {
@@ -92,7 +94,7 @@ func (ui *UI) Init() {
 	ui.TextConfig()
 	ui.ListMain()
 	ui.ListSecond()
-	ui.ListSelect()
+	ui.ListSelectCreate()
 	ui.FlexMain()
 	ui.FlexSecond()
 	ui.FlexUsers()
@@ -113,7 +115,8 @@ func (ui *UI) PagesConfig() {
 	ui.pages.AddPage(MenuSecond, ui.flexSecond, true, false)
 	ui.pages.AddPage(Create, ui.flexCreate, true, false)
 	ui.pages.AddPage(Read, ui.flexRead, true, false)
-	ui.pages.AddPage(Select, ui.flexSelect, true, false)
+	ui.pages.AddPage(SelectCreate, ui.flexSelectCreate, true, false)
+	ui.pages.AddPage(SelectRead, ui.flexSelectRead, true, false)
 }
 
 func (ui *UI) FlexMain() {
@@ -195,6 +198,7 @@ func (ui *UI) ListSecond() {
 		AddItem("Read", "", 'b', func() {
 			ui.regform.Clear(true)
 			ui.readFrm()
+			ui.ListSelectRead()
 			ui.pages.SwitchToPage(Read)
 		}).
 		AddItem("Quit", "", 'q', func() {

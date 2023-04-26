@@ -23,20 +23,28 @@ func (ui *UI) FlexCreateRead() {
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.readform, 10, 1, true).
+			AddItem(ui.listSelect, 12, 1, true).
 			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
 			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
 
-	ui.flexSelect = tview.NewFlex().
+	ui.flexSelectCreate = tview.NewFlex().
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listSelect, 10, 1, true).
+			AddItem(ui.listSelect, 12, 1, true).
+			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+
+	ui.flexSelectRead = tview.NewFlex().
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(ui.textMain, 2, 1, false).
+			AddItem(ui.listSelect, 12, 1, true).
 			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
 			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
 }
 
-func (ui *UI) ListSelect() {
+func (ui *UI) ListSelectCreate() {
 	ui.listSelect.
 		AddItem("Text", "", 'a', func() {
 			ui.loginform.Clear(true)
@@ -68,7 +76,47 @@ func (ui *UI) ListSelect() {
 			}
 		})
 	ui.listSelect.SetBorder(true)
-	ui.listSelect.SetTitle("Main menu")
+	ui.listSelect.SetTitle("menu")
+	ui.listSelect.SetTitleAlign(tview.AlignLeft)
+	ui.listSelect.SetWrapAround(true)
+	ui.listSelect.SetBackgroundColor(tcell.Color108)
+	ui.MainApp.SetFocus(ui.listSelect)
+}
+
+func (ui *UI) ListSelectRead() {
+	ui.listSelect = tview.NewList()
+	ui.listSelect.
+		AddItem("Text Item", "", 'a', func() {
+			ui.loginform.Clear(true)
+			ui.createFrm()
+			ui.pages.SwitchToPage(Create)
+		}).
+		AddItem("Login pair", "", 'b', func() {
+			ui.regform.Clear(true)
+			ui.readFrm()
+			ui.pages.SwitchToPage(Read)
+		}).
+		AddItem("Binary", "", 'b', func() {
+			ui.regform.Clear(true)
+			ui.readFrm()
+			ui.pages.SwitchToPage(Read)
+		}).
+		AddItem("Card", "", 'b', func() {
+			ui.regform.Clear(true)
+			ui.readFrm()
+			ui.pages.SwitchToPage(Read)
+		}).
+		AddItem("Quit", "", 'q', func() {
+			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+			ui.MainApp.Stop()
+			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+			if err != nil {
+				log.Print("stop programm error")
+				return
+			}
+		})
+	ui.listSelect.SetBorder(true)
+	ui.listSelect.SetTitle("menu")
 	ui.listSelect.SetTitleAlign(tview.AlignLeft)
 	ui.listSelect.SetWrapAround(true)
 	ui.listSelect.SetBackgroundColor(tcell.Color108)
