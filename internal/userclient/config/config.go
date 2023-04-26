@@ -97,7 +97,7 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	servLoginRec := services.NewLoginRec(SQLstorage)
 	servTextRec := services.NewTextRec(SQLstorage)
 	servCardRec := services.NewCardRec(SQLstorage)
-	servBinaryRec := services.NewBinaryRec(SQLstorage)
+	servBinaryRec := services.NewBinaryServices(SQLstorage)
 
 	cfgReadUsers := services.NewReadUser(SQLstorage)
 

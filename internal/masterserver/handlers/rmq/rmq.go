@@ -20,7 +20,7 @@ type ServiceProviderLogin interface {
 }
 
 type ServiceProviderBinary interface {
-	BinaryRec(ctx context.Context, record models.BinaryRecord) error
+	BinaryRecord(ctx context.Context, record models.BinaryRecord) error
 }
 
 type ServiceProviderCard interface {
