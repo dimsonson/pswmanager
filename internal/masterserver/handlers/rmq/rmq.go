@@ -12,19 +12,19 @@ import (
 
 // ServiceProvider интерфейс методов бизнес логики.
 type ServiceProviderText interface {
-	TextRec(ctx context.Context, record models.TextRec) error
+	TextRec(ctx context.Context, record models.TextRecord) error
 }
 
 type ServiceProviderLogin interface {
-	LoginRec(ctx context.Context, record models.LoginRec) error
+	LoginRec(ctx context.Context, record models.LoginRecord) error
 }
 
 type ServiceProviderBinary interface {
-	BinaryRec(ctx context.Context, record models.BinaryRec) error
+	BinaryRec(ctx context.Context, record models.BinaryRecord) error
 }
 
 type ServiceProviderCard interface {
-	CardRec(ctx context.Context, record models.CardRec) error
+	CardRec(ctx context.Context, record models.CardRecord) error
 }
 
 // Handlers структура для конструктура обработчика.
@@ -49,7 +49,7 @@ func New(txt ServiceProviderText, lg ServiceProviderLogin, bin ServiceProviderBi
 func (hnd *Handlers) TextRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
 		// process delivery
-		create := models.TextRec{}
+		create := models.TextRecord{}
 		err := ctx.BindJSON(&create)
 		if err != nil {
 			log.Print(err)
@@ -69,7 +69,7 @@ func (hnd *Handlers) TextRec(ctx context.Context, cfg models.RabbitmqSrv) func(c
 func (hnd *Handlers) LoginRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
 		// process delivery
-		loginRec := models.LoginRec{}
+		loginRec := models.LoginRecord{}
 		err := ctx.BindJSON(&loginRec)
 		if err != nil {
 			log.Print(err)
@@ -89,7 +89,7 @@ func (hnd *Handlers) LoginRec(ctx context.Context, cfg models.RabbitmqSrv) func(
 func (hnd *Handlers) BinaryRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
 		// process delivery
-		binaryRec := models.BinaryRec{}
+		binaryRec := models.BinaryRecord{}
 		err := ctx.BindJSON(&binaryRec)
 		if err != nil {
 			log.Print(err)
@@ -109,7 +109,7 @@ func (hnd *Handlers) BinaryRec(ctx context.Context, cfg models.RabbitmqSrv) func
 func (hnd *Handlers) CardRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
 		// process delivery
-		cardRec := models.CardRec{}
+		cardRec := models.CardRecord{}
 		err := ctx.BindJSON(&cardRec)
 		if err != nil {
 			log.Print(err)

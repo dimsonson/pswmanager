@@ -9,9 +9,9 @@ import (
 )
 
 type CardStorageProviver interface {
-	CreateCard(ctx context.Context, record models.CardRec) error
-	UpdateCard(ctx context.Context, record models.CardRec) error
-	DeleteCard(ctx context.Context, record models.CardRec) error
+	CreateCard(ctx context.Context, record models.CardRecord) error
+	UpdateCard(ctx context.Context, record models.CardRecord) error
+	DeleteCard(ctx context.Context, record models.CardRecord) error
 }
 
 // Services структура конструктора бизнес логики.
@@ -27,7 +27,7 @@ func NewCardRec(s StorageProvider) *CardServices {
 }
 
 // CardRec.
-func (sr *CardServices) CardRec(ctx context.Context, record models.CardRec) error {
+func (sr *CardServices) CardRec(ctx context.Context, record models.CardRecord) error {
 	var err error
 	switch record.Operation {
 	case models.Create:

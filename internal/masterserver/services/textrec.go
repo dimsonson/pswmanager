@@ -9,9 +9,9 @@ import (
 )
 
 type TextStorageProviver interface {
-	CreateText(ctx context.Context, record models.TextRec) error
-	UpdateText(ctx context.Context, record models.TextRec) error
-	DeleteText(ctx context.Context, record models.TextRec) error
+	CreateText(ctx context.Context, record models.TextRecord) error
+	UpdateText(ctx context.Context, record models.TextRecord) error
+	DeleteText(ctx context.Context, record models.TextRecord) error
 }
 
 // Services структура конструктора бизнес логики.
@@ -27,7 +27,7 @@ func NewTextRec(s StorageProvider) *TextServices {
 }
 
 // TextRec.
-func (sr *TextServices) TextRec(ctx context.Context, record models.TextRec) error {
+func (sr *TextServices) TextRec(ctx context.Context, record models.TextRecord) error {
 	var err error
 	switch record.Operation {
 	case models.Create:

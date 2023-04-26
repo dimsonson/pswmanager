@@ -29,7 +29,7 @@ type RabbitmqSrv struct {
 	RoutingWorkers int
 }
 
-// ExchangeParams generalizes amqp exchange settings
+// ExchangeParams общие настройки amqp exchange
 type ExchangeParams struct {
 	Name       string
 	Kind       string
@@ -40,7 +40,7 @@ type ExchangeParams struct {
 	Args       amqp.Table
 }
 
-// QueueParams generalizes amqp queue settings
+// QueueParams общие настройки amqp queue
 type QueueParams struct {
 	Name       string
 	Durable    bool
@@ -50,20 +50,20 @@ type QueueParams struct {
 	Args       amqp.Table
 }
 
-// QualityOfService generalizes amqp qos settings
+// QualityOfService общие настройки amqp qos
 type QualityOfService struct {
 	PrefetchCount int
 	PrefetchSize  int
 }
 
-// ConsumerParams generalizes amqp consumer settings
+// ConsumerParams общие настройки amqp consumer
 type ConsumerParams struct {
 	ConsumerName string
 	AutoAck      bool
 	ConsumerArgs amqp.Table
 }
 
-// ControllerParams generalizes rmq server controllers settings
+// ControllerParams общие настройки rmq server controllers
 type ControllerParams struct {
 	RoutingKey string
 	Controller rabbitmq.ControllerFunc `json:"-"`
@@ -111,15 +111,15 @@ const (
 )
 
 // SetRecords .
-type SetRecords struct {
-	SetLoginRec  []LoginRec
-	SetTextRec   []TextRec
-	SetBinaryRec []BinaryRec
-	SetCardRec   []CardRec
+type SetOfRecords struct {
+	SetLoginRec  []LoginRecord
+	SetTextRec   []TextRecord
+	SetBinaryRec []BinaryRecord
+	SetCardRec   []CardRecord
 }
 
 // LoginRec структура сообщния для опараций с парами логин/пароль.
-type LoginRec struct {
+type LoginRecord struct {
 	RecordID  string
 	ChngTime  time.Time
 	UID       string
@@ -131,7 +131,7 @@ type LoginRec struct {
 }
 
 // LoginRec структура сообщния для опараций с текстовыми данными пользователя.
-type TextRec struct {
+type TextRecord struct {
 	RecordID  string
 	ChngTime  time.Time
 	UID       string
@@ -142,7 +142,7 @@ type TextRec struct {
 }
 
 // BinaryRec структура сообщния для опараций с бинарными данными пользователя.
-type BinaryRec struct {
+type BinaryRecord struct {
 	RecordID  string
 	ChngTime  time.Time
 	UID       string
@@ -153,7 +153,7 @@ type BinaryRec struct {
 }
 
 // CardRec структура сообщния для опараций с данными карт пользователя.
-type CardRec struct {
+type CardRecord struct {
 	RecordID  string
 	ChngTime  time.Time
 	UID       string

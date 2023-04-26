@@ -9,9 +9,9 @@ import (
 )
 
 type BinaryStorageProviver interface {
-	CreateBinary(ctx context.Context, record models.BinaryRec) error
-	UpdateBinary(ctx context.Context, record models.BinaryRec) error
-	DeleteBinary(ctx context.Context, record models.BinaryRec) error
+	CreateBinary(ctx context.Context, record models.BinaryRecord) error
+	UpdateBinary(ctx context.Context, record models.BinaryRecord) error
+	DeleteBinary(ctx context.Context, record models.BinaryRecord) error
 }
 
 // Services структура конструктора бизнес логики.
@@ -27,7 +27,7 @@ func NewBinaryRec(s StorageProvider) *BinaryServices {
 }
 
 // BinaryRec.
-func (sr *BinaryServices) BinaryRec(ctx context.Context, record models.BinaryRec) error {
+func (sr *BinaryServices) BinaryRec(ctx context.Context, record models.BinaryRecord) error {
 	var err error
 	switch record.Operation {
 	case models.Create:

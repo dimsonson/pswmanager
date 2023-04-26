@@ -134,7 +134,7 @@ func main() {
 func msgTextTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppCfg *pb.CreateAppResponse, publisherCh *amqp.Channel, c pb.UserServicesClient) {
 	// msgText
 	// Create
-	msgText := models.TextRec{
+	msgText := models.TextRecord{
 		RecordID:  uuid.NewString(),
 		ChngTime:  time.Now(),
 		UID:       newUserCfg.UserID,
@@ -258,7 +258,7 @@ func msgTextTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppC
 func msgBinaryTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppCfg *pb.CreateAppResponse, publisherCh *amqp.Channel, c pb.UserServicesClient) {
 	// msgBinary
 	// Create
-	msgBinary := models.BinaryRec{
+	msgBinary := models.BinaryRecord{
 		RecordID:  uuid.NewString(),
 		ChngTime:  time.Now(),
 		UID:       newUserCfg.UserID,
@@ -382,7 +382,7 @@ func msgBinaryTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAp
 func msgLoginTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppCfg *pb.CreateAppResponse, publisherCh *amqp.Channel, c pb.UserServicesClient) {
 	// msgLogin
 	// Create
-	msgLogin := models.LoginRec{
+	msgLogin := models.LoginRecord{
 		RecordID:  uuid.NewString(),
 		ChngTime:  time.Now(),
 		UID:       newUserCfg.UserID,
@@ -508,7 +508,7 @@ func msgLoginTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newApp
 
 func msgCardTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppCfg *pb.CreateAppResponse, publisherCh *amqp.Channel, c pb.UserServicesClient) {
 	// Create
-	msgCard := models.CardRec{
+	msgCard := models.CardRecord{
 		RecordID:  uuid.NewString(),
 		ChngTime:  time.Now(),
 		UID:       newUserCfg.UserID,

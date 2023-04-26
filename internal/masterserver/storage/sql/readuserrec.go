@@ -8,8 +8,8 @@ import (
 )
 
 // ReadUserRecords.
-func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) (*models.SetRecords, error) {
-	userRecords := new(models.SetRecords)
+func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) (*models.SetOfRecords, error) {
+	userRecords := new(models.SetOfRecords)
 	// создаем текст запроса
 	q := `SELECT metadata, textdata, uid, appid, recordid, chng_time FROM text_records WHERE uid = $1 AND deleted <> true`
 	// делаем запрос в SQL, получаем строку
@@ -20,7 +20,7 @@ func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) (*mode
 	defer rows.Close()
 	// пишем результат запроса в структуру
 	for rows.Next() {
-		userTextRecord := new(models.TextRec)
+		userTextRecord := new(models.TextRecord)
 		err = rows.Scan(&userTextRecord.Metadata, &userTextRecord.Text, &userTextRecord.UID, &userTextRecord.AppID, &userTextRecord.RecordID, &userTextRecord.ChngTime)
 		if err != nil {
 			log.Print("row by row scan text_records error :", err)
@@ -42,7 +42,7 @@ func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) (*mode
 	}
 	// пишем результат запроса в структуру
 	for rows.Next() {
-		userBinaryRecord := new(models.BinaryRec)
+		userBinaryRecord := new(models.BinaryRecord)
 		err = rows.Scan(&userBinaryRecord.Metadata, &userBinaryRecord.Binary, &userBinaryRecord.UID, &userBinaryRecord.AppID, &userBinaryRecord.RecordID, &userBinaryRecord.ChngTime)
 		if err != nil {
 			log.Print("row by row scan binary_records error :", err)
@@ -64,7 +64,7 @@ func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) (*mode
 	}
 	// пишем результат запроса в структуру
 	for rows.Next() {
-		userLoginRecord := new(models.LoginRec)
+		userLoginRecord := new(models.LoginRecord)
 		err = rows.Scan(&userLoginRecord.Metadata, &userLoginRecord.Login, &userLoginRecord.Psw, &userLoginRecord.UID, &userLoginRecord.AppID, &userLoginRecord.RecordID, &userLoginRecord.ChngTime)
 		if err != nil {
 			log.Print("row by row scan login_records error :", err)
@@ -86,7 +86,7 @@ func (ms *StorageSQL) ReadUserRecords(ctx context.Context, userID string) (*mode
 	}
 	// пишем результат запроса в структуру
 	for rows.Next() {
-		userCardRecord := new(models.CardRec)
+		userCardRecord := new(models.CardRecord)
 		err = rows.Scan(&userCardRecord.Metadata, &userCardRecord.Brand, &userCardRecord.Number, &userCardRecord.ValidDate, &userCardRecord.Code, &userCardRecord.Holder, &userCardRecord.UID, &userCardRecord.AppID, &userCardRecord.RecordID, &userCardRecord.ChngTime)
 		if err != nil {
 			log.Print("row by row scan card_records error :", err)

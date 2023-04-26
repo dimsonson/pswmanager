@@ -7,7 +7,7 @@ import (
 )
 
 // CreateText.
-func (ms *StorageSQL) CreateCard(ctx context.Context, record models.CardRec) error {
+func (ms *StorageSQL) CreateCard(ctx context.Context, record models.CardRecord) error {
 	// создаем текст запроса
 	q := `INSERT INTO card_records 
 			VALUES (
@@ -37,7 +37,7 @@ func (ms *StorageSQL) CreateCard(ctx context.Context, record models.CardRec) err
 }
 
 // UpdateText.
-func (ms *StorageSQL) UpdateCard(ctx context.Context, record models.CardRec) error {
+func (ms *StorageSQL) UpdateCard(ctx context.Context, record models.CardRecord) error {
 	// создаем текст запроса
 	q := `UPDATE card_records 
 	SET  metadata = $3, brand = $4, num = $5, date = $6, code = $7, holder = $8
@@ -59,7 +59,7 @@ func (ms *StorageSQL) UpdateCard(ctx context.Context, record models.CardRec) err
 }
 
 // DeleteText.
-func (ms *StorageSQL) DeleteCard(ctx context.Context, record models.CardRec) error {
+func (ms *StorageSQL) DeleteCard(ctx context.Context, record models.CardRecord) error {
 	// создаем текст запроса
 	q := `UPDATE card_records 
 	SET  deleted = true 

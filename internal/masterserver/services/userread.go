@@ -7,7 +7,7 @@ import (
 )
 
 type ReadUserStorageProviver interface {
-	ReadUserRecords(ctx context.Context, userID string) (*models.SetRecords, error)
+	ReadUserRecords(ctx context.Context, userID string) (*models.SetOfRecords, error)
 }
 
 // Services структура конструктора бизнес логики.
@@ -22,7 +22,7 @@ func NewReadUser(s StorageProvider) *ReadUserServices {
 	}
 }
 
-func (sr *ReadUserServices) ReadUser(ctx context.Context, uid string) (models.SetRecords, error) {
+func (sr *ReadUserServices) ReadUser(ctx context.Context, uid string) (models.SetOfRecords, error) {
 	setRecords, err := sr.storage.ReadUserRecords(ctx, uid)
 	return *setRecords, err
 }

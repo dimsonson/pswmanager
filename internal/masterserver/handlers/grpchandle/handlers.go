@@ -13,7 +13,7 @@ import (
 )
 
 type ReadUserServicesProvider interface {
-	ReadUser(ctx context.Context, uid string) (models.SetRecords, error)
+	ReadUser(ctx context.Context, uid string) (models.SetOfRecords, error)
 }
 
 type UserServicesProvider interface {

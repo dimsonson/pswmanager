@@ -7,7 +7,7 @@ import (
 )
 
 // CreateText.
-func (ms *StorageSQL) CreateBinary(ctx context.Context, record models.BinaryRec) error {
+func (ms *StorageSQL) CreateBinary(ctx context.Context, record models.BinaryRecord) error {
 	// создаем текст запроса
 	q := `INSERT INTO binary_records 
 			VALUES (
@@ -22,7 +22,7 @@ func (ms *StorageSQL) CreateBinary(ctx context.Context, record models.BinaryRec)
 }
 
 // UpdateText.
-func (ms *StorageSQL) UpdateBinary(ctx context.Context, record models.BinaryRec) error {
+func (ms *StorageSQL) UpdateBinary(ctx context.Context, record models.BinaryRecord) error {
 	// создаем текст запроса
 	q := `UPDATE binary_records	
 	SET metadata = $3, "binary" = $4
@@ -33,7 +33,7 @@ func (ms *StorageSQL) UpdateBinary(ctx context.Context, record models.BinaryRec)
 }
 
 // DeleteText.
-func (ms *StorageSQL) DeleteBinary(ctx context.Context, record models.BinaryRec) error {
+func (ms *StorageSQL) DeleteBinary(ctx context.Context, record models.BinaryRecord) error {
 	// создаем текст запроса
 	q := `UPDATE binary_records 
 	SET  deleted = true 

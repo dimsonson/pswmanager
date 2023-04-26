@@ -9,9 +9,9 @@ import (
 )
 
 type LoginStorageProviver interface {
-	CreateLogin(ctx context.Context, record models.LoginRec) error
-	UpdateLogin(ctx context.Context, record models.LoginRec) error
-	DeleteLogin(ctx context.Context, record models.LoginRec) error
+	CreateLogin(ctx context.Context, record models.LoginRecord) error
+	UpdateLogin(ctx context.Context, record models.LoginRecord) error
+	DeleteLogin(ctx context.Context, record models.LoginRecord) error
 }
 
 // Services структура конструктора бизнес логики.
@@ -27,7 +27,7 @@ func NewLoginRec(s LoginStorageProviver) *LoginServices {
 }
 
 // LoginRec.
-func (sr *LoginServices) LoginRec(ctx context.Context, record models.LoginRec) error {
+func (sr *LoginServices) LoginRec(ctx context.Context, record models.LoginRecord) error {
 	var err error
 	switch record.Operation {
 	case models.Create:

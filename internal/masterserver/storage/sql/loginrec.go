@@ -7,7 +7,7 @@ import (
 )
 
 // CreateText.
-func (ms *StorageSQL) CreateLogin(ctx context.Context, record models.LoginRec) error {
+func (ms *StorageSQL) CreateLogin(ctx context.Context, record models.LoginRecord) error {
 	// создаем текст запроса
 	q := `INSERT INTO login_records 
 			VALUES (
@@ -23,7 +23,7 @@ func (ms *StorageSQL) CreateLogin(ctx context.Context, record models.LoginRec) e
 }
 
 // UpdateText.
-func (ms *StorageSQL) UpdateLogin(ctx context.Context, record models.LoginRec) error {
+func (ms *StorageSQL) UpdateLogin(ctx context.Context, record models.LoginRecord) error {
 	// создаем текст запроса
 	q := `UPDATE login_records 
 	SET  metadata = $3, login = $4, psw = $5 
@@ -34,7 +34,7 @@ func (ms *StorageSQL) UpdateLogin(ctx context.Context, record models.LoginRec) e
 }
 
 // DeleteText.
-func (ms *StorageSQL) DeleteLogin(ctx context.Context, record models.LoginRec) error {
+func (ms *StorageSQL) DeleteLogin(ctx context.Context, record models.LoginRecord) error {
 	// создаем текст запроса
 	q := `UPDATE login_records 
 	SET  deleted = true 

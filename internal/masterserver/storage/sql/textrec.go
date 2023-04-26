@@ -7,7 +7,7 @@ import (
 )
 
 // CreateText.
-func (ms *StorageSQL) CreateText(ctx context.Context, record models.TextRec) error {
+func (ms *StorageSQL) CreateText(ctx context.Context, record models.TextRecord) error {
 	// создаем текст запроса
 	q := `INSERT INTO text_records 
 			VALUES (
@@ -22,7 +22,7 @@ func (ms *StorageSQL) CreateText(ctx context.Context, record models.TextRec) err
 }
 
 // UpdateText.
-func (ms *StorageSQL) UpdateText(ctx context.Context, record models.TextRec) error {
+func (ms *StorageSQL) UpdateText(ctx context.Context, record models.TextRecord) error {
 	// создаем текст запроса
 	q := `UPDATE text_records 
 	SET  metadata = $3, textdata = $4
@@ -33,7 +33,7 @@ func (ms *StorageSQL) UpdateText(ctx context.Context, record models.TextRec) err
 }
 
 // DeleteText.
-func (ms *StorageSQL) DeleteText(ctx context.Context, record models.TextRec) error {
+func (ms *StorageSQL) DeleteText(ctx context.Context, record models.TextRecord) error {
 	// создаем текст запроса
 	q := `UPDATE text_records 
 	SET  deleted = true 
