@@ -32,7 +32,7 @@ func New(cfg models.Redis) *StorageNoSQL {
 		DB:       cfg.DB,       // use default DB
 		Username: cfg.Username,
 		//TLSConfig: &tls.Config{
-		//	MinVersion: tls.VersionTLS12,
+		//MinVersion: tls.VersionTLS12,
 		//Certificates: []tls.Certificate{cert}
 		//},
 	})
