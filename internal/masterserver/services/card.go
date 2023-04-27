@@ -20,14 +20,14 @@ type CardServices struct {
 }
 
 // New.
-func NewCardRec(s StorageProvider) *CardServices {
+func NewCard(s StorageProvider) *CardServices {
 	return &CardServices{
 		s,
 	}
 }
 
 // CardRec.
-func (sr *CardServices) CardRec(ctx context.Context, record models.CardRecord) error {
+func (sr *CardServices) ProcessingCard(ctx context.Context, record models.CardRecord) error {
 	var err error
 	switch record.Operation {
 	case models.Create:

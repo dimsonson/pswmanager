@@ -20,14 +20,14 @@ type TextServices struct {
 }
 
 // New.
-func NewTextRec(s StorageProvider) *TextServices {
+func NewText(s StorageProvider) *TextServices {
 	return &TextServices{
 		s,
 	}
 }
 
 // TextRec.
-func (sr *TextServices) TextRec(ctx context.Context, record models.TextRecord) error {
+func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRecord) error {
 	var err error
 	switch record.Operation {
 	case models.Create:

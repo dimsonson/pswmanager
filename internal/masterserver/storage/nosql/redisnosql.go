@@ -2,6 +2,7 @@ package nosql
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
@@ -28,7 +29,7 @@ func New(cfg models.Redis) *StorageNoSQL {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     cfg.Addr,
 		Password: cfg.Password, // no password set
-		DB:       cfg.DB,  // use default DB
+		DB:       cfg.DB,       // use default DB
 		Username: cfg.Username,
 		//TLSConfig: &tls.Config{
 		//	MinVersion: tls.VersionTLS12,
@@ -47,11 +48,17 @@ func (rdb *StorageNoSQL) Close() {
 	rdb.RedisNoSQL.Close()
 }
 
-func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg []byte) error {
+func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg models.UserConfig) error {
+	// сериализация для хранения в Redis
+	bytesUserCfg, err := json.Marshal(usercfg)
+	if err != nil {
+		log.Print("usercfg encoding error: ", err)
+		return err
+	}
 
 	pipe := rdb.RedisNoSQL.Pipeline()
 
-	err := pipe.HSet(ctx, "login", login, uid).Err()
+	err = pipe.HSet(ctx, "login", login, uid).Err()
 	if err != nil {
 		log.Print("login set to redis error: ", err)
 		return err
@@ -63,7 +70,7 @@ func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw strin
 		return err
 	}
 
-	err = pipe.HSet(ctx, "usercfg", uid, usercfg).Err()
+	err = pipe.HSet(ctx, "usercfg", uid, bytesUserCfg).Err()
 	if err != nil {
 		log.Print("usercfg set to redis error: ", err)
 		return err
@@ -78,14 +85,20 @@ func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw strin
 	return err
 }
 
-func (rdb *StorageNoSQL) ReadUserCfg(ctx context.Context, uid string) ([]byte, error) {
+func (rdb *StorageNoSQL) ReadUserCfg(ctx context.Context, uid string) (models.UserConfig, error) {
 	cmd := rdb.RedisNoSQL.HGet(ctx, "usercfg", uid)
 	bytesUserCfg, err := cmd.Bytes()
 	if err != nil {
 		log.Print("usercfg get from redis error: ", err)
-		return nil, err
+		return models.UserConfig{}, err
 	}
-	return bytesUserCfg, err
+	var usercfg models.UserConfig
+	err = json.Unmarshal(bytesUserCfg, &usercfg)
+	if err != nil {
+		log.Print("usercfg decoding error: ", err)
+		return models.UserConfig{}, err
+	}
+	return usercfg, err
 }
 
 func (rdb *StorageNoSQL) CheckPsw(ctx context.Context, uid string, psw string) (bool, error) {
@@ -97,8 +110,15 @@ func (rdb *StorageNoSQL) CheckPsw(ctx context.Context, uid string, psw string) (
 	return psw == pswStorage, err
 }
 
-func (rdb *StorageNoSQL) UpdateUser(ctx context.Context, uid string, bytesUserCfg []byte) error {
-	err := rdb.RedisNoSQL.HSet(ctx, "usercfg", uid, bytesUserCfg).Err()
+func (rdb *StorageNoSQL) UpdateUser(ctx context.Context, uid string, usercfg models.UserConfig) error {
+	// сохраняем обновленную конфигурацию в хранилище
+	// сериализация для хранения в Redis
+	bytesUserCfg, err := json.Marshal(usercfg)
+	if err != nil {
+		log.Print("usercfg encoding error: ", err)
+		return err
+	}
+	err = rdb.RedisNoSQL.HSet(ctx, "usercfg", uid, bytesUserCfg).Err()
 	if err != nil {
 		log.Print("usercfg set to redis error: ", err)
 		return err

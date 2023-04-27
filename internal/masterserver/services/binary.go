@@ -20,14 +20,14 @@ type BinaryServices struct {
 }
 
 // New.
-func NewBinaryServices(s StorageProvider) *BinaryServices {
+func NewBinary(s StorageProvider) *BinaryServices {
 	return &BinaryServices{
 		s,
 	}
 }
 
 // BinaryRec.
-func (sr *BinaryServices) BinaryRecord(ctx context.Context, record models.BinaryRecord) error {
+func (sr *BinaryServices) ProcessingBinary(ctx context.Context, record models.BinaryRecord) error {
 	var err error
 	switch record.Operation {
 	case models.Create:

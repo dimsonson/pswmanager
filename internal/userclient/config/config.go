@@ -94,14 +94,14 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	SQLstorage := sql.New(cfg.Postgree.Dsn)
 	cfg.Postgree.Conn = SQLstorage.PostgreConn
 
-	servLoginRec := services.NewLoginRec(SQLstorage)
-	servTextRec := services.NewTextRec(SQLstorage)
-	servCardRec := services.NewCardRec(SQLstorage)
-	servBinaryRec := services.NewBinaryServices(SQLstorage)
+	servLogin := services.NewLogin(SQLstorage)
+	servText := services.NewText(SQLstorage)
+	servCard := services.NewCard(SQLstorage)
+	servBinary := services.NewBinary(SQLstorage)
 
 	cfgReadUsers := services.NewReadUser(SQLstorage)
 
-	handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
+	handlers := rmq.New(servText, servLogin, servBinary, servCard)
 
 	grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, wg)
 	grpcSrv.InitGRPCservice(cfgReadUsers, cfgUser)

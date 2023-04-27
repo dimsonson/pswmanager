@@ -20,14 +20,14 @@ type LoginServices struct {
 }
 
 // New.
-func NewLoginRec(s LoginStorageProviver) *LoginServices {
+func NewLogin(s LoginStorageProviver) *LoginServices {
 	return &LoginServices{
 		s,
 	}
 }
 
 // LoginRec.
-func (sr *LoginServices) LoginRec(ctx context.Context, record models.LoginRecord) error {
+func (sr *LoginServices) ProcessingLogin(ctx context.Context, record models.LoginRecord) error {
 	var err error
 	switch record.Operation {
 	case models.Create:

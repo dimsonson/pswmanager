@@ -122,10 +122,10 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	SQLstorage := sql.New(cfg.Postgree.Dsn)
 	cfg.Postgree.Conn = SQLstorage.PostgreConn
 
-	servLoginRec := services.NewLoginRec(SQLstorage)
-	servTextRec := services.NewTextRec(SQLstorage)
-	servCardRec := services.NewCardRec(SQLstorage)
-	servBinaryRec := services.NewBinaryServices(SQLstorage)
+	servLoginRec := services.NewLogin(SQLstorage)
+	servTextRec := services.NewText(SQLstorage)
+	servCardRec := services.NewCard(SQLstorage)
+	servBinaryRec := services.NewBinary(SQLstorage)
 
 	cfgReadUsers := services.NewReadUser(SQLstorage)
 

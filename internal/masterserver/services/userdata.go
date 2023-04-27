@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -16,9 +15,9 @@ import (
 
 type UserStorageProviver interface {
 	Close()
-	CreateUser(ctx context.Context, login string, psw string, uid string, usercfg []byte) error
-	ReadUserCfg(ctx context.Context, uid string) ([]byte, error)
-	UpdateUser(ctx context.Context, uid string, bytesUserCfg []byte) error
+	CreateUser(ctx context.Context, login string, psw string, uid string, usercfg models.UserConfig) error
+	ReadUserCfg(ctx context.Context, uid string) (models.UserConfig, error)
+	UpdateUser(ctx context.Context, uid string, usercfg models.UserConfig) error
 	CheckPsw(ctx context.Context, uid string, psw string) (bool, error)
 	IsUserLoginExist(ctx context.Context, login string) (bool, error)
 }
@@ -68,7 +67,6 @@ func (s *UserServices) CreateUser(ctx context.Context, login string, psw string)
 	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	userapp.ExchangeBindings = []string{} // одно приложение - нет rk
-
 	usercfg.Apps = append(usercfg.Apps, *userapp)
 	// bindings отсутвует, т.к. одно приложение
 	_, err = s.clientRMQ.QueueDeclare(
@@ -78,14 +76,8 @@ func (s *UserServices) CreateUser(ctx context.Context, login string, psw string)
 		log.Print("rabbitmq queue creation error: ", err)
 		return models.UserConfig{}, err
 	}
-	// сериализация для хранения в Redis
-	bytesUserCfg, err := json.Marshal(usercfg)
-	if err != nil {
-		log.Print("usercfg encoding error: ", err)
-		return models.UserConfig{}, err
-	}
 	// сохраняем в хранилище
-	err = s.storage.CreateUser(ctx, login, psw, usercfg.UserID, bytesUserCfg)
+	err = s.storage.CreateUser(ctx, login, psw, usercfg.UserID, usercfg)
 	if err != nil {
 		log.Print("usercfg creating in storage error: ", err)
 		return models.UserConfig{}, err
@@ -107,15 +99,9 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 		return "", models.UserConfig{}, err
 	}
 	// получаем конфигурацию из хранилища
-	usercfg := models.UserConfig{}
-	bytesUserCfg, err := s.storage.ReadUserCfg(ctx, uid)
+	usercfg, err := s.storage.ReadUserCfg(ctx, uid)
 	if err != nil {
 		log.Print("read usercfg from storage error: ", err)
-		return "", models.UserConfig{}, err
-	}
-	err = json.Unmarshal(bytesUserCfg, &usercfg)
-	if err != nil {
-		log.Print("usercfg decoding error: ", err)
 		return "", models.UserConfig{}, err
 	}
 	// генерируем AppID
@@ -151,16 +137,8 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 	}
 	// добавлем новое приложение в структуру конфигурации
 	usercfg.Apps = append(usercfg.Apps, userapp)
-	// сохраняем обновленную конфигурацию в хранилище
-	// сериализация для хранения в Redis
-	bytesUserCfg, err = json.Marshal(usercfg)
-	if err != nil {
-		log.Print("usercfg encoding error: ", err)
-		return "", models.UserConfig{}, err
-	}
 	// сохраняем в хранилище
-	s.storage.UpdateUser(ctx, uid, bytesUserCfg)
+	s.storage.UpdateUser(ctx, uid, usercfg)
 	// возвращаем AppID и конфигурацию приложению клиента
 	return userapp.AppID, usercfg, err
 }
-

@@ -12,19 +12,19 @@ import (
 
 // ServiceProvider интерфейс методов бизнес логики.
 type ServiceProviderText interface {
-	TextRec(ctx context.Context, record models.TextRecord) error
+	ProcessingText(ctx context.Context, record models.TextRecord) error
 }
 
 type ServiceProviderLogin interface {
-	LoginRec(ctx context.Context, record models.LoginRecord) error
+	ProcessingLogin(ctx context.Context, record models.LoginRecord) error
 }
 
 type ServiceProviderBinary interface {
-	BinaryRecord(ctx context.Context, record models.BinaryRecord) error
+	ProcessingBinary(ctx context.Context, record models.BinaryRecord) error
 }
 
 type ServiceProviderCard interface {
-	CardRec(ctx context.Context, record models.CardRecord) error
+	ProcessingCard(ctx context.Context, record models.CardRecord) error
 }
 
 // Handlers структура для конструктура обработчика.
@@ -54,7 +54,7 @@ func (hnd *Handlers) TextRec(ctx context.Context, cfg models.RabbitmqSrv) func(c
 		if err != nil {
 			log.Print(err)
 		}
-		err = hnd.servText.TextRec(ctx, create)
+		err = hnd.servText.ProcessingText(ctx, create)
 		if err != nil {
 			return
 		}
@@ -74,7 +74,7 @@ func (hnd *Handlers) LoginRec(ctx context.Context, cfg models.RabbitmqSrv) func(
 		if err != nil {
 			log.Print(err)
 		}
-		err = hnd.servLogin.LoginRec(ctx, loginRec)
+		err = hnd.servLogin.ProcessingLogin(ctx, loginRec)
 		if err != nil {
 			return
 		}
@@ -88,13 +88,12 @@ func (hnd *Handlers) LoginRec(ctx context.Context, cfg models.RabbitmqSrv) func(
 // BinaryRec.
 func (hnd *Handlers) BinaryRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
-		// process delivery
 		binaryRec := models.BinaryRecord{}
 		err := ctx.BindJSON(&binaryRec)
 		if err != nil {
 			log.Print(err)
 		}
-		err = hnd.servBinary.BinaryRecord(ctx, binaryRec)
+		err = hnd.servBinary.ProcessingBinary(ctx, binaryRec)
 		if err != nil {
 			return
 		}
@@ -114,7 +113,7 @@ func (hnd *Handlers) CardRec(ctx context.Context, cfg models.RabbitmqSrv) func(c
 		if err != nil {
 			log.Print(err)
 		}
-		err = hnd.servCard.CardRec(ctx, cardRec)
+		err = hnd.servCard.ProcessingCard(ctx, cardRec)
 		if err != nil {
 			return
 		}
