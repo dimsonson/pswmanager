@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
-	"github.com/streadway/amqp"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
@@ -25,7 +24,7 @@ type UserStorageProviver interface {
 type ClientRMQProvider interface {
 	Close()
 	ExchangeDeclare(exchName string) error
-	QueueDeclare(queueName string) (amqp.Queue, error)
+	QueueDeclare(queueName string) (models.Queue, error)
 	QueueBind(queueName string, routingKey string) error
 }
 

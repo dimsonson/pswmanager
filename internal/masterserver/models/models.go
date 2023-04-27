@@ -8,7 +8,7 @@ import (
 	"github.com/MashinIvan/rabbitmq"
 	"github.com/streadway/amqp"
 )
-
+// GRPC.
 type GRPC struct {
 	Network string
 	Port    string
@@ -29,7 +29,7 @@ type RabbitmqSrv struct {
 	RoutingWorkers int
 }
 
-// ExchangeParams общие настройки amqp exchange
+// ExchangeParams общие настройки amqp exchange.
 type ExchangeParams struct {
 	Name       string
 	Kind       string
@@ -40,7 +40,7 @@ type ExchangeParams struct {
 	Args       amqp.Table
 }
 
-// QueueParams общие настройки amqp queue
+// QueueParams общие настройки amqp queue.
 type QueueParams struct {
 	Name       string
 	Durable    bool
@@ -50,20 +50,20 @@ type QueueParams struct {
 	Args       amqp.Table
 }
 
-// QualityOfService общие настройки amqp qos
+// QualityOfService общие настройки amqp qos.
 type QualityOfService struct {
 	PrefetchCount int
 	PrefetchSize  int
 }
 
-// ConsumerParams общие настройки amqp consumer
+// ConsumerParams общие настройки amqp consumer.
 type ConsumerParams struct {
 	ConsumerName string
 	AutoAck      bool
 	ConsumerArgs amqp.Table
 }
 
-// ControllerParams общие настройки rmq server controllers
+// ControllerParams общие настройки rmq server controllers.
 type ControllerParams struct {
 	RoutingKey string
 	Controller rabbitmq.ControllerFunc `json:"-"`
@@ -167,7 +167,8 @@ type CardRecord struct {
 	Operation MsgType
 }
 
-// UserConfig
+
+// UserConfig.
 type UserConfig struct {
 	UserID       string `redis:"userid"`
 	RmqHost      string `redis:"rmqhost"`
@@ -186,4 +187,11 @@ type App struct {
 	ConsumeQueue     string   `redis:"consumequeue"`
 	ConsumerName     string   `redis:"consumername"`
 	ExchangeBindings []string `redis:"bindings"`
+}
+
+// Queue.
+type Queue struct {
+	Name      string // server confirmed or generated name
+	Messages  int    // количество сообщений не требующих ask
+	Consumers int    // количество потребителей, получающих сообщения
 }

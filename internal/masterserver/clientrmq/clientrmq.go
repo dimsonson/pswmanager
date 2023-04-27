@@ -60,8 +60,8 @@ func (r *ClientRMQ) ExchangeDeclare(exchName string) error {
 	return err
 }
 
-func (r *ClientRMQ) QueueDeclare(queueName string) (amqp.Queue, error) {
-	q, err := r.Ch.QueueDeclare(
+func (r *ClientRMQ) QueueDeclare(queueName string) (models.Queue, error) {
+	amqpq, err := r.Ch.QueueDeclare(
 		queueName, // name
 		true,      // durable
 		false,     // delete when unused
@@ -69,6 +69,11 @@ func (r *ClientRMQ) QueueDeclare(queueName string) (amqp.Queue, error) {
 		false,     // no-wait
 		nil,       // arguments
 	)
+	q := models.Queue{
+		Name:      amqpq.Name,
+		Messages:  amqpq.Messages,
+		Consumers: amqpq.Consumers,
+	}
 	return q, err
 }
 
