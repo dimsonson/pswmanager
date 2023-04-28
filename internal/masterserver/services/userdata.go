@@ -3,14 +3,11 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
-	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
 )
 
 type UserStorageProviver interface {
@@ -27,6 +24,8 @@ type ClientRMQProvider interface {
 	ExchangeDeclare(exchName string) error
 	QueueDeclare(queueName string) (models.Queue, error)
 	QueueBind(queueName string, routingKey string) error
+	UserInit() (config.UserConfig, *config.App)
+	AppInit(usercfg config.UserConfig) config.App
 }
 
 // Services структура конструктора бизнес логики.
@@ -58,16 +57,9 @@ func (s *UserServices) CreateUser(ctx context.Context, login string, psw string)
 		return config.UserConfig{}, err
 	}
 	// создание uidcfg
-	usercfg := config.UserConfig{}
-	usercfg.UserID = uuid.New().String()
 	// создание конфигурации rmq
-	userapp := new(config.App)
-	userapp.AppID = uuid.New().String()
-	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.ExchangeBindings = []string{} // одно приложение - нет rk
-	usercfg.Apps = append(usercfg.Apps, *userapp)
+	// одно приложение - нет rk
+	usercfg, userapp := s.clientRMQ.UserInit()
 	// bindings отсутвует, т.к. одно приложение
 	_, err = s.clientRMQ.QueueDeclare(
 		userapp.ConsumeQueue, // name
@@ -105,12 +97,8 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 		return "", config.UserConfig{}, err
 	}
 	// генерируем AppID
-	userapp := config.App{}
-	userapp.AppID = uuid.New().String()
 	// генерируем очередь и routingkey
-	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
-	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp := s.clientRMQ.AppInit(usercfg)
 	// добавляем очередь для нового приложения пользователя
 	q, err := s.clientRMQ.QueueDeclare(userapp.ConsumeQueue)
 	if err != nil {

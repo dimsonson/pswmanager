@@ -6,6 +6,8 @@ import (
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
+	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
+	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 )
 
@@ -87,4 +89,26 @@ func (r *ClientRMQ) QueueBind(queueName string, routingKey string) error {
 		nil,                 // arguments
 	)
 	return err
+}
+
+func (r *ClientRMQ) UserInit() (config.UserConfig, *config.App) {
+	usercfg := config.UserConfig{}
+	usercfg.UserID = uuid.New().String()
+	userapp := new(config.App)
+	userapp.AppID = uuid.New().String()
+	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.ExchangeBindings = []string{}
+	usercfg.Apps = append(usercfg.Apps, *userapp)
+	return usercfg, userapp
+}
+
+func (r *ClientRMQ) AppInit(usercfg config.UserConfig) config.App {
+	userapp := config.App{}
+	userapp.AppID = uuid.New().String()
+	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.ConsumerName = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
+	return userapp
 }

@@ -346,6 +346,25 @@ func msgBinaryTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAp
 	} else {
 		fmt.Println(">>>>>>>> integration BinaryUpdate_Test: ", settings.ColorGreen, "OK", settings.ColorReset)
 	}
+
+	// fmt.Println(newReadUpdate.SetBinaryRec[0].UID)
+	// fmt.Println(msgBinary.UID)
+
+	// fmt.Println(newReadUpdate.SetBinaryRec[0].AppID)
+	// fmt.Println(msgBinary.AppID)
+
+	// fmt.Println(newReadUpdate.SetBinaryRec[0].Metadata)
+	// fmt.Println(msgBinary.Metadata)
+
+	// fmt.Println(newReadUpdate.SetBinaryRec[0].RecordID)
+	// fmt.Println(msgBinary.RecordID)
+
+	// fmt.Println(newReadUpdate.SetBinaryRec[0].Binary)
+	// fmt.Println(msgBinary.Binary)
+
+	// fmt.Println(newReadUpdate.SetBinaryRec[0].ChngTime.AsTime().Round(time.Minute))
+	// fmt.Println(msgBinary.ChngTime.UTC().Round(time.Minute))
+
 	// msgText
 	// Delete
 	msgBinary.Operation = models.Delete
@@ -589,13 +608,13 @@ func msgCardTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppC
 	}
 	// проверка соответствия направленных записей от приложений клиента выгрузке всех записей клиента из мастер базы
 	if newReadUpdate.SetCardRec[0].UID != msgCard.UID ||
-	newReadUpdate.SetCardRec[0].AppID != msgCard.AppID ||
-	newReadUpdate.SetCardRec[0].Metadata != msgCard.Metadata ||
-	newReadUpdate.SetCardRec[0].RecordID != msgCard.RecordID ||
-	newReadUpdate.SetCardRec[0].ValidDate != msgCard.ValidDate ||
-	newReadUpdate.SetCardRec[0].Number != msgCard.Number ||
-	newReadUpdate.SetCardRec[0].Code != int64(msgCard.Code) ||
-	newReadUpdate.SetCardRec[0].Holder != msgCard.Holder ||
+		newReadUpdate.SetCardRec[0].AppID != msgCard.AppID ||
+		newReadUpdate.SetCardRec[0].Metadata != msgCard.Metadata ||
+		newReadUpdate.SetCardRec[0].RecordID != msgCard.RecordID ||
+		newReadUpdate.SetCardRec[0].ValidDate != msgCard.ValidDate ||
+		newReadUpdate.SetCardRec[0].Number != msgCard.Number ||
+		newReadUpdate.SetCardRec[0].Code != int64(msgCard.Code) ||
+		newReadUpdate.SetCardRec[0].Holder != msgCard.Holder ||
 		!newReadUpdate.SetCardRec[0].ChngTime.AsTime().Round(time.Minute).
 			Equal(msgCard.ChngTime.UTC().Round(time.Minute)) {
 		fmt.Println(">>>>>>>> integration CardUpdate_Test: ", settings.ColorRed, "ERROR", settings.ColorReset)

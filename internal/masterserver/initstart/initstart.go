@@ -16,16 +16,9 @@ import (
 	"github.com/dimsonson/pswmanager/internal/masterserver/storage/sql"
 )
 
-// type ConfigProvider interface {
-// 	Parse()
-// 	ServerStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup)
-// }
-
 type Init struct {
-	//cfg ConfigProvider
 	cfg *config.ServiceConfig
 }
-
 
 func New(cfg *config.ServiceConfig) *Init {
 	return &Init{
