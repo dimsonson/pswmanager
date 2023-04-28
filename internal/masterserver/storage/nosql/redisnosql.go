@@ -7,7 +7,7 @@ import (
 	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/models"
+	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
@@ -18,7 +18,7 @@ type StorageNoSQL struct {
 }
 
 // NewNoSQLStorage конструктор нового хранилища PostgreSQL.
-func New(cfg models.Redis) *StorageNoSQL {
+func New(cfg config.Redis) *StorageNoSQL {
 	//redis.SetLogger(internal.Logger)
 
 	// создаем контекст и оснащаем его таймаутом
@@ -48,7 +48,7 @@ func (rdb *StorageNoSQL) Close() {
 	rdb.RedisNoSQL.Close()
 }
 
-func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg models.UserConfig) error {
+func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw string, uid string, usercfg config.UserConfig) error {
 	// сериализация для хранения в Redis
 	bytesUserCfg, err := json.Marshal(usercfg)
 	if err != nil {
@@ -85,18 +85,18 @@ func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw strin
 	return err
 }
 
-func (rdb *StorageNoSQL) ReadUserCfg(ctx context.Context, uid string) (models.UserConfig, error) {
+func (rdb *StorageNoSQL) ReadUserCfg(ctx context.Context, uid string) (config.UserConfig, error) {
 	cmd := rdb.RedisNoSQL.HGet(ctx, "usercfg", uid)
 	bytesUserCfg, err := cmd.Bytes()
 	if err != nil {
 		log.Print("usercfg get from redis error: ", err)
-		return models.UserConfig{}, err
+		return config.UserConfig{}, err
 	}
-	var usercfg models.UserConfig
+	var usercfg config.UserConfig
 	err = json.Unmarshal(bytesUserCfg, &usercfg)
 	if err != nil {
 		log.Print("usercfg decoding error: ", err)
-		return models.UserConfig{}, err
+		return config.UserConfig{}, err
 	}
 	return usercfg, err
 }
@@ -110,7 +110,7 @@ func (rdb *StorageNoSQL) CheckPsw(ctx context.Context, uid string, psw string) (
 	return psw == pswStorage, err
 }
 
-func (rdb *StorageNoSQL) UpdateUser(ctx context.Context, uid string, usercfg models.UserConfig) error {
+func (rdb *StorageNoSQL) UpdateUser(ctx context.Context, uid string, usercfg config.UserConfig) error {
 	// сохраняем обновленную конфигурацию в хранилище
 	// сериализация для хранения в Redis
 	bytesUserCfg, err := json.Marshal(usercfg)

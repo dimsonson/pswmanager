@@ -7,6 +7,7 @@ import (
 
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
+	"github.com/dimsonson/pswmanager/internal/userclient/config"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,8 +18,8 @@ type ReadUserServicesProvider interface {
 }
 
 type UserServicesProvider interface {
-	CreateUser(ctx context.Context, login string, psw string) (models.UserConfig, error)
-	CreateApp(ctx context.Context, uid string, psw string) (string, models.UserConfig, error)
+	CreateUser(ctx context.Context, login string, psw string) (config.UserConfig, error)
+	CreateApp(ctx context.Context, uid string, psw string) (string, config.UserConfig, error)
 }
 
 type UserServices struct {

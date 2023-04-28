@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/MashinIvan/rabbitmq"
+	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/handlers/rmq"
-	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 )
 
-func New(ctx context.Context, cfg models.RabbitmqSrv, handlers rmq.Handlers) *rabbitmq.Router {
+func New(ctx context.Context, cfg config.RabbitmqSrv, handlers rmq.Handlers) *rabbitmq.Router {
 	router := rabbitmq.NewRouter()
 	routerGroup := router.Group(
 		rabbitmq.ExchangeParams{

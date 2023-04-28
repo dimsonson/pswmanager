@@ -4,19 +4,20 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/streadway/amqp"
 )
 
 // Services структура конструктора бизнес логики.
 type ClientRMQ struct {
-	Cfg  models.RabbitmqSrv
+	Cfg  config.RabbitmqSrv
 	Conn *amqp.Connection
 	Ch   *amqp.Channel
 }
 
 // New.
-func NewClientRMQ(cfg models.RabbitmqSrv) (*ClientRMQ, error) {
+func NewClientRMQ(cfg config.RabbitmqSrv) (*ClientRMQ, error) {
 	var err error
 	rabbitConnURL := fmt.Sprintf(
 		"amqp://%s:%s@%s:%s/",

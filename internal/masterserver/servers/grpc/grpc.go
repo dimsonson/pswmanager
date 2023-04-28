@@ -6,9 +6,9 @@ import (
 	"net"
 	"sync"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/models"
-	"github.com/dimsonson/pswmanager/internal/masterserver/services"
+	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
+	"github.com/dimsonson/pswmanager/internal/masterserver/services"
 	grpczerolog "github.com/grpc-ecosystem/go-grpc-middleware/providers/zerolog/v2"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
@@ -25,7 +25,7 @@ type Server struct {
 	Wg          *sync.WaitGroup
 	Ctx         context.Context
 	Stop        context.CancelFunc
-	Cfg         models.GRPC
+	Cfg         config.GRPC
 	UserService *UserServices
 }
 
@@ -37,7 +37,7 @@ type UserServices struct {
 }
 
 // NewServer конструктор создания нового сервера в соответствии с существующей конфигурацией.
-func NewServer(ctx context.Context, stop context.CancelFunc, cfg models.GRPC, wg *sync.WaitGroup) *Server {
+func NewServer(ctx context.Context, stop context.CancelFunc, cfg config.GRPC, wg *sync.WaitGroup) *Server {
 	return &Server{
 		Ctx:  ctx,
 		Stop: stop,

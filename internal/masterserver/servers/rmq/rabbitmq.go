@@ -10,7 +10,7 @@ import (
 	"github.com/MashinIvan/rabbitmq"
 	"github.com/MashinIvan/rabbitmq/pkg/backoff"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/models"
+	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
 	"github.com/streadway/amqp"
 )
@@ -22,10 +22,10 @@ type Server struct {
 	Wg         *sync.WaitGroup
 	Ctx        context.Context
 	Stop       context.CancelFunc
-	Cfg        models.RabbitmqSrv
+	Cfg        config.RabbitmqSrv
 }
 
-func NewServer(ctx context.Context, stop context.CancelFunc, cfg models.RabbitmqSrv, wg *sync.WaitGroup) *Server {
+func NewServer(ctx context.Context, stop context.CancelFunc, cfg config.RabbitmqSrv, wg *sync.WaitGroup) *Server {
 	return &Server{
 		Ctx:  ctx,
 		Stop: stop,

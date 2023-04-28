@@ -8,15 +8,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
+	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
 )
 
 type UserStorageProviver interface {
 	Close()
-	CreateUser(ctx context.Context, login string, psw string, uid string, usercfg models.UserConfig) error
-	ReadUserCfg(ctx context.Context, uid string) (models.UserConfig, error)
-	UpdateUser(ctx context.Context, uid string, usercfg models.UserConfig) error
+	CreateUser(ctx context.Context, login string, psw string, uid string, usercfg config.UserConfig) error
+	ReadUserCfg(ctx context.Context, uid string) (config.UserConfig, error)
+	UpdateUser(ctx context.Context, uid string, usercfg config.UserConfig) error
 	CheckPsw(ctx context.Context, uid string, psw string) (bool, error)
 	IsUserLoginExist(ctx context.Context, login string) (bool, error)
 }
@@ -32,11 +33,11 @@ type ClientRMQProvider interface {
 type UserServices struct {
 	storage   UserStorageProviver
 	clientRMQ ClientRMQProvider
-	Cfg       models.RabbitmqSrv
+	Cfg       config.RabbitmqSrv
 }
 
 // New.
-func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg models.RabbitmqSrv) *UserServices {
+func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg config.RabbitmqSrv) *UserServices {
 	return &UserServices{
 		storage:   s,
 		clientRMQ: clientrmq,
@@ -45,22 +46,22 @@ func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg models.
 }
 
 // CreateUser.
-func (s *UserServices) CreateUser(ctx context.Context, login string, psw string) (models.UserConfig, error) {
+func (s *UserServices) CreateUser(ctx context.Context, login string, psw string) (config.UserConfig, error) {
 	// проверка существования пользователя
 	ok, err := s.storage.IsUserLoginExist(ctx, login)
 	if ok {
 		log.Printf("login \"%s\" already exist:", login)
-		return models.UserConfig{}, err
+		return config.UserConfig{}, err
 	}
 	if err != nil {
 		log.Print("check login error: ", err)
-		return models.UserConfig{}, err
+		return config.UserConfig{}, err
 	}
 	// создание uidcfg
-	usercfg := models.UserConfig{}
+	usercfg := config.UserConfig{}
 	usercfg.UserID = uuid.New().String()
 	// создание конфигурации rmq
-	userapp := new(models.App)
+	userapp := new(config.App)
 	userapp.AppID = uuid.New().String()
 	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
 	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
@@ -73,38 +74,38 @@ func (s *UserServices) CreateUser(ctx context.Context, login string, psw string)
 	)
 	if err != nil {
 		log.Print("rabbitmq queue creation error: ", err)
-		return models.UserConfig{}, err
+		return config.UserConfig{}, err
 	}
 	// сохраняем в хранилище
 	err = s.storage.CreateUser(ctx, login, psw, usercfg.UserID, usercfg)
 	if err != nil {
 		log.Print("usercfg creating in storage error: ", err)
-		return models.UserConfig{}, err
+		return config.UserConfig{}, err
 	}
 	// возращаем приложению клиента
 	return usercfg, err
 }
 
 // CreateUser получаем psw хешированный base64 и .
-func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (string, models.UserConfig, error) {
+func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (string, config.UserConfig, error) {
 	// проекрка логина и пароля пользователя
 	ok, err := s.storage.CheckPsw(ctx, uid, psw)
 	if !ok {
 		log.Print("uid or psw incorret")
-		return "", models.UserConfig{}, errors.New("uid or psw incorret")
+		return "", config.UserConfig{}, errors.New("uid or psw incorret")
 	}
 	if err != nil {
 		log.Print("check psw error: ", err)
-		return "", models.UserConfig{}, err
+		return "", config.UserConfig{}, err
 	}
 	// получаем конфигурацию из хранилища
 	usercfg, err := s.storage.ReadUserCfg(ctx, uid)
 	if err != nil {
 		log.Print("read usercfg from storage error: ", err)
-		return "", models.UserConfig{}, err
+		return "", config.UserConfig{}, err
 	}
 	// генерируем AppID
-	userapp := models.App{}
+	userapp := config.App{}
 	userapp.AppID = uuid.New().String()
 	// генерируем очередь и routingkey
 	userapp.ConsumeQueue = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)
@@ -114,12 +115,12 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 	q, err := s.clientRMQ.QueueDeclare(userapp.ConsumeQueue)
 	if err != nil {
 		log.Print("rabbitmq queue creation error: ", err)
-		return "", models.UserConfig{}, err
+		return "", config.UserConfig{}, err
 	}
 	err = s.clientRMQ.QueueBind(q.Name, userapp.RoutingKey)
 	if err != nil {
 		log.Print("rabbitmq queue bindings error: ", err)
-		return "", models.UserConfig{}, err
+		return "", config.UserConfig{}, err
 	}
 	// добавляем routingkey в биндинги всех приложений клиента
 	// добавление routingkey в очереди rabbit (bindings)
@@ -131,7 +132,7 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 		)
 		if err != nil {
 			log.Print("rabbitmq queue bindings error: ", err)
-			return "", models.UserConfig{}, err
+			return "", config.UserConfig{}, err
 		}
 	}
 	// добавлем новое приложение в структуру конфигурации

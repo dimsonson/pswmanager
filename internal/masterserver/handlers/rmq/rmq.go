@@ -6,6 +6,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	rmq "github.com/MashinIvan/rabbitmq"
+	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
 )
@@ -46,7 +47,7 @@ func New(txt ServiceProviderText, lg ServiceProviderLogin, bin ServiceProviderBi
 }
 
 // TextRec.
-func (hnd *Handlers) TextRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
+func (hnd *Handlers) TextRec(ctx context.Context, cfg config.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
 		// process delivery
 		create := models.TextRecord{}
@@ -66,7 +67,7 @@ func (hnd *Handlers) TextRec(ctx context.Context, cfg models.RabbitmqSrv) func(c
 }
 
 // LoginRec.
-func (hnd *Handlers) LoginRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
+func (hnd *Handlers) LoginRec(ctx context.Context, cfg config.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
 		// process delivery
 		loginRec := models.LoginRecord{}
@@ -86,7 +87,7 @@ func (hnd *Handlers) LoginRec(ctx context.Context, cfg models.RabbitmqSrv) func(
 }
 
 // BinaryRec.
-func (hnd *Handlers) BinaryRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
+func (hnd *Handlers) BinaryRec(ctx context.Context, cfg config.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
 		binaryRec := models.BinaryRecord{}
 		err := ctx.BindJSON(&binaryRec)
@@ -105,7 +106,7 @@ func (hnd *Handlers) BinaryRec(ctx context.Context, cfg models.RabbitmqSrv) func
 }
 
 // CardRec.
-func (hnd *Handlers) CardRec(ctx context.Context, cfg models.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
+func (hnd *Handlers) CardRec(ctx context.Context, cfg config.RabbitmqSrv) func(ctx *rmq.DeliveryContext) {
 	return func(ctx *rmq.DeliveryContext) {
 		// process delivery
 		cardRec := models.CardRecord{}

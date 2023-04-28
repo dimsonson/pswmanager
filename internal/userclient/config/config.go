@@ -2,23 +2,16 @@ package config
 
 import (
 	"context"
+	"crypto/tls"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"os"
 	"sync"
 
+	"github.com/MashinIvan/rabbitmq"
 	"github.com/rs/zerolog/log"
-
-	"github.com/dimsonson/pswmanager/internal/masterserver/clientrmq"
-
-	"github.com/dimsonson/pswmanager/internal/masterserver/handlers/rmq"
-	"github.com/dimsonson/pswmanager/internal/masterserver/models"
-	"github.com/dimsonson/pswmanager/internal/masterserver/router"
-	"github.com/dimsonson/pswmanager/internal/masterserver/servers/grpc"
-	rabbitmq "github.com/dimsonson/pswmanager/internal/masterserver/servers/rmq"
-	"github.com/dimsonson/pswmanager/internal/masterserver/services"
-	"github.com/dimsonson/pswmanager/internal/masterserver/storage/nosql"
-	"github.com/dimsonson/pswmanager/internal/masterserver/storage/sql"
+	"github.com/streadway/amqp"
 )
 
 // Константы по умолчанию.
@@ -31,15 +24,117 @@ const (
 // ServiceConfig структура конфигурации сервиса, при запуске сервиса с флагом -c/config
 // и отсутствии иных флагов и переменных окружения заполняется из файла указанного в этом флаге или переменной окружения CONFIG.
 type ServiceConfig struct {
-	ServerAddress  string             `json:"server_address"`
-	EnableTLS      bool               `json:"enable_tls"`
-	ConfigJSONpath string             `json:"-"`
-	Rabbitmq       models.RabbitmqSrv `json:"rabbitmq"`
-	Redis          models.Redis       `json:"redis"`
-	Postgree       models.PostgreSQL  `json:"postgre"`
-	GRPC           models.GRPC        `json:"grpc"`
-	Wg             sync.WaitGroup     `json:"-"`
+	ServerAddress  string         `json:"server_address"`
+	EnableTLS      bool           `json:"enable_tls"`
+	ConfigJSONpath string         `json:"-"`
+	Rabbitmq       RabbitmqSrv    `json:"rabbitmq"`
+	Redis          Redis          `json:"redis"`
+	Postgree       PostgreSQL     `json:"postgre"`
+	GRPC           GRPC           `json:"grpc"`
+	Wg             sync.WaitGroup `json:"-"`
 }
+
+// GRPC.
+type GRPC struct {
+	Network string
+	Port    string
+}
+
+// RabbitmqSrv обобщающая структура конфигурации RabbitMq server.
+type RabbitmqSrv struct {
+	User           string
+	Psw            string
+	Host           string
+	Port           string
+	ClientRMQ      ClientRMQ
+	Exchange       ExchangeParams
+	Queue          QueueParams
+	QoS            QualityOfService
+	Consumer       ConsumerParams
+	Controllers    []ControllerParams
+	RoutingWorkers int
+}
+
+// ExchangeParams общие настройки amqp exchange.
+type ExchangeParams struct {
+	Name       string
+	Kind       string
+	Durable    bool
+	AutoDelete bool
+	Internal   bool
+	NoWait     bool
+	Args       amqp.Table
+}
+
+// QueueParams общие настройки amqp queue.
+type QueueParams struct {
+	Name       string
+	Durable    bool
+	AutoDelete bool
+	Exclusive  bool
+	NoWait     bool
+	Args       amqp.Table
+}
+
+// QualityOfService общие настройки amqp qos.
+type QualityOfService struct {
+	PrefetchCount int
+	PrefetchSize  int
+}
+
+// ConsumerParams общие настройки amqp consumer.
+type ConsumerParams struct {
+	ConsumerName string
+	AutoAck      bool
+	ConsumerArgs amqp.Table
+}
+
+// ControllerParams общие настройки rmq server controllers.
+type ControllerParams struct {
+	RoutingKey string
+	Controller rabbitmq.ControllerFunc `json:"-"`
+}
+
+type Redis struct {
+	Username  string
+	Password  string
+	Network   string
+	Addr      string // host:port address.
+	DB        int
+	TLSConfig *tls.Config `json:"-"`
+}
+
+type PostgreSQL struct {
+	Dsn  string  `json:"postgre_dsn"`
+	Conn *sql.DB `json:"-"`
+}
+
+type ClientRMQ struct {
+	Conn *amqp.Connection `json:"-"`
+	Ch   *amqp.Channel    `json:"-"`
+}
+
+// UserConfig.
+type UserConfig struct {
+	UserID       string `redis:"userid"`
+	RmqHost      string `redis:"rmqhost"`
+	RmqPort      string `redis:"rmqpost"`
+	RmqUID       string `redis:"rmquid"`
+	RmqPsw       string `redis:"rmqpsw"`
+	ExchangeName string `redis:"exchangename"`
+	ExchangeKind string `redis:"exchangekind"`
+	Apps         []App  `redis:"apps"`
+}
+
+// App .
+type App struct {
+	AppID            string   `redis:"appid"`
+	RoutingKey       string   `redis:"routingkey"`
+	ConsumeQueue     string   `redis:"consumequeue"`
+	ConsumerName     string   `redis:"consumername"`
+	ExchangeBindings []string `redis:"bindings"`
+}
+
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
 func New() *ServiceConfig {
@@ -80,44 +175,44 @@ func (cfg *ServiceConfig) Parse() {
 
 func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
 
-	noSQLstorage := nosql.New(cfg.Redis)
+	// noSQLstorage := nosql.New(cfg.Redis)
 
-	clientRMQ, err := clientrmq.NewClientRMQ(cfg.Rabbitmq)
-	if err != nil {
-		log.Printf("new client error: %s", err)
-		return
-	}
-	cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn
-	cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
-	cfgUser := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
+	// clientRMQ, err := clientrmq.NewClientRMQ(cfg.Rabbitmq)
+	// if err != nil {
+	// 	log.Printf("new client error: %s", err)
+	// 	return
+	// }
+	// cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn
+	// cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
+	// cfgUser := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
 
-	SQLstorage := sql.New(cfg.Postgree.Dsn)
-	cfg.Postgree.Conn = SQLstorage.PostgreConn
+	// SQLstorage := sql.New(cfg.Postgree.Dsn)
+	// cfg.Postgree.Conn = SQLstorage.PostgreConn
 
-	servLogin := services.NewLogin(SQLstorage)
-	servText := services.NewText(SQLstorage)
-	servCard := services.NewCard(SQLstorage)
-	servBinary := services.NewBinary(SQLstorage)
+	// servLogin := services.NewLogin(SQLstorage)
+	// servText := services.NewText(SQLstorage)
+	// servCard := services.NewCard(SQLstorage)
+	// servBinary := services.NewBinary(SQLstorage)
 
-	cfgReadUsers := services.NewReadUser(SQLstorage)
+	// cfgReadUsers := services.NewReadUser(SQLstorage)
 
-	handlers := rmq.New(servText, servLogin, servBinary, servCard)
+	// handlers := rmq.New(servText, servLogin, servBinary, servCard)
 
-	grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, wg)
-	grpcSrv.InitGRPCservice(cfgReadUsers, cfgUser)
-	//wg.Add(1)
-	//grpcSrv.GrpcGracefullShotdown()
-	//wg.Add(1)
-	//go grpcSrv.StartGRPC()
+	// grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, wg)
+	// grpcSrv.InitGRPCservice(cfgReadUsers, cfgUser)
+	// //wg.Add(1)
+	// //grpcSrv.GrpcGracefullShotdown()
+	// //wg.Add(1)
+	// //go grpcSrv.StartGRPC()
 
-	rmqRouter := router.New(ctx, cfg.Rabbitmq, *handlers)
-	rmqSrv := rabbitmq.NewServer(ctx, stop, cfg.Rabbitmq, wg)
-	rmqSrv.Init()
-	wg.Add(1)
-	rmqSrv.Shutdown()
-	wg.Add(1)
-	log.Print("rmq starting...")
-	rmqSrv.Start(ctx, rmqRouter)
+	// rmqRouter := router.New(ctx, cfg.Rabbitmq, *handlers)
+	// rmqSrv := rabbitmq.NewServer(ctx, stop, cfg.Rabbitmq, wg)
+	// rmqSrv.Init()
+	// wg.Add(1)
+	// rmqSrv.Shutdown()
+	// wg.Add(1)
+	// log.Print("rmq starting...")
+	// rmqSrv.Start(ctx, rmqRouter)
 }
 
 func (cfg *ServiceConfig) ConnClose(ctx context.Context) {
