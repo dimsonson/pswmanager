@@ -12,11 +12,16 @@ import (
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/initstart"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
+
+	//"github.com/dimsonson/pswmanager/pkg/logger"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 func init() {
+	//var log = logger.New()
+	//logger.Log.Print("123")
+
 	log.Logger = log.Output(zerolog.ConsoleWriter{
 		Out:          os.Stderr,
 		TimeFormat:   "2006/01/02 15:04:05",
