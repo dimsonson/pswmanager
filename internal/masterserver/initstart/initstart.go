@@ -2,8 +2,9 @@ package initstart
 
 import (
 	"context"
-	"log"
 	"sync"
+
+	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/clientrmq"
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"

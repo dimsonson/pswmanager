@@ -9,10 +9,10 @@ import (
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/masterserver/services"
+	"github.com/dimsonson/pswmanager/pkg/log"
 	grpczerolog "github.com/grpc-ecosystem/go-grpc-middleware/providers/zerolog/v2"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
-	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -62,7 +62,7 @@ func (srv *Server) InitGRPCservice(readUser *services.ReadUserServices, user *se
 	// создаём gRPC-сервер без зарегистрированной службы
 	srv.GRPCserver = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			logging.UnaryServerInterceptor(grpczerolog.InterceptorLogger(log.Logger)),
+			logging.UnaryServerInterceptor(grpczerolog.InterceptorLogger(log.Logg)),
 			grpc_recovery.UnaryServerInterceptor(opts...),
 		),
 	)

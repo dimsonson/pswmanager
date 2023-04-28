@@ -2,7 +2,7 @@ package ui
 
 import (
 	"github.com/derailed/tview"
-	"github.com/rs/zerolog/log"
+	"github.com/dimsonson/pswmanager/pkg/log"
 )
 
 func (ui *UI) FlexUsers() {

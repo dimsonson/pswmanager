@@ -2,7 +2,8 @@ package clientrmq
 
 import (
 	"fmt"
-	"log"
+
+	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"

@@ -3,12 +3,10 @@ package grpchandle
 import (
 	"context"
 
-	"github.com/rs/zerolog/log"
-
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
-
+	"github.com/dimsonson/pswmanager/pkg/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

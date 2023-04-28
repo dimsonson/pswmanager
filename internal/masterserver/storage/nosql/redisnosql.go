@@ -4,12 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/redis/go-redis/v9"
-	"github.com/rs/zerolog/log"
-
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
+	"github.com/dimsonson/pswmanager/pkg/log"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/redis/go-redis/v9"
 )
 
 // StorageNoSQL структура хранилища Redis.

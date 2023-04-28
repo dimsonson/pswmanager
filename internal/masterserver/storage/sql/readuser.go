@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
-	"github.com/rs/zerolog/log"
+	"github.com/dimsonson/pswmanager/pkg/log"
 )
 
 // ReadUserRecords.

@@ -6,8 +6,8 @@ import (
 
 	"github.com/derailed/tcell/v2"
 	"github.com/derailed/tview"
+	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 func (ui *UI) FlexCreateRead() {
@@ -67,7 +67,8 @@ func (ui *UI) ListSelectCreate() {
 			ui.pages.SwitchToPage(Read)
 		}).
 		AddItem("Quit", "", 'q', func() {
-			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+			
+		log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 			ui.MainApp.Stop()
 			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 			if err != nil {
@@ -107,7 +108,7 @@ func (ui *UI) ListSelectRead() {
 			ui.pages.SwitchToPage(Read)
 		}).
 		AddItem("Quit", "", 'q', func() {
-			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 			ui.MainApp.Stop()
 			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 			if err != nil {

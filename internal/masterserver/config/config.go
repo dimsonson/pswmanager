@@ -10,7 +10,7 @@ import (
 	"sync"
 
 	"github.com/MashinIvan/rabbitmq"
-	"github.com/rs/zerolog/log"
+	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/streadway/amqp"
 )
 

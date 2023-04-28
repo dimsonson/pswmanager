@@ -3,7 +3,7 @@ package services
 import (
 	"context"
 
-	"github.com/rs/zerolog/log"
+	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 )

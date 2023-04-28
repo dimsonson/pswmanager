@@ -3,12 +3,11 @@ package rmq
 import (
 	"context"
 
-	"github.com/rs/zerolog/log"
-
 	rmq "github.com/MashinIvan/rabbitmq"
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
+	"github.com/rs/zerolog/log"
 )
 
 // ServiceProvider интерфейс методов бизнес логики.

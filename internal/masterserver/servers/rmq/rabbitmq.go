@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/rs/zerolog/log"
+	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/MashinIvan/rabbitmq"
 	"github.com/MashinIvan/rabbitmq/pkg/backoff"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/rs/zerolog/log"
+	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"

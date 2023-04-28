@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/rs/zerolog/log"
+	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
 	_ "github.com/jackc/pgx/v5/stdlib"
