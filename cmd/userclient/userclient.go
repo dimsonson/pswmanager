@@ -10,14 +10,16 @@ import (
 
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/internal/userclient/ui"
+	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+
 )
 
 func init() {
 	ui := ui.New()
 	ui.Init()
-	log.Logger = log.Output(zerolog.ConsoleWriter{
+	log.LogInit()
+	log.Logg = log.Output(zerolog.ConsoleWriter{
 		Out:          ui.LogWindow,
 		TimeFormat:   "2006/01/02 15:04:05",
 		NoColor:      true,
@@ -25,7 +27,7 @@ func init() {
 		PartsOrder:   []string{zerolog.TimestampFieldName, zerolog.LevelFieldName, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
 		With().Caller().Logger()
 	stdlog.SetFlags(stdlog.Lshortfile)
-	stdlog.SetOutput(log.Logger)
+	stdlog.SetOutput(log.Logg)
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	go ui.UIRun()
 }

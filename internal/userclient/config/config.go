@@ -213,6 +213,7 @@ func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFu
 	// wg.Add(1)
 	// log.Print("rmq starting...")
 	// rmqSrv.Start(ctx, rmqRouter)
+	<- ctx.Done()
 }
 
 func (cfg *ServiceConfig) ConnClose(ctx context.Context) {

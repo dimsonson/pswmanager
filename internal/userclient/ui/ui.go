@@ -4,8 +4,8 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 
 	"github.com/derailed/tcell/v2"
 	//"github.com/rivo/tview"
@@ -15,14 +15,15 @@ import (
 // var Brand = []string{"MIR", "VISA", "MC", "AMEX"}
 
 const (
-	Menu         string = "Menu"
-	Login        string = "Login"
-	Register     string = "Register"
-	MenuSecond   string = "MenuSecond"
-	Create       string = "Create"
-	Read         string = "Read"
-	SelectCreate string = "SelectCreate"
-	SelectRead   string = "SelectRead"
+	LoginPage        string = "LoginPage"
+	LoginForm        string = "LoginForm"
+	RegisterForm     string = "RegisterForm"
+	MainPage         string = "MainPage"
+	SelectPage       string = "SelectPage"
+	NewTextForm      string = "NewTextForm"
+	NewLoginPairForm string = "NewLoginPairForm"
+	NewCardForm      string = "NewCardForm"
+	NewBinaryForm    string = "NewBinaryForm"
 )
 
 type (
@@ -37,38 +38,47 @@ type ULogin struct {
 }
 
 type UI struct {
-	UserUI
+	LoginUI
 	MainUI
 	DialogUI
-	CreateReadUI
+	CreateUI
+	ReadUI
 }
 
 type MainUI struct {
-	listMain   *tview.List
-	listSecond *tview.List
-	flexMain   *tview.Flex
-	flexSecond *tview.Flex
-	textMain   *tview.TextView
-	LogWindow  *tview.TextView
-	pages      *tview.Pages
-	MainApp    *tview.Application
+	listLogin *tview.List
+	listMain  *tview.List
+	flexLogin *tview.Flex
+	flexMain  *tview.Flex
+	textMain  *tview.TextView
+	LogWindow *tview.TextView
+	pages     *tview.Pages
+	MainApp   *tview.Application
 }
 
-type UserUI struct {
-	flexLogin *tview.Flex
+type LoginUI struct {
+	flexLog   *tview.Flex
 	flexReg   *tview.Flex
 	regform   *tview.Form
 	loginform *tview.Form
 }
 
-type CreateReadUI struct {
-	flexCreate       *tview.Flex
-	flexRead         *tview.Flex
-	flexSelectCreate *tview.Flex
-	flexSelectRead   *tview.Flex
-	listSelect       *tview.List
-	createform       *tview.Form
-	readform         *tview.Form
+type CreateUI struct {
+	flexSelectCreate    *tview.Flex
+	listSelectCreate    *tview.List
+	flexTextCreate      *tview.Flex
+	createTextForm      *tview.Form
+	createLoginPairForm *tview.Form
+	createBinaryForm    *tview.Form
+	createCardForm      *tview.Form
+}
+
+type ReadUI struct {
+	flexSelectRead         *tview.Flex
+	flexMetadataSearchForm *tview.Flex
+	listSelect             *tview.List
+	createform             *tview.Form
+	readform               *tview.Form
 }
 
 type DialogUI struct {
@@ -84,20 +94,22 @@ func (ui *UI) Init() {
 	ui.pages = tview.NewPages()
 	ui.loginform = tview.NewForm()
 	ui.regform = tview.NewForm()
-	ui.createform = tview.NewForm()
+	ui.createTextForm = tview.NewForm()
+	ui.createLoginPairForm = tview.NewForm()
+	ui.createBinaryForm = tview.NewForm()
+	ui.createCardForm = tview.NewForm()
 	ui.readform = tview.NewForm()
 	ui.textMain = tview.NewTextView()
+	ui.listLogin = tview.NewList()
 	ui.listMain = tview.NewList()
-	ui.listSecond = tview.NewList()
 	ui.listSelect = tview.NewList()
 	ui.LogWindow = tview.NewTextView()
 	ui.TextConfig()
+	ui.ListLogin()
 	ui.ListMain()
-	ui.ListSecond()
 	ui.ListSelectCreate()
+	ui.FlexLogin()
 	ui.FlexMain()
-	ui.FlexSecond()
-	ui.FlexUsers()
 	ui.FlexCreateRead()
 	ui.PagesConfig()
 }
@@ -109,14 +121,15 @@ func (ui *UI) UIRun() {
 }
 
 func (ui *UI) PagesConfig() {
-	ui.pages.AddPage(Menu, ui.flexMain, true, true)
-	ui.pages.AddPage(Login, ui.flexLogin, true, false)
-	ui.pages.AddPage(Register, ui.flexReg, true, false)
-	ui.pages.AddPage(MenuSecond, ui.flexSecond, true, false)
-	ui.pages.AddPage(Create, ui.flexCreate, true, false)
-	ui.pages.AddPage(Read, ui.flexRead, true, false)
-	ui.pages.AddPage(SelectCreate, ui.flexSelectCreate, true, false)
-	ui.pages.AddPage(SelectRead, ui.flexSelectRead, true, false)
+	ui.pages.AddPage(LoginPage, ui.flexLogin, true, true)
+	ui.pages.AddPage(LoginForm, ui.flexLog, true, false)
+	ui.pages.AddPage(RegisterForm, ui.flexReg, true, false)
+	ui.pages.AddPage(MainPage, ui.flexMain, true, false)
+	ui.pages.AddPage(SelectPage, ui.flexSelectCreate, true, false)
+	ui.pages.AddPage(NewTextForm, ui.flexTextCreate, true, false)
+	ui.pages.AddPage(NewLoginPairForm, ui.flexSelectCreate, true, false)
+	ui.pages.AddPage(NewCardForm, ui.flexSelectRead, true, false)
+	ui.pages.AddPage(NewBinaryForm, ui.flexSelectRead, true, false)
 }
 
 func (ui *UI) FlexMain() {
@@ -133,27 +146,7 @@ func (ui *UI) FlexMain() {
 		} else if event.Rune() == '1' {
 			ui.loginform.Clear(true)
 			ui.loginFrm()
-			ui.pages.SwitchToPage(Menu)
-		}
-		return event
-	})
-}
-
-func (ui *UI) FlexSecond() {
-	ui.flexSecond = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listSecond, 10, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
-	ui.flexSecond.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Rune() == 'q' {
-			ui.MainApp.Stop()
-		} else if event.Rune() == '1' {
-			ui.loginform.Clear(true)
-			ui.loginFrm()
-			ui.pages.SwitchToPage(Menu)
+			ui.pages.SwitchToPage(MainPage)
 		}
 		return event
 	})
@@ -161,18 +154,17 @@ func (ui *UI) FlexSecond() {
 
 func (ui *UI) ListMain() {
 	ui.listMain.
-		AddItem("Login", "", 'a', func() {
+		AddItem("Create new", "", 'a', func() {
 			ui.loginform.Clear(true)
-			ui.loginFrm()
-			ui.pages.SwitchToPage(Login)
+			ui.pages.SwitchToPage(SelectPage)
 		}).
-		AddItem("Registration", "", 'b', func() {
+		AddItem("Select existed record", "", 'b', func() {
 			ui.regform.Clear(true)
-			ui.registerFrm()
-			ui.pages.SwitchToPage(Register)
+			ui.ListSelectRead()
+			ui.pages.SwitchToPage(SelectPage)
 		}).
 		AddItem("Quit", "", 'q', func() {
-			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 			ui.MainApp.Stop()
 			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 			if err != nil {
@@ -186,36 +178,6 @@ func (ui *UI) ListMain() {
 	ui.listMain.SetWrapAround(true)
 	ui.listMain.SetBackgroundColor(tcell.Color108)
 	ui.MainApp.SetFocus(ui.listMain)
-}
-
-func (ui *UI) ListSecond() {
-	ui.listSecond.
-		AddItem("Create", "", 'a', func() {
-			ui.loginform.Clear(true)
-			ui.createFrm()
-			ui.pages.SwitchToPage(Create)
-		}).
-		AddItem("Read", "", 'b', func() {
-			ui.regform.Clear(true)
-			ui.readFrm()
-			ui.ListSelectRead()
-			ui.pages.SwitchToPage(Read)
-		}).
-		AddItem("Quit", "", 'q', func() {
-			log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-			ui.MainApp.Stop()
-			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-			if err != nil {
-				log.Print("stop programm error")
-				return
-			}
-		})
-	ui.listSecond.SetBorder(true)
-	ui.listSecond.SetTitle("Main menu")
-	ui.listSecond.SetTitleAlign(tview.AlignLeft)
-	ui.listSecond.SetWrapAround(true)
-	ui.listSecond.SetBackgroundColor(tcell.Color108)
-	ui.MainApp.SetFocus(ui.listSecond)
 }
 
 func (ui *UI) TextConfig() {

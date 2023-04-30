@@ -14,9 +14,6 @@ import (
 
 var Logg = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
-type Logger struct {
-	*zerolog.ConsoleWriter
-}
 
 func LogInit() {
 	Logg = log.Output(
