@@ -173,7 +173,25 @@ func (ui *UI) PagesConfig() {
 }
 
 func (ui *UI) FlexMain() {
-	ui.flexMain = ui.NewAppFlex(ui.listMain, 10)
+	//ui.flexMain = ui.NewAppFlex(ui.listMain, 10)
+
+	ui.flexMain = tview.NewFlex().
+	AddItem(tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.textMain, 2, 1, false).
+		AddItem(ui.listMain, 10, 1, true).
+		AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+		AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+ui.flexMain.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	if event.Rune() == 'q' {
+		ui.MainApp.Stop()
+	} else if event.Rune() == '1' {
+		ui.loginform.Clear(true)
+		ui.loginFrm()
+		ui.pages.SwitchToPage(MainPage)
+	}
+	return event
+})
 }
 
 func (ui *UI) ListMain() {
