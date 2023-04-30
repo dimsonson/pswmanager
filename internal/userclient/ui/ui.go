@@ -12,7 +12,6 @@ import (
 	"github.com/derailed/tview"
 )
 
-// var Brand = []string{"MIR", "VISA", "MC", "AMEX"}
 
 const (
 	LoginPage        string = "LoginPage"
@@ -67,6 +66,9 @@ type CreateUI struct {
 	flexSelectCreate    *tview.Flex
 	listSelectCreate    *tview.List
 	flexTextCreate      *tview.Flex
+	flexLoginPairCreate *tview.Flex
+	flexBinaryCreate    *tview.Flex
+	flexCardCreate      *tview.Flex
 	createTextForm      *tview.Form
 	createLoginPairForm *tview.Form
 	createBinaryForm    *tview.Form
@@ -127,9 +129,9 @@ func (ui *UI) PagesConfig() {
 	ui.pages.AddPage(MainPage, ui.flexMain, true, false)
 	ui.pages.AddPage(SelectPage, ui.flexSelectCreate, true, false)
 	ui.pages.AddPage(NewTextForm, ui.flexTextCreate, true, false)
-	ui.pages.AddPage(NewLoginPairForm, ui.flexSelectCreate, true, false)
-	ui.pages.AddPage(NewCardForm, ui.flexSelectRead, true, false)
-	ui.pages.AddPage(NewBinaryForm, ui.flexSelectRead, true, false)
+	ui.pages.AddPage(NewLoginPairForm, ui.flexLoginPairCreate, true, false)
+	ui.pages.AddPage(NewCardForm, ui.flexCardCreate, true, false)
+	ui.pages.AddPage(NewBinaryForm, ui.flexBinaryCreate, true, false)
 }
 
 func (ui *UI) FlexMain() {

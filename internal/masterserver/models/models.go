@@ -20,7 +20,7 @@ type CardType int
 
 // Константы типа CardType исплльзуемые для проставления признака типа банковской карты.
 const (
-	Mir CardType = iota + 1
+	Mir CardType = iota 
 	MasterCard
 	Visa
 	AmEx

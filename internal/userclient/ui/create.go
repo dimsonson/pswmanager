@@ -2,6 +2,7 @@ package ui
 
 import (
 	"os"
+	"strconv"
 	"syscall"
 
 	"github.com/derailed/tcell/v2"
@@ -17,6 +18,30 @@ func (ui *UI) FlexCreateRead() {
 			SetDirection(tview.FlexRow).
 			AddItem(ui.textMain, 2, 1, false).
 			AddItem(ui.createTextForm, 12, 1, true).
+			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+
+	ui.flexLoginPairCreate = tview.NewFlex().
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(ui.textMain, 2, 1, false).
+			AddItem(ui.createLoginPairForm, 12, 1, true).
+			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+
+	ui.flexBinaryCreate = tview.NewFlex().
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(ui.textMain, 2, 1, false).
+			AddItem(ui.createBinaryForm, 12, 1, true).
+			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+
+	ui.flexCardCreate = tview.NewFlex().
+		AddItem(tview.NewFlex().
+			SetDirection(tview.FlexRow).
+			AddItem(ui.textMain, 2, 1, false).
+			AddItem(ui.createCardForm, 15, 1, true).
 			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
 			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
 
@@ -45,23 +70,22 @@ func (ui *UI) ListSelectCreate() {
 			ui.pages.SwitchToPage(NewTextForm)
 		}).
 		AddItem("Login pair", "", 'b', func() {
-			ui.regform.Clear(true)
-			ui.readFrm()
+			ui.createLoginPairForm.Clear(true)
+			ui.createLoginPairFrm()
 			ui.pages.SwitchToPage(NewLoginPairForm)
 		}).
 		AddItem("Binary", "", 'b', func() {
-			ui.regform.Clear(true)
-			ui.readFrm()
+			ui.createBinaryForm.Clear(true)
+			ui.createBinaryFrm()
 			ui.pages.SwitchToPage(NewBinaryForm)
 		}).
 		AddItem("Card", "", 'b', func() {
-			ui.regform.Clear(true)
-			ui.readFrm()
+			ui.createCardForm.Clear(true)
+			ui.createCardFrm()
 			ui.pages.SwitchToPage(NewCardForm)
 		}).
 		AddItem("Quit", "", 'q', func() {
-			
-		log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 			ui.MainApp.Stop()
 			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
 			if err != nil {
@@ -87,17 +111,17 @@ func (ui *UI) ListSelectRead() {
 		}).
 		AddItem("Login pair", "", 'b', func() {
 			ui.regform.Clear(true)
-			ui.readFrm()
+			ui.createLoginPairFrm()
 			ui.pages.SwitchToPage(LoginPage)
 		}).
 		AddItem("Binary", "", 'b', func() {
 			ui.regform.Clear(true)
-			ui.readFrm()
+			ui.createBinaryFrm()
 			ui.pages.SwitchToPage(LoginPage)
 		}).
 		AddItem("Card", "", 'b', func() {
 			ui.regform.Clear(true)
-			ui.readFrm()
+			ui.createCardFrm()
 			ui.pages.SwitchToPage(LoginPage)
 		}).
 		AddItem("Quit", "", 'q', func() {
@@ -154,40 +178,130 @@ func (ui *UI) createTextFrm() *tview.Form {
 	return ui.createTextForm
 }
 
-func (ui *UI) readFrm() *tview.Form {
-	// loginpsw := ULogin{}
-	// ui.readform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
-	// 	loginpsw.uLogin = ulogin
-	// })
-	// ui.readform.AddPasswordField("Password", "", 20, '*', func(upsw string) {
-	// 	loginpsw.uPsw = upsw
-	// })
-	// ui.readform.AddButton("Register", func() {
-	// 	if loginpsw.uLogin == "0" {
-	// 		log.Print("user reg 0")
-	// 		ui.ShowOk("Registration successful. \n Please, keep your credentials safe.", func() {
+func (ui *UI) createLoginPairFrm() *tview.Form {
+	loginPairRecord := models.LoginRecord{}
+	ui.createLoginPairForm.AddInputField("Metadata:", "", 20, nil, func(metadata string) {
+		loginPairRecord.Metadata = metadata
+	})
+	ui.createLoginPairForm.AddInputField("Login data:", "", 20, nil, func(logindata string) {
+		loginPairRecord.Login = logindata
+	})
+	ui.createLoginPairForm.AddPasswordField("Password data:", "", 20, '*', func(pswdata string) {
+		loginPairRecord.Psw = pswdata
+	})
+	ui.createLoginPairForm.AddButton("Create Item", func() {
+		if loginPairRecord.Metadata == "0" {
+			ui.ShowConfirm("Error record to database", "Do you like try again?",
+				func() {
+					log.Print("new login pair 1")
+					ui.createLoginPairForm.SetFocus(0)
+					ui.pages.ShowPage(NewLoginPairForm)
+				},
+				func() {
 
-	// 			ui.pages.SwitchToPage(Menu)
-	// 		})
-	// 	}
-	// 	if loginpsw.uLogin == "1" {
-	// 		ui.ShowConfirm("Username already exist", "Do you like try again?",
-	// 			func() {
-	// 				log.Print("user reg 1")
-	// 				ui.readform.SetFocus(0)
-	// 				ui.pages.ShowPage(Register)
-	// 			},
-	// 			func() {
-	// 				ui.pages.SwitchToPage(Menu)
-	// 			})
-	// 	}
+					ui.pages.SwitchToPage(SelectPage)
+				})
+		}
+		if loginPairRecord.Metadata == "1" {
+			log.Print("user login 0")
+			ui.ShowOk("New Text Item recorded to database", func() {
+				ui.pages.SwitchToPage(SelectPage)
+			})
+		}
+		if loginPairRecord.Metadata != "1" && loginPairRecord.Metadata != "0" {
+			ui.pages.SwitchToPage(MainPage)
+		}
+	})
+	ui.createLoginPairForm.AddButton("Cancel", func() {
+		ui.pages.SwitchToPage(MainPage)
+	})
+	return ui.createLoginPairForm
+}
 
-	// 	if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
-	// 		ui.pages.SwitchToPage(Menu)
-	// 	}
-	// })
-	// ui.readform.AddButton("Cancel", func() {
-	// 	ui.pages.SwitchToPage(Menu)
-	// })
-	return ui.readform
+func (ui *UI) createBinaryFrm() *tview.Form {
+	binaryRecord := models.BinaryRecord{}
+	ui.createBinaryForm.AddInputField("Metadata:", "", 20, nil, func(metadata string) {
+		binaryRecord.Metadata = metadata
+	})
+	ui.createBinaryForm.AddInputField("Path to Binary data:", "", 20, nil, func(binarydata string) {
+		binaryRecord.Binary = binarydata
+	})
+	ui.createBinaryForm.AddButton("Create Item", func() {
+		if binaryRecord.Metadata == "0" {
+			ui.ShowConfirm("Error record to database", "Do you like try again?",
+				func() {
+					log.Print("new text 1")
+					ui.createBinaryForm.SetFocus(0)
+					ui.pages.ShowPage(NewTextForm)
+				},
+				func() {
+
+					ui.pages.SwitchToPage(SelectPage)
+				})
+		}
+		if binaryRecord.Metadata == "1" {
+			log.Print("user login 0")
+			ui.ShowOk("New Text Item recorded to database", func() {
+				ui.pages.SwitchToPage(SelectPage)
+			})
+		}
+		if binaryRecord.Metadata != "1" && binaryRecord.Metadata != "0" {
+			ui.pages.SwitchToPage(MainPage)
+		}
+	})
+	ui.createBinaryForm.AddButton("Cancel", func() {
+		ui.pages.SwitchToPage(MainPage)
+	})
+	return ui.createBinaryForm
+}
+
+func (ui *UI) createCardFrm() *tview.Form {
+	cardRecord := models.CardRecord{}
+	var brand = []string{"MIR", "MC", "VISA", "AMEX"}
+	ui.createCardForm.AddInputField("Metadata:", "", 20, nil, func(metadata string) {
+		cardRecord.Metadata = metadata
+	})
+	ui.createCardForm.AddDropDown("Brand:", brand, 0, func(branddata string, index int) {
+		cardRecord.Brand = models.CardType(index)
+	})
+	ui.createCardForm.AddInputField("Number:", "", 20, nil, func(numberdata string) {
+		cardRecord.Number = numberdata
+	})
+	ui.createCardForm.AddInputField("Valid Date:", "", 20, nil, func(validdata string) {
+		cardRecord.ValidDate = validdata
+	})
+	ui.createCardForm.AddInputField("Code:", "", 20, nil, func(codedata string) {
+		//var err error
+		cardRecord.Code, _ = strconv.Atoi(codedata)
+	})
+	ui.createCardForm.AddInputField("Holder:", "", 20, nil, func(holderdata string) {
+		cardRecord.Holder = holderdata
+	})
+	ui.createCardForm.AddButton("Create Item", func() {
+		if cardRecord.Metadata == "0" {
+			ui.ShowConfirm("Error record to database", "Do you like try again?",
+				func() {
+					log.Print("new text 1")
+					ui.createCardForm.SetFocus(0)
+					ui.pages.ShowPage(NewCardForm)
+				},
+				func() {
+
+					ui.pages.SwitchToPage(SelectPage)
+				})
+		}
+		if cardRecord.Metadata == "1" {
+			log.Print("user login 0")
+			ui.ShowOk("New Text Item recorded to database", func() {
+				ui.pages.SwitchToPage(SelectPage)
+			})
+		}
+		if cardRecord.Metadata != "1" && cardRecord.Metadata != "0" {
+			ui.pages.SwitchToPage(MainPage)
+		}
+	})
+	ui.createCardForm.AddButton("Cancel", func() {
+		ui.pages.SwitchToPage(MainPage)
+	})
+	return ui.createCardForm
 }
