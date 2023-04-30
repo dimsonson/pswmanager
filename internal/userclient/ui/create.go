@@ -12,61 +12,12 @@ import (
 	"github.com/rs/zerolog"
 )
 
-
-
 func (ui *UI) FlexCreate() {
-
 	ui.flexTextCreate = ui.NewAppFlex(ui.createTextForm, 12)
-
-	// ui.flexTextCreate = tview.NewFlex().
-	// 	//	AddItem(tview.NewFlex().
-	// 	SetDirection(tview.FlexRow).
-	// 	AddItem(ui.textMain, 2, 1, false).
-	// 	AddItem(ui.createTextForm, 12, 1, true).
-	// 	AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-	// 	AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
-
 	ui.flexLoginPairCreate = ui.NewAppFlex(ui.createLoginPairForm, 12)
-
-	// ui.flexLoginPairCreate = tview.NewFlex().
-	// 	//AddItem(tview.NewFlex().
-	// 	SetDirection(tview.FlexRow).
-	// 	AddItem(ui.textMain, 2, 1, false).
-	// 	AddItem(ui.createLoginPairForm, 12, 1, true).
-	// 	AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-	// 	AddItem(ui.textMain, 1, 1, false) // , 0, 2, true)
-
 	ui.flexBinaryCreate = ui.NewAppFlex(ui.createBinaryForm, 12)
-
-	// ui.flexBinaryCreate = tview.NewFlex().
-	// 	//AddItem(tview.NewFlex().
-	// 	SetDirection(tview.FlexRow).
-	// 	AddItem(ui.textMain, 2, 1, false).
-	// 	AddItem(ui.createBinaryForm, 12, 1, true).
-	// 	AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-	// 	AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
-
-	//ui.flexCardCreate = flexBase.AddItemAtIndex(1, ui.createCardForm, 12, 1, true).RemoveItemAtIndex(2)
 	ui.flexCardCreate = ui.NewAppFlex(ui.createCardForm, 15)
-
-	// ui.flexCardCreate = tview.NewFlex().
-	// 	//AddItem(tview.NewFlex().
-	// 	SetDirection(tview.FlexRow).
-	// 	AddItem(ui.textMain, 2, 1, false).
-	// 	AddItem(ui.createCardForm, 15, 1, true).
-	// 	AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-	// 	AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
-
 	ui.flexSelectCreate = ui.NewAppFlex(ui.listSelectCreate, 12)
-	//ui.flexSelectCreate = flexBase.AddItemAtIndex(1, ui.listSelectCreate, 12, 1, true).RemoveItemAtIndex(2)
-
-	// ui.flexSelectCreate = tview.NewFlex().
-	// 	//AddItem(tview.NewFlex().
-	// 	SetDirection(tview.FlexRow).
-	// 	AddItem(ui.textMain, 2, 1, false).
-	// 	AddItem(ui.listSelectCreate, 12, 1, true).
-	// 	AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-	// 	AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
 }
 
 func (ui *UI) ListSelectCreate() {

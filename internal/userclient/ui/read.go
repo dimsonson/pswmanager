@@ -13,75 +13,79 @@ import (
 )
 
 func (ui *UI) FlexRead() {
-	ui.flexTextRead = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.readTextForm, 12, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+	ui.flexSelectRead = ui.NewAppFlex(ui.listSelectRead, 12)
+	// ui.flexTextRead = ui.NewAppFlex(ui.readTextForm, 10)
+	// ui.flexLoginPairRead = ui.NewAppFlex(ui.readLoginPairForm, 12)
+	// ui.flexBinaryRead = ui.NewAppFlex(ui.readBinaryForm, 12)
+	// ui.flexCardRead = ui.NewAppFlex(ui.readCardForm, 12)
 
-	ui.flexLoginPairRead = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.readLoginPairForm, 12, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
 
-	ui.flexBinaryRead = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.readBinaryForm, 12, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+	// ui.flexLoginPairRead = tview.NewFlex().
+	// 	AddItem(tview.NewFlex().
+	// 		SetDirection(tview.FlexRow).
+	// 		AddItem(ui.textMain, 2, 1, false).
+	// 		AddItem(ui.readLoginPairForm, 12, 1, true).
+	// 		AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+	// 		AddItem(ui.textMain, 1, 1, false), 0, 2, true)
 
-	ui.flexCardRead = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.readCardForm, 15, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+	// ui.flexBinaryRead = tview.NewFlex().
+	// 	AddItem(tview.NewFlex().
+	// 		SetDirection(tview.FlexRow).
+	// 		AddItem(ui.textMain, 2, 1, false).
+	// 		AddItem(ui.readBinaryForm, 12, 1, true).
+	// 		AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+	// 		AddItem(ui.textMain, 1, 1, false), 0, 2, true)
 
-	ui.flexSelectRead = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listSelectRead, 12, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
-			
-	ui.flexSelectRead = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listSelectRead, 12, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+	// ui.flexCardRead = tview.NewFlex().
+	// 	AddItem(tview.NewFlex().
+	// 		SetDirection(tview.FlexRow).
+	// 		AddItem(ui.textMain, 2, 1, false).
+	// 		AddItem(ui.readCardForm, 15, 1, true).
+	// 		AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+	// 		AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+
+	// ui.flexSelectRead = tview.NewFlex().
+	// 	AddItem(tview.NewFlex().
+	// 		SetDirection(tview.FlexRow).
+	// 		AddItem(ui.textMain, 2, 1, false).
+	// 		AddItem(ui.listSelectRead, 12, 1, true).
+	// 		AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+	// 		AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+
+	// ui.flexSelectRead = tview.NewFlex().
+	// 	AddItem(tview.NewFlex().
+	// 		SetDirection(tview.FlexRow).
+	// 		AddItem(ui.textMain, 2, 1, false).
+	// 		AddItem(ui.listSelectRead, 12, 1, true).
+	// 		AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+	// 		AddItem(ui.textMain, 1, 1, false), 0, 2, true)
 }
 
 func (ui *UI) ListSelectRead() {
 	ui.listSelectRead = tview.NewList().
 		AddItem("Text Item", "", 'a', func() {
 			ui.readTextForm.Clear(true)
-			ui.createTextFrm()
+			textRecord:= models.TextRecord{
+				RecordID: "123",
+				Metadata: "www.ru",
+				Text: "secret",
+			}
+			ui.readTextFrm(textRecord)
 			ui.pages.SwitchToPage(ReadTextForm)
 		}).
 		AddItem("Login pair", "", 'b', func() {
 			ui.readLoginPairForm.Clear(true)
-			ui.createLoginPairFrm()
+			ui.readLoginPairFrm()
 			ui.pages.SwitchToPage(ReadLoginPairForm)
 		}).
 		AddItem("Binary", "", 'b', func() {
 			ui.readBinaryForm.Clear(true)
-			ui.createBinaryFrm()
+			ui.readBinaryFrm()
 			ui.pages.SwitchToPage(ReadBinaryForm)
 		}).
 		AddItem("Card", "", 'b', func() {
 			ui.readCardForm.Clear(true)
-			ui.createCardFrm()
+			ui.readCardFrm()
 			ui.pages.SwitchToPage(ReadCardForm)
 		}).
 		AddItem("Quit", "", 'q', func() {
@@ -137,18 +141,18 @@ func (ui *UI) readTextFrm(item models.TextRecord) *tview.Form {
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
 					log.Print("new text 1")
-					ui.createTextForm.SetFocus(0)
-					ui.pages.ShowPage(NewTextForm)
+					ui.readTextForm.SetFocus(0)
+					ui.pages.ShowPage(ReadTextForm)
 				},
 				func() {
 
-					ui.pages.SwitchToPage(SelectCreatePage)
+					ui.pages.SwitchToPage(SelectReadPage)
 				})
 		}
 		if item.Metadata == "1" {
 			log.Print("user login 0")
 			ui.ShowOk("New Text Item recorded to database", func() {
-				ui.pages.SwitchToPage(SelectCreatePage)
+				ui.pages.SwitchToPage(SelectReadPage)
 			})
 		}
 		if item.Metadata != "1" && item.Metadata != "0" {

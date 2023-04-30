@@ -143,7 +143,7 @@ func (ui *UI) Init() {
 	ui.FlexLogin()
 	ui.FlexMain()
 	ui.FlexCreate()
-	//ui.FlexRead()
+	ui.FlexRead()
 	ui.PagesConfig()
 }
 
@@ -157,32 +157,23 @@ func (ui *UI) PagesConfig() {
 	ui.pages.AddPage(LoginPage, ui.flexLogin, true, true)
 	ui.pages.AddPage(LoginForm, ui.flexLog, true, false)
 	ui.pages.AddPage(RegisterForm, ui.flexReg, true, false)
+
 	ui.pages.AddPage(MainPage, ui.flexMain, true, false)
 	ui.pages.AddPage(SelectCreatePage, ui.flexSelectCreate, true, false)
 	ui.pages.AddPage(NewTextForm, ui.flexTextCreate, true, false)
 	ui.pages.AddPage(NewLoginPairForm, ui.flexLoginPairCreate, true, false)
 	ui.pages.AddPage(NewCardForm, ui.flexCardCreate, true, false)
 	ui.pages.AddPage(NewBinaryForm, ui.flexBinaryCreate, true, false)
+	ui.pages.AddPage(SelectReadPage, ui.flexSelectRead, true, false)
+
+	// ui.pages.AddPage(ReadTextForm, ui.flexTextRead, true, false)
+	// ui.pages.AddPage(ReadLoginPairForm, ui.flexLoginPairRead, true, false)
+	// ui.pages.AddPage(ReadCardForm, ui.flexCardRead, true, false)
+	// ui.pages.AddPage(ReadBinaryForm, ui.flexBinaryRead, true, false)
 }
 
 func (ui *UI) FlexMain() {
-	ui.flexMain = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listMain, 10, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
-	ui.flexMain.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Rune() == 'q' {
-			ui.MainApp.Stop()
-		} else if event.Rune() == '1' {
-			ui.loginform.Clear(true)
-			ui.loginFrm()
-			ui.pages.SwitchToPage(MainPage)
-		}
-		return event
-	})
+	ui.flexMain = ui.NewAppFlex(ui.listMain, 10)
 }
 
 func (ui *UI) ListMain() {
