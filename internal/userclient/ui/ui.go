@@ -4,25 +4,29 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/rs/zerolog"
 
 	"github.com/derailed/tcell/v2"
-	//"github.com/rivo/tview"
 	"github.com/derailed/tview"
 )
 
-
 const (
-	LoginPage        string = "LoginPage"
-	LoginForm        string = "LoginForm"
-	RegisterForm     string = "RegisterForm"
-	MainPage         string = "MainPage"
-	SelectPage       string = "SelectPage"
-	NewTextForm      string = "NewTextForm"
-	NewLoginPairForm string = "NewLoginPairForm"
-	NewCardForm      string = "NewCardForm"
-	NewBinaryForm    string = "NewBinaryForm"
+	LoginPage         string = "LoginPage"
+	LoginForm         string = "LoginForm"
+	RegisterForm      string = "RegisterForm"
+	MainPage          string = "MainPage"
+	SelectCreatePage  string = "SelectCreatePage"
+	SelectReadPage    string = "SelectReadPage"
+	NewTextForm       string = "NewTextForm"
+	NewLoginPairForm  string = "NewLoginPairForm"
+	NewCardForm       string = "NewCardForm"
+	NewBinaryForm     string = "NewBinaryForm"
+	ReadTextForm      string = "ReadTextForm"
+	ReadLoginPairForm string = "ReadLoginPairForm"
+	ReadCardForm      string = "ReadCardForm"
+	ReadBinaryForm    string = "ReadBinaryForm"
 )
 
 type (
@@ -63,8 +67,8 @@ type LoginUI struct {
 }
 
 type CreateUI struct {
-	flexSelectCreate    *tview.Flex
 	listSelectCreate    *tview.List
+	flexSelectCreate    *tview.Flex
 	flexTextCreate      *tview.Flex
 	flexLoginPairCreate *tview.Flex
 	flexBinaryCreate    *tview.Flex
@@ -78,9 +82,23 @@ type CreateUI struct {
 type ReadUI struct {
 	flexSelectRead         *tview.Flex
 	flexMetadataSearchForm *tview.Flex
-	listSelect             *tview.List
-	createform             *tview.Form
-	readform               *tview.Form
+	listSelectRead         *tview.List
+	flexTextRead           *tview.Flex
+	flexLoginPairRead      *tview.Flex
+	flexBinaryRead         *tview.Flex
+	flexCardRead           *tview.Flex
+	readTextForm           *tview.Form
+	readLoginPairForm      *tview.Form
+	readBinaryForm         *tview.Form
+	readCardForm           *tview.Form
+	listTextSearchResult   *tview.List
+	listLoginsSearchResult *tview.List
+	listBinarySearchResult *tview.List
+	listCardSearchResult   *tview.List
+	TextSearchResult       []models.TextRecord
+	LoginsSearchResult     []models.LoginRecord
+	BinarySearchResult     []models.BinaryRecord
+	CardSearchResult       []models.CardRecord
 }
 
 type DialogUI struct {
@@ -100,11 +118,14 @@ func (ui *UI) Init() {
 	ui.createLoginPairForm = tview.NewForm()
 	ui.createBinaryForm = tview.NewForm()
 	ui.createCardForm = tview.NewForm()
-	ui.readform = tview.NewForm()
+	ui.readTextForm = tview.NewForm()
+	ui.listTextSearchResult = tview.NewList().ShowSecondaryText(false)
+	ui.listLoginsSearchResult = tview.NewList().ShowSecondaryText(false)
+	ui.listBinarySearchResult = tview.NewList().ShowSecondaryText(false)
+	ui.listCardSearchResult = tview.NewList().ShowSecondaryText(false)
 	ui.textMain = tview.NewTextView()
 	ui.listLogin = tview.NewList()
 	ui.listMain = tview.NewList()
-	ui.listSelect = tview.NewList()
 	ui.LogWindow = tview.NewTextView()
 	ui.TextConfig()
 	ui.ListLogin()
@@ -112,7 +133,8 @@ func (ui *UI) Init() {
 	ui.ListSelectCreate()
 	ui.FlexLogin()
 	ui.FlexMain()
-	ui.FlexCreateRead()
+	ui.FlexCreate()
+	//ui.FlexRead()
 	ui.PagesConfig()
 }
 
@@ -127,7 +149,7 @@ func (ui *UI) PagesConfig() {
 	ui.pages.AddPage(LoginForm, ui.flexLog, true, false)
 	ui.pages.AddPage(RegisterForm, ui.flexReg, true, false)
 	ui.pages.AddPage(MainPage, ui.flexMain, true, false)
-	ui.pages.AddPage(SelectPage, ui.flexSelectCreate, true, false)
+	ui.pages.AddPage(SelectCreatePage, ui.flexSelectCreate, true, false)
 	ui.pages.AddPage(NewTextForm, ui.flexTextCreate, true, false)
 	ui.pages.AddPage(NewLoginPairForm, ui.flexLoginPairCreate, true, false)
 	ui.pages.AddPage(NewCardForm, ui.flexCardCreate, true, false)
@@ -158,12 +180,12 @@ func (ui *UI) ListMain() {
 	ui.listMain.
 		AddItem("Create new", "", 'a', func() {
 			ui.loginform.Clear(true)
-			ui.pages.SwitchToPage(SelectPage)
+			ui.pages.SwitchToPage(SelectCreatePage)
 		}).
 		AddItem("Select existed record", "", 'b', func() {
 			ui.regform.Clear(true)
 			ui.ListSelectRead()
-			ui.pages.SwitchToPage(SelectPage)
+			ui.pages.SwitchToPage(SelectReadPage)
 		}).
 		AddItem("Quit", "", 'q', func() {
 			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -189,5 +211,5 @@ func (ui *UI) TextConfig() {
 	ui.textMain.SetBackgroundColor(tcell.Color102)
 
 	ui.LogWindow.SetScrollable(false)
-	ui.LogWindow.SetBackgroundColor(tcell.Color102.TrueColor())
+	ui.LogWindow.SetBackgroundColor(tcell.Color102)
 }

@@ -12,7 +12,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func (ui *UI) FlexCreateRead() {
+func (ui *UI) FlexCreate() {
 	ui.flexTextCreate = tview.NewFlex().
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
@@ -49,21 +49,13 @@ func (ui *UI) FlexCreateRead() {
 		AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listSelect, 12, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
-
-	ui.flexSelectRead = tview.NewFlex().
-		AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listSelect, 12, 1, true).
+			AddItem(ui.listSelectCreate, 12, 1, true).
 			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
 			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
 }
 
 func (ui *UI) ListSelectCreate() {
-	ui.listSelect.
+	ui.listSelectCreate = tview.NewList().
 		AddItem("Text", "", 'a', func() {
 			ui.createTextForm.Clear(true)
 			ui.createTextFrm()
@@ -93,52 +85,12 @@ func (ui *UI) ListSelectCreate() {
 				return
 			}
 		})
-	ui.listSelect.SetBorder(true)
-	ui.listSelect.SetTitle("menu")
-	ui.listSelect.SetTitleAlign(tview.AlignLeft)
-	ui.listSelect.SetWrapAround(true)
-	ui.listSelect.SetBackgroundColor(tcell.Color108)
-	ui.MainApp.SetFocus(ui.listSelect)
-}
-
-func (ui *UI) ListSelectRead() {
-	ui.listSelect = tview.NewList()
-	ui.listSelect.
-		AddItem("Text Item", "", 'a', func() {
-			ui.loginform.Clear(true)
-			ui.createTextFrm()
-			ui.pages.SwitchToPage(LoginPage)
-		}).
-		AddItem("Login pair", "", 'b', func() {
-			ui.regform.Clear(true)
-			ui.createLoginPairFrm()
-			ui.pages.SwitchToPage(LoginPage)
-		}).
-		AddItem("Binary", "", 'b', func() {
-			ui.regform.Clear(true)
-			ui.createBinaryFrm()
-			ui.pages.SwitchToPage(LoginPage)
-		}).
-		AddItem("Card", "", 'b', func() {
-			ui.regform.Clear(true)
-			ui.createCardFrm()
-			ui.pages.SwitchToPage(LoginPage)
-		}).
-		AddItem("Quit", "", 'q', func() {
-			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-			ui.MainApp.Stop()
-			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-			if err != nil {
-				log.Print("stop programm error")
-				return
-			}
-		})
-	ui.listSelect.SetBorder(true)
-	ui.listSelect.SetTitle("menu")
-	ui.listSelect.SetTitleAlign(tview.AlignLeft)
-	ui.listSelect.SetWrapAround(true)
-	ui.listSelect.SetBackgroundColor(tcell.Color108)
-	ui.MainApp.SetFocus(ui.listSelect)
+	ui.listSelectCreate.SetBorder(true)
+	ui.listSelectCreate.SetTitle("menu")
+	ui.listSelectCreate.SetTitleAlign(tview.AlignLeft)
+	ui.listSelectCreate.SetWrapAround(true)
+	ui.listSelectCreate.SetBackgroundColor(tcell.Color108)
+	ui.MainApp.SetFocus(ui.listSelectCreate)
 }
 
 func (ui *UI) createTextFrm() *tview.Form {
@@ -159,13 +111,13 @@ func (ui *UI) createTextFrm() *tview.Form {
 				},
 				func() {
 
-					ui.pages.SwitchToPage(SelectPage)
+					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
 		if textRecord.Metadata == "1" {
 			log.Print("user login 0")
 			ui.ShowOk("New Text Item recorded to database", func() {
-				ui.pages.SwitchToPage(SelectPage)
+				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
 		if textRecord.Metadata != "1" && textRecord.Metadata != "0" {
@@ -199,13 +151,13 @@ func (ui *UI) createLoginPairFrm() *tview.Form {
 				},
 				func() {
 
-					ui.pages.SwitchToPage(SelectPage)
+					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
 		if loginPairRecord.Metadata == "1" {
 			log.Print("user login 0")
 			ui.ShowOk("New Text Item recorded to database", func() {
-				ui.pages.SwitchToPage(SelectPage)
+				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
 		if loginPairRecord.Metadata != "1" && loginPairRecord.Metadata != "0" {
@@ -236,13 +188,13 @@ func (ui *UI) createBinaryFrm() *tview.Form {
 				},
 				func() {
 
-					ui.pages.SwitchToPage(SelectPage)
+					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
 		if binaryRecord.Metadata == "1" {
 			log.Print("user login 0")
 			ui.ShowOk("New Text Item recorded to database", func() {
-				ui.pages.SwitchToPage(SelectPage)
+				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
 		if binaryRecord.Metadata != "1" && binaryRecord.Metadata != "0" {
@@ -287,13 +239,13 @@ func (ui *UI) createCardFrm() *tview.Form {
 				},
 				func() {
 
-					ui.pages.SwitchToPage(SelectPage)
+					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
 		if cardRecord.Metadata == "1" {
 			log.Print("user login 0")
 			ui.ShowOk("New Text Item recorded to database", func() {
-				ui.pages.SwitchToPage(SelectPage)
+				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
 		if cardRecord.Metadata != "1" && cardRecord.Metadata != "0" {
