@@ -32,12 +32,12 @@ func (ui *UI) ListSelectCreate() {
 			ui.createLoginPairFrm()
 			ui.pages.SwitchToPage(NewLoginPairForm)
 		}).
-		AddItem("Binary", "", 'b', func() {
+		AddItem("Binary", "", 'c', func() {
 			ui.createBinaryForm.Clear(true)
 			ui.createBinaryFrm()
 			ui.pages.SwitchToPage(NewBinaryForm)
 		}).
-		AddItem("Card", "", 'b', func() {
+		AddItem("Card", "", 'd', func() {
 			ui.createCardForm.Clear(true)
 			ui.createCardFrm()
 			ui.pages.SwitchToPage(NewCardForm)
@@ -52,7 +52,7 @@ func (ui *UI) ListSelectCreate() {
 			}
 		})
 	ui.listSelectCreate.SetBorder(true)
-	ui.listSelectCreate.SetTitle("menu")
+	ui.listSelectCreate.SetTitle("Create menu")
 	ui.listSelectCreate.SetTitleAlign(tview.AlignLeft)
 	ui.listSelectCreate.SetWrapAround(true)
 	ui.listSelectCreate.SetBackgroundColor(tcell.Color108)

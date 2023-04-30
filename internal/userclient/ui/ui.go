@@ -142,10 +142,11 @@ func (ui *UI) Init() {
 	ui.ListLogin()
 	ui.ListMain()
 	ui.ListSelectCreate()
+	ui.ListSelectRead()
 	ui.FlexLogin()
 	ui.FlexMain()
 	ui.FlexCreate()
-	//ui.FlexRead()
+	ui.FlexRead()
 	ui.PagesConfig()
 }
 
@@ -167,9 +168,9 @@ func (ui *UI) PagesConfig() {
 	ui.pages.AddPage(NewCardForm, ui.flexCardCreate, true, false)
 	ui.pages.AddPage(NewBinaryForm, ui.flexBinaryCreate, true, false)
 
-	// ui.pages.AddPage(SelectReadPage, ui.flexSelectRead, true, false)
+	ui.pages.AddPage(SelectReadPage, ui.flexSelectRead, true, false)
 
-	// ui.pages.AddPage(ReadTextForm, ui.flexTextRead, true, false)
+	//ui.pages.AddPage(ReadTextForm, ui.flexTextRead, true, false)
 	// ui.pages.AddPage(ReadLoginPairForm, ui.flexLoginPairRead, true, false)
 	// ui.pages.AddPage(ReadCardForm, ui.flexCardRead, true, false)
 	// ui.pages.AddPage(ReadBinaryForm, ui.flexBinaryRead, true, false)
@@ -206,8 +207,7 @@ func (ui *UI) ListMain() {
 		}).
 		AddItem("Select existed record", "", 'b', func() {
 			ui.regform.Clear(true)
-			//ui.ListSelectRead()
-			//ui.pages.SwitchToPage(SelectReadPage)
+			ui.pages.SwitchToPage(SelectReadPage)
 		}).
 		AddItem("Quit", "", 'q', func() {
 			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
