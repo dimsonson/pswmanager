@@ -109,6 +109,15 @@ func New() *UI {
 	return &UI{}
 }
 
+func (ui *UI) NewAppFlex(primitive tview.Primitive, fixedSize int) *tview.Flex {
+	return tview.NewFlex().
+		SetDirection(tview.FlexRow).
+		AddItem(ui.textMain, 2, 1, false).
+		AddItem(primitive, fixedSize, 1, true).
+		AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
+		AddItem(ui.textMain, 1, 1, false)
+}
+
 func (ui *UI) Init() {
 	ui.MainApp = tview.NewApplication()
 	ui.pages = tview.NewPages()
