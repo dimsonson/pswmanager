@@ -17,7 +17,7 @@ func (ui *UI) FlexCreate() {
 	ui.flexLoginPairCreate = ui.NewAppFlex(ui.createLoginPairForm, 12)
 	ui.flexBinaryCreate = ui.NewAppFlex(ui.createBinaryForm, 12)
 	ui.flexCardCreate = ui.NewAppFlex(ui.createCardForm, 15)
-	ui.flexSelectCreate = ui.NewAppFlex(ui.listSelectCreate, 12)
+	ui.flexSelectCreate = ui.NewAppFlex(ui.listSelectCreate, 15)
 }
 
 func (ui *UI) ListSelectCreate() {
@@ -57,6 +57,7 @@ func (ui *UI) ListSelectCreate() {
 	ui.listSelectCreate.SetWrapAround(true)
 	ui.listSelectCreate.SetBackgroundColor(tcell.Color108)
 	ui.MainApp.SetFocus(ui.listSelectCreate)
+
 }
 
 func (ui *UI) createTextFrm() *tview.Form {

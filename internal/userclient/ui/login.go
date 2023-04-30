@@ -86,7 +86,7 @@ func (ui *UI) registerFrm() *tview.Form {
 }
 
 func (ui *UI) ListLogin() {
-	ui.listLogin.
+	ui.listLogin = tview.NewList().
 		AddItem("Login", "", 'a', func() {
 			ui.loginform.Clear(true)
 			ui.loginFrm()
@@ -116,35 +116,27 @@ func (ui *UI) ListLogin() {
 
 func (ui *UI) FlexLogin() {
 	ui.flexLogin = tview.NewFlex().
-		AddItem(tview.NewFlex().
+	//	AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(ui.textMain, 2, 1, false).
 			AddItem(ui.listLogin, 10, 1, true).
 			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
-	ui.flexLogin.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Rune() == 'q' {
-			ui.MainApp.Stop()
-		} else if event.Rune() == '1' {
-			ui.loginform.Clear(true)
-			ui.loginFrm()
-			ui.pages.SwitchToPage(LoginPage)
-		}
-		return event
-	})
+			AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
+	
+	
 	ui.flexLog = tview.NewFlex().
-		AddItem(tview.NewFlex().
+		//AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(ui.textMain, 2, 1, false).
 			AddItem(ui.loginform, 10, 1, true).
 			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+			AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
 
 	ui.flexReg = tview.NewFlex().
-		AddItem(tview.NewFlex().
+	//	AddItem(tview.NewFlex().
 			SetDirection(tview.FlexRow).
 			AddItem(ui.textMain, 2, 1, false).
 			AddItem(ui.regform, 10, 1, true).
 			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false), 0, 2, true)
+			AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
 }
