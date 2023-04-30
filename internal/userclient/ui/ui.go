@@ -129,6 +129,9 @@ func (ui *UI) Init() {
 	ui.createBinaryForm = tview.NewForm()
 	ui.createCardForm = tview.NewForm()
 	ui.readTextForm = tview.NewForm()
+	ui.readLoginPairForm = tview.NewForm()
+	ui.readBinaryForm = tview.NewForm()
+	ui.readCardForm = tview.NewForm()
 	ui.listTextSearchResult = tview.NewList().ShowSecondaryText(false)
 	ui.listLoginsSearchResult = tview.NewList().ShowSecondaryText(false)
 	ui.listBinarySearchResult = tview.NewList().ShowSecondaryText(false)
@@ -170,10 +173,10 @@ func (ui *UI) PagesConfig() {
 
 	ui.pages.AddPage(SelectReadPage, ui.flexSelectRead, true, false)
 
-	//ui.pages.AddPage(ReadTextForm, ui.flexTextRead, true, false)
-	// ui.pages.AddPage(ReadLoginPairForm, ui.flexLoginPairRead, true, false)
-	// ui.pages.AddPage(ReadCardForm, ui.flexCardRead, true, false)
-	// ui.pages.AddPage(ReadBinaryForm, ui.flexBinaryRead, true, false)
+	ui.pages.AddPage(ReadTextForm, ui.flexTextRead, true, false)
+	ui.pages.AddPage(ReadLoginPairForm, ui.flexLoginPairRead, true, false)
+	ui.pages.AddPage(ReadCardForm, ui.flexCardRead, true, false)
+	ui.pages.AddPage(ReadBinaryForm, ui.flexBinaryRead, true, false)
 }
 
 func (ui *UI) FlexMain() {

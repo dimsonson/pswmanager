@@ -14,10 +14,10 @@ import (
 
 func (ui *UI) FlexRead() {
 	ui.flexSelectRead = ui.NewAppFlex(ui.listSelectRead, 12)
-	// ui.flexTextRead = ui.NewAppFlex(ui.readTextForm, 10)
-	// ui.flexLoginPairRead = ui.NewAppFlex(ui.readLoginPairForm, 12)
-	// ui.flexBinaryRead = ui.NewAppFlex(ui.readBinaryForm, 12)
-	// ui.flexCardRead = ui.NewAppFlex(ui.readCardForm, 12)
+	ui.flexTextRead = ui.NewAppFlex(ui.readTextForm, 10)
+	ui.flexLoginPairRead = ui.NewAppFlex(ui.readLoginPairForm, 12)
+	ui.flexBinaryRead = ui.NewAppFlex(ui.readBinaryForm, 12)
+	ui.flexCardRead = ui.NewAppFlex(ui.readCardForm, 15)
 }
 
 func (ui *UI) ListSelectRead() {
