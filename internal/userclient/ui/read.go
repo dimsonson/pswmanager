@@ -22,7 +22,7 @@ func (ui *UI) FlexRead() {
 func (ui *UI) ListSelectRead() {
 	ui.listSelectRead = tview.NewList().
 		AddItem("Text Item", "", 'a', func() {
-			ui.readTextForm.Clear(true)
+			ui.listTextSearchResult.Clear()
 			// textRecord := models.TextRecord{
 			// 	RecordID: "123",
 			// 	Metadata: "www.ru",
@@ -61,6 +61,7 @@ func (ui *UI) ListSelectRead() {
 func (ui *UI) addTextItems() {
 	for index, item := range ui.TextSearchResult {
 		ui.listTextSearchResult.AddItem(item.Metadata+" "+item.Text, "", rune(49+index), func() {
+			ui.readTextForm.Clear(true)
 			ui.readTextFrm(item)
 			ui.pages.SwitchToPage(ReadTextForm)
 		})
