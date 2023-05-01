@@ -10,11 +10,11 @@ import (
 )
 
 func (ui *UI) FlexCreate() {
-	ui.flexTextCreate = ui.NewAppFlex(ui.createTextForm, 12)
-	ui.flexLoginPairCreate = ui.NewAppFlex(ui.createLoginPairForm, 12)
-	ui.flexBinaryCreate = ui.NewAppFlex(ui.createBinaryForm, 12)
-	ui.flexCardCreate = ui.NewAppFlex(ui.createCardForm, 15)
-	ui.flexSelectCreate = ui.NewAppFlex(ui.listSelectCreate, 12)
+	ui.flexTextCreate = ui.NewCustomFlex(ui.createTextForm, 12)
+	ui.flexLoginPairCreate = ui.NewCustomFlex(ui.createLoginPairForm, 12)
+	ui.flexBinaryCreate = ui.NewCustomFlex(ui.createBinaryForm, 12)
+	ui.flexCardCreate = ui.NewCustomFlex(ui.createCardForm, 15)
+	ui.flexSelectCreate = ui.NewCustomFlex(ui.listSelectCreate, 12)
 }
 
 func (ui *UI) ListSelectCreate() {

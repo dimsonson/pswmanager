@@ -115,7 +115,7 @@ func New() *UI {
 	return &UI{}
 }
 
-func (ui *UI) NewAppFlex(primitive tview.Primitive, fixedSize int) *tview.Flex {
+func (ui *UI) NewCustomFlex(primitive tview.Primitive, fixedSize int) *tview.Flex {
 	flex := tview.NewFlex().
 		SetDirection(tview.FlexRow).
 		AddItem(ui.textMain, 2, 1, false).
@@ -196,7 +196,7 @@ func (ui *UI) PagesConfig() {
 }
 
 func (ui *UI) FlexMain() {
-	ui.flexMain = ui.NewAppFlex(ui.listMain, 10)
+	ui.flexMain = ui.NewCustomFlex(ui.listMain, 10)
 }
 
 func (ui *UI) ListMain() {

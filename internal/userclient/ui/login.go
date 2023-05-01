@@ -11,9 +11,9 @@ import (
 )
 
 func (ui *UI) FlexLogin() {
-	ui.flexLogin = ui.NewAppFlex(ui.listLogin, 10)
-	ui.flexLog = ui.NewAppFlex(ui.loginform, 10)
-	ui.flexReg = ui.NewAppFlex(ui.regform, 10)
+	ui.flexLogin = ui.NewCustomFlex(ui.listLogin, 10)
+	ui.flexLog = ui.NewCustomFlex(ui.loginform, 10)
+	ui.flexReg = ui.NewCustomFlex(ui.regform, 10)
 }
 
 func (ui *UI) ListLogin() {
