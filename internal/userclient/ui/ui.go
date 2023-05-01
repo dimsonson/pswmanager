@@ -13,21 +13,26 @@ import (
 )
 
 const (
-	LoginPage         string = "LoginPage"
-	LoginForm         string = "LoginForm"
-	RegisterForm      string = "RegisterForm"
-	MainPage          string = "MainPage"
-	SelectCreatePage  string = "SelectCreatePage"
-	SelectReadPage    string = "SelectReadPage"
-	NewTextForm       string = "NewTextForm"
-	NewLoginPairForm  string = "NewLoginPairForm"
-	NewCardForm       string = "NewCardForm"
-	NewBinaryForm     string = "NewBinaryForm"
-	ReadTextForm      string = "ReadTextForm"
-	ReadLoginPairForm string = "ReadLoginPairForm"
-	ReadCardForm      string = "ReadCardForm"
-	ReadBinaryForm    string = "ReadBinaryForm"
-	ReadBinarySearch    string = "ReadBinarySearch"
+	LoginPage          string = "LoginPage"
+	LoginForm          string = "LoginForm"
+	RegisterForm       string = "RegisterForm"
+	MainPage           string = "MainPage"
+	SelectCreatePage   string = "SelectCreatePage"
+	SelectReadPage     string = "SelectReadPage"
+	NewTextForm        string = "NewTextForm"
+	NewLoginPairForm   string = "NewLoginPairForm"
+	NewCardForm        string = "NewCardForm"
+	NewBinaryForm      string = "NewBinaryForm"
+	ReadTextForm       string = "ReadTextForm"
+	ReadLoginPairForm  string = "ReadLoginPairForm"
+	ReadCardForm       string = "ReadCardForm"
+	ReadBinaryForm     string = "ReadBinaryForm"
+	TextSearchResult   string = "TextSearchResult"
+	LoginsSearchResult string = "LoginsSearchResult"
+	BinarySearchResult string = "BinarySearchResult"
+	CardSearchResult   string = "CardSearchResult"
+
+	searchForm string = "searchForm"
 )
 
 type (
@@ -101,10 +106,14 @@ type ReadUI struct {
 	BinarySearchResult     []models.BinaryRecord
 	CardSearchResult       []models.CardRecord
 
-	flexLoginPairReadSearch *tview.Flex
-	flexBinaryReadSearch    *tview.Flex
-	flexCardReadSearch      *tview.Flex
-	flexTextReadSearch      *tview.Flex
+	flexLoginPairSearchResult *tview.Flex
+	flexBinarySearchResult    *tview.Flex
+	flexCardSearchResult      *tview.Flex
+	flexTextSearchResult      *tview.Flex
+
+	searchForm     *tview.Form
+	flexSearchForm *tview.Flex
+	searchdata     string
 }
 
 type DialogUI struct {
@@ -138,6 +147,7 @@ func (ui *UI) Init() {
 	ui.readLoginPairForm = tview.NewForm()
 	ui.readBinaryForm = tview.NewForm()
 	ui.readCardForm = tview.NewForm()
+	ui.searchForm = tview.NewForm()
 	ui.listTextSearchResult = tview.NewList().ShowSecondaryText(false)
 	ui.listLoginsSearchResult = tview.NewList().ShowSecondaryText(false)
 	ui.listBinarySearchResult = tview.NewList().ShowSecondaryText(false)
@@ -152,6 +162,33 @@ func (ui *UI) Init() {
 		Text:     "texttext2",
 	}
 	ui.TextSearchResult = []models.TextRecord{r1, r2}
+	r3 := models.LoginRecord{
+		Metadata: "metalogin11",
+		Login:    "login11",
+	}
+	r4 := models.LoginRecord{
+		Metadata: "test2",
+		Login:    "login23",
+	}
+	ui.LoginsSearchResult = []models.LoginRecord{r3, r4}
+	r5 := models.BinaryRecord{
+		Metadata: "bin1",
+		Binary:   "binarybody1",
+	}
+	r6 := models.BinaryRecord{
+		Metadata: "test3",
+		Binary:   "binarybody33",
+	}
+	ui.BinarySearchResult = []models.BinaryRecord{r5, r6}
+	r7 := models.CardRecord{
+		Metadata: "card1",
+		Number:   "4410 0545 8945 4589",
+	}
+	r8 := models.CardRecord{
+		Metadata: "card2",
+		Number:   "4410 9999 8945 4589",
+	}
+	ui.CardSearchResult = []models.CardRecord{r7, r8}
 
 	ui.textMain = tview.NewTextView()
 	ui.LogWindow = tview.NewTextView()
@@ -192,7 +229,12 @@ func (ui *UI) PagesConfig() {
 	ui.pages.AddPage(ReadCardForm, ui.flexCardRead, true, false)
 	ui.pages.AddPage(ReadBinaryForm, ui.flexBinaryRead, true, false)
 
-	ui.pages.AddPage(ReadBinarySearch, ui.flexTextReadSearch, true, false)
+	ui.pages.AddPage(TextSearchResult, ui.flexTextSearchResult, true, false)
+	ui.pages.AddPage(BinarySearchResult, ui.flexBinarySearchResult, true, false)
+	ui.pages.AddPage(CardSearchResult, ui.flexCardSearchResult, true, false)
+	ui.pages.AddPage(LoginsSearchResult, ui.flexLoginPairSearchResult, true, false)
+
+	ui.pages.AddPage(searchForm, ui.flexSearchForm, true, false)
 }
 
 func (ui *UI) FlexMain() {
