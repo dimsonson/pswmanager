@@ -10,6 +10,41 @@ import (
 	"github.com/rs/zerolog"
 )
 
+func (ui *UI) FlexLogin() {
+	ui.flexLogin = ui.NewAppFlex(ui.listLogin, 10)
+	ui.flexLog = ui.NewAppFlex(ui.loginform, 10)
+	ui.flexReg = ui.NewAppFlex(ui.regform, 10)
+}
+
+func (ui *UI) ListLogin() {
+	ui.listLogin = tview.NewList().
+		AddItem("Login", "", 'a', func() {
+			ui.loginform.Clear(true)
+			ui.loginFrm()
+			ui.pages.SwitchToPage(LoginForm)
+		}).
+		AddItem("Registration", "", 'b', func() {
+			ui.regform.Clear(true)
+			ui.registerFrm()
+			ui.pages.SwitchToPage(RegisterForm)
+		}).
+		AddItem("Quit", "", 'q', func() {
+			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+			ui.MainApp.Stop()
+			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
+			if err != nil {
+				log.Print("stop programm error")
+				return
+			}
+		})
+	ui.listLogin.SetBorder(true)
+	ui.listLogin.SetTitle("Login menu")
+	ui.listLogin.SetTitleAlign(tview.AlignLeft)
+	ui.listLogin.SetWrapAround(true)
+	ui.listLogin.SetBackgroundColor(tcell.Color108)
+	ui.MainApp.SetFocus(ui.listLogin)
+}
+
 func (ui *UI) loginFrm() *tview.Form {
 	loginpsw := ULogin{}
 	ui.loginform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
@@ -85,58 +120,4 @@ func (ui *UI) registerFrm() *tview.Form {
 	return ui.regform
 }
 
-func (ui *UI) ListLogin() {
-	ui.listLogin = tview.NewList().
-		AddItem("Login", "", 'a', func() {
-			ui.loginform.Clear(true)
-			ui.loginFrm()
-			ui.pages.SwitchToPage(LoginForm)
-		}).
-		AddItem("Registration", "", 'b', func() {
-			ui.regform.Clear(true)
-			ui.registerFrm()
-			ui.pages.SwitchToPage(RegisterForm)
-		}).
-		AddItem("Quit", "", 'q', func() {
-			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-			ui.MainApp.Stop()
-			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-			if err != nil {
-				log.Print("stop programm error")
-				return
-			}
-		})
-	ui.listLogin.SetBorder(true)
-	ui.listLogin.SetTitle("Login menu")
-	ui.listLogin.SetTitleAlign(tview.AlignLeft)
-	ui.listLogin.SetWrapAround(true)
-	ui.listLogin.SetBackgroundColor(tcell.Color108)
-	ui.MainApp.SetFocus(ui.listLogin)
-}
 
-func (ui *UI) FlexLogin() {
-	ui.flexLogin = tview.NewFlex().
-	//	AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.listLogin, 10, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
-	
-	
-	ui.flexLog = tview.NewFlex().
-		//AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.loginform, 10, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
-
-	ui.flexReg = tview.NewFlex().
-	//	AddItem(tview.NewFlex().
-			SetDirection(tview.FlexRow).
-			AddItem(ui.textMain, 2, 1, false).
-			AddItem(ui.regform, 10, 1, true).
-			AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
-			AddItem(ui.textMain, 1, 1, false) //, 0, 2, true)
-}

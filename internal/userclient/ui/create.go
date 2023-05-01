@@ -1,15 +1,12 @@
 package ui
 
 import (
-	"os"
 	"strconv"
-	"syscall"
 
 	"github.com/derailed/tcell/v2"
 	"github.com/derailed/tview"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/pkg/log"
-	"github.com/rs/zerolog"
 )
 
 func (ui *UI) FlexCreate() {
@@ -17,7 +14,7 @@ func (ui *UI) FlexCreate() {
 	ui.flexLoginPairCreate = ui.NewAppFlex(ui.createLoginPairForm, 12)
 	ui.flexBinaryCreate = ui.NewAppFlex(ui.createBinaryForm, 12)
 	ui.flexCardCreate = ui.NewAppFlex(ui.createCardForm, 15)
-	ui.flexSelectCreate = ui.NewAppFlex(ui.listSelectCreate, 15)
+	ui.flexSelectCreate = ui.NewAppFlex(ui.listSelectCreate, 12)
 }
 
 func (ui *UI) ListSelectCreate() {
@@ -42,14 +39,8 @@ func (ui *UI) ListSelectCreate() {
 			ui.createCardFrm()
 			ui.pages.SwitchToPage(NewCardForm)
 		}).
-		AddItem("Quit", "", 'q', func() {
-			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-			ui.MainApp.Stop()
-			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-			if err != nil {
-				log.Print("stop programm error")
-				return
-			}
+		AddItem("Main menu", "", 'q', func() {
+			ui.pages.SwitchToPage(MainPage)
 		})
 	ui.listSelectCreate.SetBorder(true)
 	ui.listSelectCreate.SetTitle("Create menu")

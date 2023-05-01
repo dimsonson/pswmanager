@@ -1,15 +1,12 @@
 package ui
 
 import (
-	"os"
 	"strconv"
-	"syscall"
 
 	"github.com/derailed/tcell/v2"
 	"github.com/derailed/tview"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/pkg/log"
-	"github.com/rs/zerolog"
 )
 
 func (ui *UI) FlexRead() {
@@ -18,19 +15,22 @@ func (ui *UI) FlexRead() {
 	ui.flexLoginPairRead = ui.NewAppFlex(ui.readLoginPairForm, 12)
 	ui.flexBinaryRead = ui.NewAppFlex(ui.readBinaryForm, 12)
 	ui.flexCardRead = ui.NewAppFlex(ui.readCardForm, 15)
+
+	ui.flexTextReadSearch = ui.NewAppFlex(ui.listTextSearchResult, 15)
 }
 
 func (ui *UI) ListSelectRead() {
 	ui.listSelectRead = tview.NewList().
 		AddItem("Text Item", "", 'a', func() {
 			ui.readTextForm.Clear(true)
-			textRecord := models.TextRecord{
-				RecordID: "123",
-				Metadata: "www.ru",
-				Text:     "secret",
-			}
-			ui.readTextFrm(textRecord)
-			ui.pages.SwitchToPage(ReadTextForm)
+			// textRecord := models.TextRecord{
+			// 	RecordID: "123",
+			// 	Metadata: "www.ru",
+			// 	Text:     "secret",
+			// }
+			//ui.readTextFrm(textRecord)
+			ui.addTextItems()
+			ui.pages.SwitchToPage(ReadBinarySearch)
 		}).
 		AddItem("Login pair", "", 'b', func() {
 			ui.readLoginPairForm.Clear(true)
@@ -47,14 +47,8 @@ func (ui *UI) ListSelectRead() {
 			ui.readCardFrm()
 			ui.pages.SwitchToPage(ReadCardForm)
 		}).
-		AddItem("Quit", "", 'q', func() {
-			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-			ui.MainApp.Stop()
-			err := syscall.Kill(syscall.Getpid(), syscall.SIGINT)
-			if err != nil {
-				log.Print("stop programm error")
-				return
-			}
+		AddItem("Main menu", "", 'q', func() {
+			ui.pages.SwitchToPage(MainPage)
 		})
 	ui.listSelectRead.SetBorder(true)
 	ui.listSelectRead.SetTitle("Read menu")
@@ -66,7 +60,10 @@ func (ui *UI) ListSelectRead() {
 
 func (ui *UI) addTextItems() {
 	for index, item := range ui.TextSearchResult {
-		ui.listTextSearchResult.AddItem(item.Metadata+" "+item.Text, "", rune(49+index), nil)
+		ui.listTextSearchResult.AddItem(item.Metadata+" "+item.Text, "", rune(49+index), func() {
+			ui.readTextFrm(item)
+			ui.pages.SwitchToPage(ReadTextForm)
+		})
 	}
 }
 

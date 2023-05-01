@@ -27,6 +27,7 @@ const (
 	ReadLoginPairForm string = "ReadLoginPairForm"
 	ReadCardForm      string = "ReadCardForm"
 	ReadBinaryForm    string = "ReadBinaryForm"
+	ReadBinarySearch    string = "ReadBinarySearch"
 )
 
 type (
@@ -99,6 +100,11 @@ type ReadUI struct {
 	LoginsSearchResult     []models.LoginRecord
 	BinarySearchResult     []models.BinaryRecord
 	CardSearchResult       []models.CardRecord
+
+	flexLoginPairReadSearch *tview.Flex
+	flexBinaryReadSearch    *tview.Flex
+	flexCardReadSearch      *tview.Flex
+	flexTextReadSearch      *tview.Flex
 }
 
 type DialogUI struct {
@@ -116,7 +122,7 @@ func (ui *UI) NewAppFlex(primitive tview.Primitive, fixedSize int) *tview.Flex {
 		AddItem(primitive, fixedSize, 1, true).
 		AddItem(ui.LogWindow.SetChangedFunc(func() { ui.MainApp.Draw() }), 10, 0, false).
 		AddItem(ui.textMain, 1, 1, false)
-		return flex
+	return flex
 }
 
 func (ui *UI) Init() {
@@ -136,10 +142,18 @@ func (ui *UI) Init() {
 	ui.listLoginsSearchResult = tview.NewList().ShowSecondaryText(false)
 	ui.listBinarySearchResult = tview.NewList().ShowSecondaryText(false)
 	ui.listCardSearchResult = tview.NewList().ShowSecondaryText(false)
+
+	r1 := models.TextRecord{
+		Metadata: "test1",
+		Text:     "texttext1",
+	}
+	r2 := models.TextRecord{
+		Metadata: "test2",
+		Text:     "texttext2",
+	}
+	ui.TextSearchResult = []models.TextRecord{r1, r2}
+
 	ui.textMain = tview.NewTextView()
-	//ui.flexSelectCreate = tview.NewFlex()
-	//ui.listLogin = tview.NewList()
-	//ui.listMain = tview.NewList()
 	ui.LogWindow = tview.NewTextView()
 	ui.TextConfig()
 	ui.ListLogin()
@@ -177,6 +191,8 @@ func (ui *UI) PagesConfig() {
 	ui.pages.AddPage(ReadLoginPairForm, ui.flexLoginPairRead, true, false)
 	ui.pages.AddPage(ReadCardForm, ui.flexCardRead, true, false)
 	ui.pages.AddPage(ReadBinaryForm, ui.flexBinaryRead, true, false)
+
+	ui.pages.AddPage(ReadBinarySearch, ui.flexTextReadSearch, true, false)
 }
 
 func (ui *UI) FlexMain() {
