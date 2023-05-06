@@ -94,7 +94,7 @@ func (ui *UI) registerFrm() *tview.Form {
 		if loginpsw.uLogin == "0" {
 			log.Print("user reg 0")
 			ui.ShowOk("Registration successful. \n Please, keep your credentials safe.", func() {
-					ui.pages.SwitchToPage(LoginPage)
+				ui.pages.SwitchToPage(LoginPage)
 			})
 		}
 		if loginpsw.uLogin == "1" {
@@ -117,3 +117,5 @@ func (ui *UI) registerFrm() *tview.Form {
 	})
 	return ui.regform
 }
+
+
