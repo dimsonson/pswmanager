@@ -22,7 +22,9 @@ func New(dsn string) (*SQLite, error) {
 	// key := "2DD29CA851E7B56E4697B0E1F08507293D761A05CE4D1B628663F411A8086D99"
 	// dbname := fmt.Sprintf("db?_pragma_key=x'%s'&_pragma_cipher_page_size=4096", key)
 
-	db, err := sql.Open("sqlite3", "db?_pragma_key=123") // dbname)
+	dbname := fmt.Sprintf("%s?_pragma_key=123", dsn)
+
+	db, err := sql.Open("sqlite3", dbname)
 	if err != nil {
 		return nil, fmt.Errorf("can't open database: %w", err)
 	}

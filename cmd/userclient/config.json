@@ -2,10 +2,12 @@
   "server_address": "",
   "enable_tls": false,
   "sqlite": {
-    "sqlite_dsn": "file:./db?_auth\u0026_auth_user=admin\u0026_auth_pass=admin\u0026_auth_crypt=sha1"
+    "sqlite_dsn": "db"
   },
   "grpc": {
     "Network": "",
     "Port": ""
-  }
+  },
+  "UserID": "",
+  "AppID": ""
 }
