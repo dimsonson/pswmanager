@@ -30,8 +30,12 @@ require (
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
+	github.com/mattn/go-sqlite3 v1.14.16 // indirect
+	github.com/mutecomm/go-sqlcipher v0.0.0-20190227152316-55dbde17881f // indirect
+	github.com/mutecomm/go-sqlcipher/v4 v4.4.2 // indirect
 	github.com/rivo/tview v0.0.0-20230406072732-e22ce9588bb4 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
+	github.com/xeodou/go-sqlcipher v0.0.0-20200727080346-d681773ef093 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect

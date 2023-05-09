@@ -9,10 +9,10 @@ import (
 	"syscall"
 
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
+	"github.com/dimsonson/pswmanager/internal/userclient/initstart"
 	"github.com/dimsonson/pswmanager/internal/userclient/ui"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/rs/zerolog"
-
 )
 
 func init() {
@@ -50,8 +50,10 @@ func main() {
 	cfg := config.New()
 	// парсинг конфигурации сервера
 	cfg.Parse()
+
+	init:= initstart.New(cfg)
 	// старт серверов
-	cfg.ServerStart(ctx, stop, &wg)
+	init.InitAndStart(ctx, stop, &wg)
 	// остановка всех сущностей, куда передан контекст по прерыванию
 	stop()
 	// закрываем соединения

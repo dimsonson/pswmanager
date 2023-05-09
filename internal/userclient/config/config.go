@@ -2,14 +2,12 @@ package config
 
 import (
 	"context"
-	"crypto/tls"
 	"database/sql"
 	"encoding/json"
 	"flag"
 	"os"
 	"sync"
 
-	"github.com/MashinIvan/rabbitmq"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/streadway/amqp"
 )
@@ -27,9 +25,7 @@ type ServiceConfig struct {
 	ServerAddress  string         `json:"server_address"`
 	EnableTLS      bool           `json:"enable_tls"`
 	ConfigJSONpath string         `json:"-"`
-	Rabbitmq       RabbitmqSrv    `json:"rabbitmq"`
-	Redis          Redis          `json:"redis"`
-	Postgree       PostgreSQL     `json:"postgre"`
+	SQLight        SQLight        `json:"postgre"`
 	GRPC           GRPC           `json:"grpc"`
 	Wg             sync.WaitGroup `json:"-"`
 }
@@ -40,72 +36,8 @@ type GRPC struct {
 	Port    string
 }
 
-// RabbitmqSrv обобщающая структура конфигурации RabbitMq server.
-type RabbitmqSrv struct {
-	User           string
-	Psw            string
-	Host           string
-	Port           string
-	ClientRMQ      ClientRMQ
-	Exchange       ExchangeParams
-	Queue          QueueParams
-	QoS            QualityOfService
-	Consumer       ConsumerParams
-	Controllers    []ControllerParams
-	RoutingWorkers int
-}
-
-// ExchangeParams общие настройки amqp exchange.
-type ExchangeParams struct {
-	Name       string
-	Kind       string
-	Durable    bool
-	AutoDelete bool
-	Internal   bool
-	NoWait     bool
-	Args       amqp.Table
-}
-
-// QueueParams общие настройки amqp queue.
-type QueueParams struct {
-	Name       string
-	Durable    bool
-	AutoDelete bool
-	Exclusive  bool
-	NoWait     bool
-	Args       amqp.Table
-}
-
-// QualityOfService общие настройки amqp qos.
-type QualityOfService struct {
-	PrefetchCount int
-	PrefetchSize  int
-}
-
-// ConsumerParams общие настройки amqp consumer.
-type ConsumerParams struct {
-	ConsumerName string
-	AutoAck      bool
-	ConsumerArgs amqp.Table
-}
-
-// ControllerParams общие настройки rmq server controllers.
-type ControllerParams struct {
-	RoutingKey string
-	Controller rabbitmq.ControllerFunc `json:"-"`
-}
-
-type Redis struct {
-	Username  string
-	Password  string
-	Network   string
-	Addr      string // host:port address.
-	DB        int
-	TLSConfig *tls.Config `json:"-"`
-}
-
-type PostgreSQL struct {
-	Dsn  string  `json:"postgre_dsn"`
+type SQLight struct {
+	Dsn  string  `json:"sqlite_dsn"`
 	Conn *sql.DB `json:"-"`
 }
 
@@ -135,7 +67,6 @@ type App struct {
 	ExchangeBindings []string `redis:"bindings"`
 }
 
-
 // NewConfig конструктор создания конфигурации сервера из переменных оружения, флагов, конфиг файла, а так же значений по умолчанию.
 func New() *ServiceConfig {
 	return &ServiceConfig{}
@@ -162,68 +93,84 @@ func (cfg *ServiceConfig) Parse() {
 			}
 		}
 	}
-	// сохранение congig.json
-	// configFile, err := json.MarshalIndent(cfg, "", "  ")
-	// if err != nil {
-	// 	log.Printf("marshal config file error: %s", err)
-	// }
-	// err = os.WriteFile("config.json", configFile, 0666)
-	// if err != nil {
-	// 	log.Printf("write config file error: %s", err)
-	// }
+	//сохранение congig.json
+	cfg.SQLight.Dsn = "file:test.s3db" //?_auth&_auth_user=admin&_auth_pass=admin&_auth_crypt=sha1"
+	configFile, err := json.MarshalIndent(cfg, "", "  ")
+	if err != nil {
+		log.Printf("marshal config file error: %s", err)
+	}
+	err = os.WriteFile("config.json", configFile, 0666)
+	if err != nil {
+		log.Printf("write config file error: %s", err)
+	}
 }
 
-func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
+// func (cfg *ServiceConfig) ServerStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
 
-	// noSQLstorage := nosql.New(cfg.Redis)
+// 	sl, err := storage.New(cfg.SQLight.Dsn)
+// 	if err != nil {
+// 		log.Print("storage new error:", err)
+// 	}
 
-	// clientRMQ, err := clientrmq.NewClientRMQ(cfg.Rabbitmq)
-	// if err != nil {
-	// 	log.Printf("new client error: %s", err)
-	// 	return
-	// }
-	// cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn
-	// cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
-	// cfgUser := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
+// 	srvtext := services.NewText(sl)
 
-	// SQLstorage := sql.New(cfg.Postgree.Dsn)
-	// cfg.Postgree.Conn = SQLstorage.PostgreConn
+// 	testMsg := models.TextRecord{
+// 		RecordID:  uuid.NewString(),
+// 		ChngTime:  time.Now(),
+// 		UID:       "uidtest",
+// 		AppID:     "AppId Test",
+// 		Text:      "secured text sending",
+// 		Metadata:  "meta data description sample",
+// 		Operation: models.Create,
+// 	}
 
-	// servLogin := services.NewLogin(SQLstorage)
-	// servText := services.NewText(SQLstorage)
-	// servCard := services.NewCard(SQLstorage)
-	// servBinary := services.NewBinary(SQLstorage)
+// 	if err = srvtext.ProcessingText(ctx, testMsg); err != nil {
+// 		log.Print("storage new error:", err)
+// 	}
 
-	// cfgReadUsers := services.NewReadUser(SQLstorage)
+// 	// noSQLstorage := nosql.New(cfg.Redis)
 
-	// handlers := rmq.New(servText, servLogin, servBinary, servCard)
+// 	// clientRMQ, err := clientrmq.NewClientRMQ(cfg.Rabbitmq)
+// 	// if err != nil {
+// 	// 	log.Printf("new client error: %s", err)
+// 	// 	return
+// 	// }
+// 	// cfg.Rabbitmq.ClientRMQ.Conn = clientRMQ.Conn
+// 	// cfg.Rabbitmq.ClientRMQ.Ch = clientRMQ.Ch
+// 	// cfgUser := services.NewUserData(noSQLstorage, clientRMQ, cfg.Rabbitmq)
 
-	// grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, wg)
-	// grpcSrv.InitGRPCservice(cfgReadUsers, cfgUser)
-	// //wg.Add(1)
-	// //grpcSrv.GrpcGracefullShotdown()
-	// //wg.Add(1)
-	// //go grpcSrv.StartGRPC()
+// 	// SQLstorage := sql.New(cfg.Postgree.Dsn)
+// 	// cfg.Postgree.Conn = SQLstorage.PostgreConn
 
-	// rmqRouter := router.New(ctx, cfg.Rabbitmq, *handlers)
-	// rmqSrv := rabbitmq.NewServer(ctx, stop, cfg.Rabbitmq, wg)
-	// rmqSrv.Init()
-	// wg.Add(1)
-	// rmqSrv.Shutdown()
-	// wg.Add(1)
-	// log.Print("rmq starting...")
-	// rmqSrv.Start(ctx, rmqRouter)
-	<- ctx.Done()
-}
+// 	// servLogin := services.NewLogin(SQLstorage)
+// 	// servText := services.NewText(SQLstorage)
+// 	// servCard := services.NewCard(SQLstorage)
+// 	// servBinary := services.NewBinary(SQLstorage)
+
+// 	// cfgReadUsers := services.NewReadUser(SQLstorage)
+
+// 	// handlers := rmq.New(servText, servLogin, servBinary, servCard)
+
+// 	// grpcSrv := grpc.NewServer(ctx, stop, cfg.GRPC, wg)
+// 	// grpcSrv.InitGRPCservice(cfgReadUsers, cfgUser)
+// 	// //wg.Add(1)
+// 	// //grpcSrv.GrpcGracefullShotdown()
+// 	// //wg.Add(1)
+// 	// //go grpcSrv.StartGRPC()
+
+// 	// rmqRouter := router.New(ctx, cfg.Rabbitmq, *handlers)
+// 	// rmqSrv := rabbitmq.NewServer(ctx, stop, cfg.Rabbitmq, wg)
+// 	// rmqSrv.Init()
+// 	// wg.Add(1)
+// 	// rmqSrv.Shutdown()
+// 	// wg.Add(1)
+// 	// log.Print("rmq starting...")
+// 	// rmqSrv.Start(ctx, rmqRouter)
+// 	<-ctx.Done()
+// }
 
 func (cfg *ServiceConfig) ConnClose(ctx context.Context) {
-	if cfg.Postgree.Conn != nil {
-		cfg.Postgree.Conn.Close()
-	}
-	if cfg.Rabbitmq.ClientRMQ.Conn != nil {
-		cfg.Rabbitmq.ClientRMQ.Conn.Close()
-	}
-	if cfg.Rabbitmq.ClientRMQ.Ch != nil {
-		cfg.Rabbitmq.ClientRMQ.Ch.Close()
+	if cfg.SQLight.Conn != nil {
+		cfg.SQLight.Conn.Close()
 	}
 }

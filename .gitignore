@@ -23,3 +23,4 @@ vendor/
 notes.txt
 cmd/pswm/.DS_Store
 .DS_Store
+internal/userclient/config/config.go
