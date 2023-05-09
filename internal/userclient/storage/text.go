@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"time"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 )
@@ -20,7 +19,7 @@ func (sl *SQLite) CreateText(ctx context.Context, record models.TextRecord) erro
 			$6,
 			$7
 			)`
-	_, err := sl.db.ExecContext(ctx, q, record.Metadata, record.Text, record.UID, record.AppID, record.RecordID, false, time.Now())
+	_, err := sl.db.ExecContext(ctx, q, record.Metadata, record.Text, record.UID, record.AppID, record.RecordID, false, record.ChngTime)
 	return err
 }
 

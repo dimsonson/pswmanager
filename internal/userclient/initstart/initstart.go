@@ -60,8 +60,50 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Print("storage new error:", err)
 	}
 
+	srvlogin := services.NewLogin(sl)
 
 
+
+
+	msgLogin := models.LoginRecord{
+		RecordID:  uuid.NewString(),
+		ChngTime:  time.Now(),
+		UID:       init.cfg.UserID,
+		AppID:     init.cfg.AppID,
+		Login:     "login0001",
+		Psw:       "password001",
+		Metadata:  "meta data description sample",
+		Operation: models.Create,
+	}
+	if err = srvlogin.ProcessingLogin(ctx, msgLogin); err != nil {
+		log.Print("storage new error:", err)
+	}
+
+
+
+	// msgBinary := models.BinaryRecord{
+	// 	RecordID:  uuid.NewString(),
+	// 	ChngTime:  time.Now(),
+	// 	UID:       newUserCfg.UserID,
+	// 	AppID:     newAppCfg.Appid,
+	// 	Binary:    "secured text sending",
+	// 	Metadata:  "meta data description sample",
+	// 	Operation: models.Create,
+	// }
+
+	// msgCard := models.CardRecord{
+	// 	RecordID:  uuid.NewString(),
+	// 	ChngTime:  time.Now(),
+	// 	UID:       newUserCfg.UserID,
+	// 	AppID:     newAppCfg.Appid,
+	// 	Brand:     1,
+	// 	ValidDate: "01/28",
+	// 	Number:    "2202245445789856",
+	// 	Code:      123,
+	// 	Holder:    "DMTIRY BO",
+	// 	Metadata:  "meta data card description sample",
+	// 	Operation: models.Create,
+	// }
 
 	<-ctx.Done()
 }
