@@ -11,6 +11,7 @@ import (
 
 type SQLite struct {
 	db *sql.DB
+	NamedParam
 }
 
 func New(dsn string) (*SQLite, error) {
@@ -87,4 +88,10 @@ func New(dsn string) (*SQLite, error) {
 
 func (sl *SQLite) Close() {
 	sl.db.Close()
+}
+
+type NamedParam string
+
+func (sl *NamedParam) Param(name string, value string) NamedParam {
+	return NamedParam(value)
 }

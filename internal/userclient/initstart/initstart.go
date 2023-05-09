@@ -42,10 +42,26 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		Metadata:  "meta data description sample",
 		Operation: models.Create,
 	}
-
 	if err = srvtext.ProcessingText(ctx, testMsg); err != nil {
 		log.Print("storage new error:", err)
 	}
+
+	updateTxtMsg := testMsg
+	updateTxtMsg.Text = "update secured text sending"
+	updateTxtMsg.Metadata = "123"
+	updateTxtMsg.Operation = models.Update
+	if err = srvtext.ProcessingText(ctx, updateTxtMsg); err != nil {
+		log.Print("storage new error:", err)
+	}
+
+	delTxtMsg := testMsg
+	delTxtMsg.Operation = models.Delete
+	if err = srvtext.ProcessingText(ctx, delTxtMsg); err != nil {
+		log.Print("storage new error:", err)
+	}
+
+
+
 
 	<-ctx.Done()
 }
