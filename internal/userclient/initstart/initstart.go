@@ -8,8 +8,8 @@ import (
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/google/uuid"
 
-	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
+	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/internal/userclient/services"
 	"github.com/dimsonson/pswmanager/internal/userclient/storage"
 )
@@ -48,5 +48,10 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	}
 
 	<-ctx.Done()
+}
 
+func (init *Init) ConnClose(ctx context.Context) {
+	if init.cfg.SQLight.Conn != nil {
+		init.cfg.SQLight.Conn.Close()
+	}
 }

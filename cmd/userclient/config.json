@@ -1,11 +1,11 @@
 {
-  "server_address": "localhost:8080",
+  "server_address": "",
   "enable_tls": false,
-  "postgre": {
-    "sqlite_dsn": "file:test.s3db"
+  "sqlite": {
+    "sqlite_dsn": "file:./db?_auth\u0026_auth_user=admin\u0026_auth_pass=admin\u0026_auth_crypt=sha1"
   },
   "grpc": {
-    "Network": "tcp",
-    "Port": ":8080"
+    "Network": "",
+    "Port": ""
   }
 }
