@@ -12,6 +12,7 @@ type LoginStorageProviver interface {
 	CreateLogin(ctx context.Context, record models.LoginRecord) error
 	UpdateLogin(ctx context.Context, record models.LoginRecord) error
 	DeleteLogin(ctx context.Context, record models.LoginRecord) error
+	SearchLogin(ctx context.Context, searchInput string) ([]models.LoginRecord, error)
 }
 
 // Services структура конструктора бизнес логики.
@@ -50,4 +51,12 @@ func (sr *LoginServices) ProcessingLogin(ctx context.Context, record models.Logi
 		return err
 	}
 	return err
+}
+
+func (sr *LoginServices) SearchLogin(ctx context.Context, searchInput string) ([]models.LoginRecord, error) {
+	loginRecords, err := sr.storage.SearchLogin(ctx, searchInput)
+	if err != nil {
+		log.Print("rearch login record error: ", err)
+	}
+	return loginRecords, err
 }

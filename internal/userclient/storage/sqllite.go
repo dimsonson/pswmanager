@@ -41,8 +41,8 @@ func New(dsn string) (*SQLite, error) {
 	"uid" TEXT NOT NULL,
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
-	"deleted" BOOLEAN DEFAULT 'false',
-	"chng_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+	"chng_time" DATETIME,
+	"deleted" INTEGER DEFAULT 0
 	);
 
 	CREATE TABLE IF NOT EXISTS text_records (
@@ -51,8 +51,8 @@ func New(dsn string) (*SQLite, error) {
 	"uid" TEXT NOT NULL,
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
-	"deleted" BOOLEAN DEFAULT 'false', 
-	"chng_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+	"chng_time" DATETIME,
+	"deleted" BOOLEAN DEFAULT 'false' 
 	);
 
 	CREATE TABLE IF NOT EXISTS binary_records (
@@ -61,8 +61,8 @@ func New(dsn string) (*SQLite, error) {
 	"uid" TEXT NOT NULL,
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
-	"deleted" BOOLEAN DEFAULT 'false',
-	"chng_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+	"chng_time" DATETIME,
+	"deleted" BOOLEAN DEFAULT 'false'
 	);
 
 	CREATE TABLE IF NOT EXISTS card_records (
@@ -75,8 +75,8 @@ func New(dsn string) (*SQLite, error) {
 	"uid" TEXT NOT NULL,
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
-	"deleted" BOOLEAN DEFAULT 'false',
-	"chng_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
+	"chng_time" DATETIME,
+	"deleted" BOOLEAN DEFAULT 'false'
 	);
 	`
 	if _, err = db.ExecContext(ctx, q); err != nil {

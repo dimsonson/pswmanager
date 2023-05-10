@@ -21,7 +21,7 @@ func (sl *SQLite) CreateLogin(ctx context.Context, record models.LoginRecord) er
 			$7,
 			$8			
 			)`
-	_, err := sl.db.ExecContext(ctx, q, record.Metadata, record.Login, record.Psw, record.UID, record.AppID, record.RecordID, false, record.ChngTime)
+	_, err := sl.db.ExecContext(ctx, q, record.Metadata, record.Login, record.Psw, record.UID, record.AppID, record.RecordID, record.ChngTime, false)
 	return err
 }
 
@@ -47,29 +47,38 @@ func (sl *SQLite) DeleteLogin(ctx context.Context, record models.LoginRecord) er
 	return err
 }
 
-func (sl *SQLite) SearchLogin(ctx context.Context, record models.LoginRecord) error {
-	userRecords := new(models.SetOfRecords)
+func (sl *SQLite) SearchLogin(ctx context.Context, searchInput string) ([]models.LoginRecord, error) {
+	loginRecords := new([]models.LoginRecord)
+	searchInput = "%"+searchInput+"%"
 	// создаем текст запроса
-	q := `SELECT metadata, textdata, uid, appid, recordid, chng_time FROM text_records WHERE uid = $1 AND deleted <> true`
+	q := `SELECT metadata, login, psw, uid, appid, recordid, chng_time FROM login_records WHERE metadata LIKE $1 AND deleted <> 1`
 	// делаем запрос в SQL, получаем строку
-	rows, err := sl.db.QueryContext(ctx, q, record.RecordID)
+	rows, err := sl.db.QueryContext(ctx, q, searchInput)
 	if err != nil {
-		log.Print("select text_records SQL reuest error :", err)
+		log.Print("select login_records SQL reqest error :", err)
+		return nil, err
 	}
 	defer rows.Close()
-	// пишем результат запроса в структуру
+	// пишем результат запроса в слайс
 	for rows.Next() {
-		userTextRecord := new(models.TextRecord)
-		err = rows.Scan(&userTextRecord.Metadata, &userTextRecord.Text, &userTextRecord.UID, &userTextRecord.AppID, &userTextRecord.RecordID, &userTextRecord.ChngTime)
+		loginRecord := new(models.LoginRecord)
+		err = rows.Scan(
+			&loginRecord.Metadata,
+			&loginRecord.Login,
+			&loginRecord.Psw,
+			&loginRecord.UID,
+			&loginRecord.AppID,
+			&loginRecord.RecordID,
+			&loginRecord.ChngTime)
 		if err != nil {
-			log.Print("row by row scan text_records error :", err)
+			log.Print("row by row scan login_records error :", err)
 		}
-		userRecords.SetTextRec = append(userRecords.SetTextRec, *userTextRecord)
+		*loginRecords = append(*loginRecords, *loginRecord)
 	}
 	// проверяем итерации на ошибки
 	err = rows.Err()
 	if err != nil {
 		log.Print("request text_records iteration scan error:", err)
 	}
-	return err
+	return *loginRecords, err
 }
