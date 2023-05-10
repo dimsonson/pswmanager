@@ -134,7 +134,12 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Print("storage new error:", err)
 	}
 
+	binaryResultSearch, err := srvBinary.SearchBinary(ctx, "sample")
+	if err != nil {
+		log.Print("search login_records error :", err)
+	}
 
+	log.Print(binaryResultSearch)
 
 
 	// msgCard := models.CardRecord{

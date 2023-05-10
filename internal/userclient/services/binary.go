@@ -12,6 +12,7 @@ type BinaryStorageProviver interface {
 	CreateBinary(ctx context.Context, record models.BinaryRecord) error
 	UpdateBinary(ctx context.Context, record models.BinaryRecord) error
 	DeleteBinary(ctx context.Context, record models.BinaryRecord) error
+	SearchBinary(ctx context.Context, searchInput string) ([]models.BinaryRecord, error)
 }
 
 // Services структура конструктора бизнес логики.
@@ -50,4 +51,12 @@ func (sr *BinaryServices) ProcessingBinary(ctx context.Context, record models.Bi
 		return err
 	}
 	return err
+}
+
+func (sr *BinaryServices) SearchBinary(ctx context.Context, searchInput string) ([]models.BinaryRecord, error) {
+	binaryRecords, err := sr.storage.SearchBinary(ctx, searchInput)
+	if err != nil {
+		log.Print("search binary record error: ", err)
+	}
+	return binaryRecords, err
 }
