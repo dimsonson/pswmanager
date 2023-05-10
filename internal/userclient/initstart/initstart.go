@@ -54,11 +54,18 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Print("storage new error:", err)
 	}
 
-	delTxtMsg := testMsg
-	delTxtMsg.Operation = models.Delete
-	if err = srvtext.ProcessingText(ctx, delTxtMsg); err != nil {
-		log.Print("storage new error:", err)
+	// delTxtMsg := testMsg
+	// delTxtMsg.Operation = models.Delete
+	// if err = srvtext.ProcessingText(ctx, delTxtMsg); err != nil {
+	// 	log.Print("storage new error:", err)
+	// }
+
+	resultTextSearch, err := srvtext.SearchText(ctx, "123")
+	if err != nil {
+		log.Print("search login_records error :", err)
 	}
+
+	log.Print(resultTextSearch)
 
 	srvlogin := services.NewLogin(sl)
 
@@ -84,11 +91,11 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Print("storage new error:", err)
 	}
 
-	delLoginMsg := updateLoginMsg
-	delLoginMsg.Operation = models.Delete
-	if err = srvlogin.ProcessingLogin(ctx, delLoginMsg); err != nil {
-		log.Print("storage new error:", err)
-	}
+	// delLoginMsg := updateLoginMsg
+	// delLoginMsg.Operation = models.Delete
+	// if err = srvlogin.ProcessingLogin(ctx, delLoginMsg); err != nil {
+	// 	log.Print("storage new error:", err)
+	// }
 
 	resultSearch, err := srvlogin.SearchLogin(ctx, "12")
 	if err != nil {
@@ -97,15 +104,38 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	log.Print(resultSearch)
 
-	// msgBinary := models.BinaryRecord{
-	// 	RecordID:  uuid.NewString(),
-	// 	ChngTime:  time.Now(),
-	// 	UID:       newUserCfg.UserID,
-	// 	AppID:     newAppCfg.Appid,
-	// 	Binary:    "secured text sending",
-	// 	Metadata:  "meta data description sample",
-	// 	Operation: models.Create,
-	// }
+	srvBinary := services.NewBinary(sl)
+
+	msgBinary := models.BinaryRecord{
+		RecordID:  uuid.NewString(),
+		ChngTime:  time.Now(),
+		UID:       "newUserCfg.UserID",
+		AppID:     "newAppCfg.Appid",
+		Binary:    "secured binary sending",
+		Metadata:  "meta data description sample",
+		Operation: models.Create,
+	}
+
+	if err = srvBinary.ProcessingBinary(ctx, msgBinary); err != nil {
+		log.Print("storage new error:", err)
+	}
+
+	updateBinaryMsg := msgBinary
+	updateBinaryMsg.Binary = "update binary"
+	updateBinaryMsg.Metadata = "123updateBinary"
+	updateBinaryMsg.Operation = models.Update
+	if err = srvBinary.ProcessingBinary(ctx, updateBinaryMsg); err != nil {
+		log.Print("storage new error:", err)
+	}
+
+	delBinaryMsg := updateBinaryMsg
+	delBinaryMsg.Operation = models.Delete
+	if err = srvBinary.ProcessingBinary(ctx, delBinaryMsg); err != nil {
+		log.Print("storage new error:", err)
+	}
+
+
+
 
 	// msgCard := models.CardRecord{
 	// 	RecordID:  uuid.NewString(),

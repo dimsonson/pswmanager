@@ -12,6 +12,7 @@ type TextStorageProviver interface {
 	CreateText(ctx context.Context, record models.TextRecord) error
 	UpdateText(ctx context.Context, record models.TextRecord) error
 	DeleteText(ctx context.Context, record models.TextRecord) error
+	SearchText(ctx context.Context, searchInput string) ([]models.TextRecord, error)
 }
 
 // Services структура конструктора бизнес логики.
@@ -50,4 +51,12 @@ func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRe
 		return err
 	}
 	return err
+}
+
+func (sr *TextServices) SearchText(ctx context.Context, searchInput string) ([]models.TextRecord, error) {
+	textRecords, err := sr.sl.SearchText(ctx, searchInput)
+	if err != nil {
+		log.Print("rearch text record error: ", err)
+	}
+	return textRecords, err
 }

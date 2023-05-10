@@ -2,7 +2,7 @@ package storage
 
 import (
 	"context"
-	"log"
+	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 )
