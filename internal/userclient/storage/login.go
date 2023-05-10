@@ -29,10 +29,10 @@ func (sl *SQLite) CreateLogin(ctx context.Context, record models.LoginRecord) er
 func (sl *SQLite) UpdateLogin(ctx context.Context, record models.LoginRecord) error {
 	// создаем текст запроса
 	q := `UPDATE login_records 
-	SET  metadata = $3, login = $4, psw = $5 
-	WHERE recordid = $1 
-	AND uid = $2`
-	_, err := sl.db.ExecContext(ctx, q, record.RecordID, record.UID, record.Metadata, record.Login, record.Psw)
+	SET  metadata = $1, login = $2, psw = $3 
+	WHERE recordid = $4 
+	AND uid = $5`
+	_, err := sl.db.ExecContext(ctx, q, record.Metadata, record.Login, record.Psw, record.RecordID, record.UID)
 	return err
 }
 
@@ -40,7 +40,7 @@ func (sl *SQLite) UpdateLogin(ctx context.Context, record models.LoginRecord) er
 func (sl *SQLite) DeleteLogin(ctx context.Context, record models.LoginRecord) error {
 	// создаем текст запроса
 	q := `UPDATE login_records 
-	SET  deleted = true 
+	SET  deleted = 1 
 	WHERE recordid = $1 
 	AND uid = $2`
 	_, err := sl.db.ExecContext(ctx, q, record.RecordID, record.UID)

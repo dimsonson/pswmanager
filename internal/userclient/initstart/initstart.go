@@ -60,16 +60,14 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Print("storage new error:", err)
 	}
 
+
 	srvlogin := services.NewLogin(sl)
-
-
-
 
 	msgLogin := models.LoginRecord{
 		RecordID:  uuid.NewString(),
 		ChngTime:  time.Now(),
-		UID:       init.cfg.UserID,
-		AppID:     init.cfg.AppID,
+		UID:       "uid1", //init.cfg.UserID,
+		AppID:     "app1", //init.cfg.AppID,
 		Login:     "login0001",
 		Psw:       "password001",
 		Metadata:  "meta data description sample",
@@ -79,6 +77,19 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Print("storage new error:", err)
 	}
 
+	updateLoginMsg := msgLogin
+	updateLoginMsg.Login = "update login"
+	updateLoginMsg.Metadata = "123update"
+	updateLoginMsg.Operation = models.Update
+	if err = srvlogin.ProcessingLogin(ctx, updateLoginMsg); err != nil {
+		log.Print("storage new error:", err)
+	}
+
+	delLoginMsg := updateLoginMsg
+	delLoginMsg.Operation = models.Delete
+	if err = srvlogin.ProcessingLogin(ctx, delLoginMsg); err != nil {
+		log.Print("storage new error:", err)
+	}
 
 
 	// msgBinary := models.BinaryRecord{

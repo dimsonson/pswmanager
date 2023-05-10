@@ -41,8 +41,8 @@ func New(dsn string) (*SQLite, error) {
 	"uid" TEXT NOT NULL,
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
-	"chng_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-	"deleted" BOOLEAN DEFAULT 'false'
+	"deleted" BOOLEAN DEFAULT 'false',
+	"chng_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 	);
 
 	CREATE TABLE IF NOT EXISTS text_records (
@@ -75,8 +75,8 @@ func New(dsn string) (*SQLite, error) {
 	"uid" TEXT NOT NULL,
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
-	"chng_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP,
-	"deleted" BOOLEAN DEFAULT 'false'
+	"deleted" BOOLEAN DEFAULT 'false',
+	"chng_time" timestamp with time zone DEFAULT CURRENT_TIMESTAMP
 	);
 	`
 	if _, err = db.ExecContext(ctx, q); err != nil {
