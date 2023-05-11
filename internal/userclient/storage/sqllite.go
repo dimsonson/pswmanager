@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"crypto/sha256"
 	"database/sql"
 	"fmt"
 
@@ -102,4 +103,10 @@ type NamedParam string
 
 func (sl *NamedParam) Param(name string, value string) NamedParam {
 	return NamedParam(value)
+}
+
+// CryptEncoderSHA256 encodes a password with SHA256
+func CryptEncoderSHA256(pass []byte, hash interface{}) []byte {
+	h := sha256.Sum256(pass)
+	return h[:]
 }

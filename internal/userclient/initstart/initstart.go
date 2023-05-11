@@ -25,9 +25,9 @@ func New() *Init {
 }
 
 func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup, uiLog *tview.TextView) {
-	// создание конфигурацию сервера
+	// создание конфигураци клиента
 	init.cfg = config.New()
-	// парсинг конфигурации сервера
+	// парсинг конфигурациии клиента
 	init.cfg.Parse()
 
 	sl, err := storage.New(init.cfg.SQLight.Dsn)
@@ -55,6 +55,8 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	<-ctx.Done()
 }
+
+
 
 func (init *Init) ConnClose(ctx context.Context) {
 	if init.cfg.SQLight.Conn != nil {
