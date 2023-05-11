@@ -44,9 +44,6 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	ui := ui.NewUI(ctx, init.cfg, srvusers)
 	ui.Init(uiLog)
-	//ui.LogWindow = uiLog
-	//log.LogInit()
-	//log.Output(ui.LogWindow)
 	go ui.UIRun()
 
 	//init.test(ctx)

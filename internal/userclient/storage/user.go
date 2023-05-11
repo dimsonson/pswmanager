@@ -76,13 +76,12 @@ func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig) error 
 // проверка наличия нового пользователя в хранилище - авторизация
 func (sl *SQLite) ReadUser(ctx context.Context) (config.UserConfig, error) {
 	ucfg := config.UserConfig{}
-	var passwDB string
 	// создаем текст запроса
-	q := `SELECT password FROM users WHERE login = $1`
+	q := `SELECT ulogin, upsw, uid, appid FROM ucfg`
 	// делаем запрос в SQL, получаем строку и пишем результат запроса в пременную
-	err := sl.db.QueryRowContext(ctx, q, 123).Scan(&passwDB)
+	err := sl.db.QueryRowContext(ctx, q).Scan(&ucfg.UserLogin, &ucfg.UserPsw, &ucfg.UserID, &ucfg.AppID)
 	if err != nil {
-		log.Printf("select StorageAuthorizationCheck SQL request scan error: %s", err)
+		log.Printf("select SQL request scan error: %s", err)
 		return ucfg, err
 	}
 	// сравнение паролей из базы данных и полученного
@@ -97,7 +96,7 @@ func (sl *SQLite) ReadUser(ctx context.Context) (config.UserConfig, error) {
 func (sl *SQLite) CheckUser(ctx context.Context, login string, passwHex string) error {
 	var passwDB string
 	// создаем текст запроса
-	q := `SELECT password FROM users WHERE login = $1`
+	q := `SELECT login, upsw, uid, appid FROM ucfg WHERE ROWNUM = 1`
 	// делаем запрос в SQL, получаем строку и пишем результат запроса в пременную
 	err := sl.db.QueryRowContext(ctx, q, login).Scan(&passwDB)
 	if err != nil {
@@ -111,3 +110,5 @@ func (sl *SQLite) CheckUser(ctx context.Context, login string, passwHex string) 
 	}
 	return err
 }
+
+

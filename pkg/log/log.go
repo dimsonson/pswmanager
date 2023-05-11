@@ -23,9 +23,6 @@ func LogInit() *tview.TextView {
 			NoColor:      true,
 			TimeFormat:   "2006/01/02 15:04:05",
 			FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
-			// FormatMessage: func(i interface{}) string {
-			// 	return fmt.Sprintf("%s%s%s:", settings.ColorNewYellow, i, settings.ColorReset)
-			// },
 			PartsOrder: []string{
 				zerolog.TimestampFieldName,
 				zerolog.LevelFieldName,
@@ -38,17 +35,6 @@ func LogInit() *tview.TextView {
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	return uiLog
 }
-
-// log.Logg = log.Output(zerolog.ConsoleWriter{
-// 	Out:          ui.LogWindow,
-// 	TimeFormat:   "2006/01/02 15:04:05",
-// 	NoColor:      true,
-// 	FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
-// 	PartsOrder:   []string{zerolog.TimestampFieldName, zerolog.LevelFieldName, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
-// 	With().Caller().Logger()
-// stdlog.SetFlags(stdlog.Lshortfile)
-// stdlog.SetOutput(log.Logg)
-// zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 // Output duplicates the global logger and sets w as its output.
 func Output(w io.Writer) zerolog.Logger {

@@ -10,23 +10,6 @@ import (
 	"github.com/dimsonson/pswmanager/pkg/log"
 )
 
-func init() {
-	// uiLog := ui.NewUILogWindow()
-	// //ui.Init()
-	// log.LogInit()
-	// log.Logg = log.Output(zerolog.ConsoleWriter{
-	// 	Out:          uiLog, //  os.Stderr, //ui.LogWindow,
-	// 	TimeFormat:   "2006/01/02 15:04:05",
-	// 	NoColor:      true,
-	// 	FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
-	// 	PartsOrder:   []string{zerolog.TimestampFieldName, zerolog.LevelFieldName, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
-	// 	With().Caller().Logger()
-	// stdlog.SetFlags(stdlog.Lshortfile)
-	// stdlog.SetOutput(log.Logg)
-	// zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	//go ui.UIRun()
-}
-
 // Глобальные переменные для использования при сборке - go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(date +'%Y/%m/%d')' -X main.buildCommit=final"  main.go.
 var (
 	buildVersion string = "N/A"
@@ -37,9 +20,9 @@ var (
 func main() {
 	// Вывод данных о версии, дате, коммите сборки.
 	log.Printf("version=%s, date=%s, commit=%s", buildVersion, buildDate, buildCommit)
-	
+
 	uiLog := log.LogInit()
-	
+
 	var wg sync.WaitGroup
 	// опередяляем контекст уведомления о сигнале прерывания
 	ctx, stop := signal.NotifyContext(
