@@ -83,6 +83,7 @@ func (init *Init) test(ctx context.Context) {
 	if err != nil {
 		log.Print("search login_records error :", err)
 	}
+
 	delTxtMsg := testMsg
 	delTxtMsg.Operation = models.Delete
 	if err = srvtext.ProcessingText(ctx, delTxtMsg); err != nil {
@@ -96,8 +97,8 @@ func (init *Init) test(ctx context.Context) {
 	msgLogin := models.LoginRecord{
 		RecordID:  uuid.NewString(),
 		ChngTime:  time.Now(),
-		UID:       "uid1", //init.cfg.UserID,
-		AppID:     "app1", //init.cfg.AppID,
+		UID:       "uid1", 
+		AppID:     "app1", 
 		Login:     "login0001",
 		Psw:       "password001",
 		Metadata:  "meta data description sample",
