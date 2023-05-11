@@ -7,6 +7,7 @@ import (
 
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/google/uuid"
+	"github.com/derailed/tview"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
@@ -23,7 +24,7 @@ func New() *Init {
 	return &Init{}
 }
 
-func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
+func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup, uiLog *tview.TextView) {
 	// создание конфигурацию сервера
 	init.cfg = config.New()
 	// парсинг конфигурации сервера
@@ -42,8 +43,10 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	}
 
 	ui := ui.NewUI(ctx, init.cfg, srvusers)
-	ui.Init()
+	ui.Init(uiLog)
+	//ui.LogWindow = uiLog
 	//log.LogInit()
+	//log.Output(ui.LogWindow)
 	go ui.UIRun()
 
 	//init.test(ctx)

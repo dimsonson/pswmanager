@@ -7,29 +7,36 @@ import (
 	stdlog "log"
 	"os"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
+	"github.com/derailed/tview"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 var Logg = zerolog.New(os.Stderr).With().Timestamp().Logger()
 
+func LogInit() *tview.TextView {
 
-func LogInit() {
+	uiLog := tview.NewTextView()
 	Logg = log.Output(
 		zerolog.ConsoleWriter{
-			Out:          os.Stderr,
+			Out:          uiLog,
+			NoColor:      true,
 			TimeFormat:   "2006/01/02 15:04:05",
 			FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
-			FormatMessage: func(i interface{}) string {
-				return fmt.Sprintf("%s%s%s:", settings.ColorNewYellow, i, settings.ColorReset)
-			},
-			PartsOrder: []string{zerolog.TimestampFieldName, zerolog.LevelFieldName, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
+			// FormatMessage: func(i interface{}) string {
+			// 	return fmt.Sprintf("%s%s%s:", settings.ColorNewYellow, i, settings.ColorReset)
+			// },
+			PartsOrder: []string{
+				zerolog.TimestampFieldName,
+				zerolog.LevelFieldName,
+				zerolog.MessageFieldName,
+				zerolog.CallerFieldName}}).
 		With().Caller().Logger()
 
 	stdlog.SetFlags(stdlog.Lshortfile)
 	stdlog.SetOutput(Logg)
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	return uiLog
 }
 
 // log.Logg = log.Output(zerolog.ConsoleWriter{

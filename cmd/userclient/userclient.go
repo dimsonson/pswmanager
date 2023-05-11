@@ -11,11 +11,11 @@ import (
 )
 
 func init() {
-	//ui := ui.New()
-	//ui.Init()
-	log.LogInit()
+	// uiLog := ui.NewUILogWindow()
+	// //ui.Init()
+	// log.LogInit()
 	// log.Logg = log.Output(zerolog.ConsoleWriter{
-	// 	Out:          ui.LogWindow,
+	// 	Out:          uiLog, //  os.Stderr, //ui.LogWindow,
 	// 	TimeFormat:   "2006/01/02 15:04:05",
 	// 	NoColor:      true,
 	// 	FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
@@ -37,7 +37,9 @@ var (
 func main() {
 	// Вывод данных о версии, дате, коммите сборки.
 	log.Printf("version=%s, date=%s, commit=%s", buildVersion, buildDate, buildCommit)
-
+	
+	uiLog := log.LogInit()
+	
 	var wg sync.WaitGroup
 	// опередяляем контекст уведомления о сигнале прерывания
 	ctx, stop := signal.NotifyContext(
@@ -48,7 +50,7 @@ func main() {
 
 	init := initstart.New()
 	// старт серверов
-	init.InitAndStart(ctx, stop, &wg)
+	init.InitAndStart(ctx, stop, &wg, uiLog)
 	// остановка всех сущностей, куда передан контекст по прерыванию
 	stop()
 	// закрываем соединения

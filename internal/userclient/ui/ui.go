@@ -49,7 +49,7 @@ type UI struct {
 	CreateUI
 	ReadUI
 	cfg *config.ServiceConfig
-	s ServicesProvider
+	s   ServicesProvider
 	ctx context.Context
 }
 
@@ -86,7 +86,7 @@ type CreateUI struct {
 
 type ReadUI struct {
 	flexSelectRead         *tview.Flex
-	flexMetadataSearchForm *tview.Flex
+	//flexMetadataSearchForm *tview.Flex
 	listSelectRead         *tview.List
 	flexTextRead           *tview.Flex
 	flexLoginPairRead      *tview.Flex
@@ -123,7 +123,7 @@ func NewUI(ctx context.Context, cfg *config.ServiceConfig, s ServicesProvider) *
 	return &UI{
 		ctx: ctx,
 		cfg: cfg,
-		s: s,
+		s:   s,
 	}
 }
 
@@ -137,7 +137,7 @@ func (ui *UI) NewCustomFlex(primitive tview.Primitive, fixedSize int) *tview.Fle
 	return flex
 }
 
-func (ui *UI) Init() {
+func (ui *UI) Init(uiLog *tview.TextView) {
 	ui.MainApp = tview.NewApplication()
 	ui.pages = tview.NewPages()
 	ui.loginform = tview.NewForm()
@@ -194,7 +194,7 @@ func (ui *UI) Init() {
 	ui.CardSearchResult = []models.CardRecord{r7, r8}
 
 	ui.textMain = tview.NewTextView()
-	ui.LogWindow = tview.NewTextView()
+	ui.LogWindow = uiLog
 	ui.TextConfig()
 	ui.ListLogin()
 	ui.ListMain()
