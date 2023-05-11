@@ -18,10 +18,10 @@ var (
 )
 
 func main() {
+	uiLog := log.LogInit()
 	// Вывод данных о версии, дате, коммите сборки.
 	log.Printf("version=%s, date=%s, commit=%s", buildVersion, buildDate, buildCommit)
 
-	uiLog := log.LogInit()
 
 	var wg sync.WaitGroup
 	// опередяляем контекст уведомления о сигнале прерывания

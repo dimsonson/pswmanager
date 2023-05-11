@@ -54,7 +54,7 @@ func (sr *UserServices) CreateUser(ctx context.Context, ucfg config.UserConfig) 
 func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error) {
 	ucfg, err := sr.sl.ReadUser(ctx)
 	if err != nil {
-		log.Print("rearch text record error: ", err)
+		log.Print("read user cfg error: ", err)
 	}
 	return ucfg, err
 }
@@ -62,7 +62,7 @@ func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error)
 func (sr *UserServices) CheckUser(ctx context.Context, ulogin string, passw string) error {
 	textRecords, err := sr.sl.SearchText(ctx, ulogin)
 	if err != nil {
-		log.Print("rearch text record error: ", err)
+		log.Print("check user cfg error: ", err)
 	}
 	_ = textRecords
 	return err

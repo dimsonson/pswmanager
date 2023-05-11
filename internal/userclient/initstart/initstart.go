@@ -39,7 +39,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
 	if err != nil {
-		log.Print("storage new error:", err)
+		log.Print("no user data exist:", err)
 	}
 
 	ui := ui.NewUI(ctx, init.cfg, srvusers)
