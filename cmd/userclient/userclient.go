@@ -2,34 +2,29 @@ package main
 
 import (
 	"context"
-	"fmt"
-	stdlog "log"
 	"os/signal"
 	"sync"
 	"syscall"
 
-	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/internal/userclient/initstart"
-	"github.com/dimsonson/pswmanager/internal/userclient/ui"
 	"github.com/dimsonson/pswmanager/pkg/log"
-	"github.com/rs/zerolog"
 )
 
 func init() {
-	ui := ui.New()
-	ui.Init()
+	//ui := ui.New()
+	//ui.Init()
 	log.LogInit()
-	log.Logg = log.Output(zerolog.ConsoleWriter{
-		Out:          ui.LogWindow,
-		TimeFormat:   "2006/01/02 15:04:05",
-		NoColor:      true,
-		FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
-		PartsOrder:   []string{zerolog.TimestampFieldName, zerolog.LevelFieldName, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
-		With().Caller().Logger()
-	stdlog.SetFlags(stdlog.Lshortfile)
-	stdlog.SetOutput(log.Logg)
-	zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	go ui.UIRun()
+	// log.Logg = log.Output(zerolog.ConsoleWriter{
+	// 	Out:          ui.LogWindow,
+	// 	TimeFormat:   "2006/01/02 15:04:05",
+	// 	NoColor:      true,
+	// 	FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
+	// 	PartsOrder:   []string{zerolog.TimestampFieldName, zerolog.LevelFieldName, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
+	// 	With().Caller().Logger()
+	// stdlog.SetFlags(stdlog.Lshortfile)
+	// stdlog.SetOutput(log.Logg)
+	// zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	//go ui.UIRun()
 }
 
 // Глобальные переменные для использования при сборке - go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(date +'%Y/%m/%d')' -X main.buildCommit=final"  main.go.
@@ -45,13 +40,13 @@ func main() {
 
 	var wg sync.WaitGroup
 	// опередяляем контекст уведомления о сигнале прерывания
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	// создание конфигурацию сервера
-	cfg := config.New()
-	// парсинг конфигурации сервера
-	cfg.Parse()
+	ctx, stop := signal.NotifyContext(
+		context.Background(),
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT)
 
-	init:= initstart.New(cfg)
+	init := initstart.New()
 	// старт серверов
 	init.InitAndStart(ctx, stop, &wg)
 	// остановка всех сущностей, куда передан контекст по прерыванию

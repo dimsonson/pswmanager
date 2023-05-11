@@ -78,6 +78,14 @@ func New(dsn string) (*SQLite, error) {
 	"chng_time" DATETIME,
 	"deleted" BOOLEAN DEFAULT 'false'
 	);
+
+	CREATE TABLE IF NOT EXISTS ucfg (
+		"ulogin" TEXT NOT NULL,
+		"upsw" TEXT,
+		"uid" TEXT,
+		"appid" TEXT		
+	);
+
 	`
 	if _, err = db.ExecContext(ctx, q); err != nil {
 		return nil, fmt.Errorf("can't create tables: %w", err)

@@ -1,14 +1,22 @@
 package ui
 
 import (
+	"context"
 	"os"
 	"syscall"
 
 	"github.com/derailed/tcell/v2"
 	"github.com/derailed/tview"
+	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/rs/zerolog"
 )
+
+type UsersServicesProvider interface {
+	CreateUser(ctx context.Context, ucfg config.UserConfig) error
+	ReadUser(ctx context.Context) (config.UserConfig, error)
+	CheckUser(ctx context.Context, login string, passwHex string) error
+}
 
 func (ui *UI) FlexLogin() {
 	ui.flexLogin = ui.NewCustomFlex(ui.listLogin, 10)
@@ -46,15 +54,15 @@ func (ui *UI) ListLogin() {
 }
 
 func (ui *UI) loginFrm() *tview.Form {
-	loginpsw := ULogin{}
+	tmpUserCfg := config.UserConfig{}
 	ui.loginform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
-		loginpsw.uLogin = ulogin
+		tmpUserCfg.UserLogin = ulogin
 	})
 	ui.loginform.AddPasswordField("Password", "", 20, '*', func(upsw string) {
-		loginpsw.uPsw = upsw
+		tmpUserCfg.UserPsw = upsw
 	})
 	ui.loginform.AddButton("Login", func() {
-		if loginpsw.uLogin == "1" {
+		if tmpUserCfg.UserLogin != ui.cfg.UserLogin {
 			ui.ShowConfirm("Wrong password or username", "Do you like try again?",
 				func() {
 					log.Print("user login 1")
@@ -65,15 +73,13 @@ func (ui *UI) loginFrm() *tview.Form {
 					ui.pages.SwitchToPage(LoginPage)
 				})
 		}
-		if loginpsw.uLogin == "0" {
-			log.Print("user login 0")
-			ui.ShowOk("Login successful", func() {
-				ui.pages.SwitchToPage(MainPage)
-			})
+		err := ui.s.CheckUser(ui.ctx, tmpUserCfg.UserLogin, tmpUserCfg.UserPsw)
+		if err != nil {
+			
 		}
-		if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
-			ui.pages.SwitchToPage(LoginForm)
-		}
+		// if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
+		// 	ui.pages.SwitchToPage(LoginForm)
+		// }
 
 	})
 	ui.loginform.AddButton("Cancel", func() {
@@ -82,8 +88,13 @@ func (ui *UI) loginFrm() *tview.Form {
 	return ui.loginform
 }
 
+type U struct {
+	uLogin string
+	uPsw   string
+}
+
 func (ui *UI) registerFrm() *tview.Form {
-	loginpsw := ULogin{}
+	loginpsw := U{}
 	ui.regform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
 		loginpsw.uLogin = ulogin
 	})
@@ -117,5 +128,3 @@ func (ui *UI) registerFrm() *tview.Form {
 	})
 	return ui.regform
 }
-
-

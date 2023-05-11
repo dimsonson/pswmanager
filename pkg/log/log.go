@@ -32,6 +32,17 @@ func LogInit() {
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 }
 
+// log.Logg = log.Output(zerolog.ConsoleWriter{
+// 	Out:          ui.LogWindow,
+// 	TimeFormat:   "2006/01/02 15:04:05",
+// 	NoColor:      true,
+// 	FormatCaller: func(i interface{}) string { return fmt.Sprintf("%s:", i) },
+// 	PartsOrder:   []string{zerolog.TimestampFieldName, zerolog.LevelFieldName, zerolog.MessageFieldName, zerolog.CallerFieldName}}).
+// 	With().Caller().Logger()
+// stdlog.SetFlags(stdlog.Lshortfile)
+// stdlog.SetOutput(log.Logg)
+// zerolog.SetGlobalLevel(zerolog.DebugLevel)
+
 // Output duplicates the global logger and sets w as its output.
 func Output(w io.Writer) zerolog.Logger {
 	return Logg.Output(w)

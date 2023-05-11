@@ -12,28 +12,41 @@ import (
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/internal/userclient/services"
 	"github.com/dimsonson/pswmanager/internal/userclient/storage"
+	"github.com/dimsonson/pswmanager/internal/userclient/ui"
 )
 
 type Init struct {
 	cfg *config.ServiceConfig
 }
 
-func New(cfg *config.ServiceConfig) *Init {
-	return &Init{
-		cfg: cfg,
-	}
+func New() *Init {
+	return &Init{}
 }
 
 func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
+	// создание конфигурацию сервера
+	init.cfg = config.New()
+	// парсинг конфигурации сервера
+	init.cfg.Parse()
 
 	sl, err := storage.New(init.cfg.SQLight.Dsn)
 	if err != nil {
 		log.Print("storage new error:", err)
 	}
 
-	init.test(ctx)
-	
-	_ = sl
+	srvusers := services.NewUsers(sl)
+
+	init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
+	if err != nil {
+		log.Print("storage new error:", err)
+	}
+
+	ui := ui.NewUI(ctx, init.cfg, srvusers)
+	ui.Init()
+	//log.LogInit()
+	go ui.UIRun()
+
+	//init.test(ctx)
 
 	// srvtext := services.NewText(sl)
 	// srvlogin := services.NewLogin(sl)
@@ -97,8 +110,8 @@ func (init *Init) test(ctx context.Context) {
 	msgLogin := models.LoginRecord{
 		RecordID:  uuid.NewString(),
 		ChngTime:  time.Now(),
-		UID:       "uid1", 
-		AppID:     "app1", 
+		UID:       "uid1",
+		AppID:     "app1",
 		Login:     "login0001",
 		Psw:       "password001",
 		Metadata:  "meta data description sample",

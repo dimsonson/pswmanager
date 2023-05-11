@@ -18,7 +18,7 @@ const (
 )
 
 // ServiceConfig структура конфигурации сервиса, при запуске сервиса с флагом -c/config
-// и отсутствии иных флагов и переменных окружения заполняется из файла указанного 
+// и отсутствии иных флагов и переменных окружения заполняется из файла указанного
 // в этом флаге или переменной окружения CONFIG.
 type ServiceConfig struct {
 	ServerAddress  string         `json:"server_address"`
@@ -43,25 +43,30 @@ type SQLight struct {
 
 // UserConfig .
 type UserConfig struct {
-	UserID string
-	AppID  string
+	UserID    string
+	AppID     string
+	UserLogin string
+	UserPsw   string
 }
 
-// NewConfig конструктор создания конфигурации сервера из переменных оружения, 
+// NewConfig конструктор создания конфигурации сервера из переменных оружения,
 // флагов, конфиг файла, а так же значений по умолчанию.
 func New() *ServiceConfig {
 	return &ServiceConfig{}
 }
 
-// Parse метод парсинга и получения значений из переменных оружения, флагов, 
+// Parse метод парсинга и получения значений из переменных оружения, флагов,
 // конфиг файла, а так же значений по умолчанию.
 func (cfg *ServiceConfig) Parse() {
+
+
+	
 	// описываем флаги
 	cfgFlag := flag.String("c", "", "config json path")
 	// парсим флаги в переменные
 	flag.Parse()
 	cfg.ConfigJSONpath = *cfgFlag
-	// используем структуру cfg models.Config для хранения параментров 
+	// используем структуру cfg models.Config для хранения параментров
 	// необходимых для запуска сервера
 	// читаем конфигурвационный файл и парксим в стркутуру
 	if cfg.ConfigJSONpath != "" {
@@ -77,13 +82,18 @@ func (cfg *ServiceConfig) Parse() {
 		}
 	}
 	//сохранение congig.json
-	cfg.SQLight.Dsn = "db" // "file:./db?_auth&_auth_user=admin&_auth_pass=admin&_auth_crypt=sha1"
-	configFile, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		log.Printf("marshal config file error: %s", err)
-	}
-	err = os.WriteFile("config.json", configFile, 0666)
-	if err != nil {
-		log.Printf("write config file error: %s", err)
-	}
+	// cfg.SQLight.Dsn = "db" // "file:./db?_auth&_auth_user=admin&_auth_pass=admin&_auth_crypt=sha1"
+	// configFile, err := json.MarshalIndent(cfg, "", "  ")
+	// if err != nil {
+	// 	log.Printf("marshal config file error: %s", err)
+	// }
+	// err = os.WriteFile("config.json", configFile, 0666)
+	// if err != nil {
+	// 	log.Printf("write config file error: %s", err)
+	// }
+
+
+
 }
+
+

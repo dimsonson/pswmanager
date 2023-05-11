@@ -1,10 +1,12 @@
 package ui
 
 import (
+	"context"
 	"os"
 	"syscall"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
+	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/rs/zerolog"
 
@@ -40,18 +42,15 @@ type (
 	cancelFunc  func()
 )
 
-type ULogin struct {
-	uLogin string
-	uPsw   string
-	uid    string
-}
-
 type UI struct {
 	LoginUI
 	MainUI
 	DialogUI
 	CreateUI
 	ReadUI
+	cfg *config.ServiceConfig
+	s ServicesProvider
+	ctx context.Context
 }
 
 type MainUI struct {
@@ -120,8 +119,12 @@ type DialogUI struct {
 	Confirm *tview.Modal
 }
 
-func New() *UI {
-	return &UI{}
+func NewUI(ctx context.Context, cfg *config.ServiceConfig, s ServicesProvider) *UI {
+	return &UI{
+		ctx: ctx,
+		cfg: cfg,
+		s: s,
+	}
 }
 
 func (ui *UI) NewCustomFlex(primitive tview.Primitive, fixedSize int) *tview.Flex {
