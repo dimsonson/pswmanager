@@ -49,7 +49,12 @@ type UI struct {
 	CreateUI
 	ReadUI
 	cfg *config.ServiceConfig
-	s   ServicesProvider
+	//s   ServicesProvider
+	u   UsersServicesProvider
+	t   TextServicesProvider
+	l   LoginServicesProvider
+	b   BinaryServicesProvider
+	c   CardServicesProvider
 	ctx context.Context
 }
 
@@ -85,7 +90,7 @@ type CreateUI struct {
 }
 
 type ReadUI struct {
-	flexSelectRead         *tview.Flex
+	flexSelectRead *tview.Flex
 	//flexMetadataSearchForm *tview.Flex
 	listSelectRead         *tview.List
 	flexTextRead           *tview.Flex
@@ -119,11 +124,22 @@ type DialogUI struct {
 	Confirm *tview.Modal
 }
 
-func NewUI(ctx context.Context, cfg *config.ServiceConfig, s ServicesProvider) *UI {
+func NewUI(
+	ctx context.Context,
+	cfg *config.ServiceConfig,
+	u UsersServicesProvider,
+	t TextServicesProvider,
+	l LoginServicesProvider,
+	b BinaryServicesProvider,
+	c CardServicesProvider) *UI {
 	return &UI{
 		ctx: ctx,
 		cfg: cfg,
-		s:   s,
+		u:   u,
+		t:   t,
+		l:   l,
+		b:   b,
+		c:   c,
 	}
 }
 

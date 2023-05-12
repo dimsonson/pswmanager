@@ -29,13 +29,28 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	init.cfg = config.New()
 	// парсинг конфигурациии клиента
 	init.cfg.Parse()
+	
 
 	sl, err := storage.New(init.cfg.SQLight.Dsn)
 	if err != nil {
 		log.Print("storage new error:", err)
 	}
 
-	srvusers := services.NewUsers(sl)
+	srvusers := services.NewUsers(sl, init.cfg.UserConfig)
+
+	init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
+	if err != nil {
+		log.Print("no user data exist:", err)
+	}
+
+	log.Print(init.cfg.UserConfig.Key)
+
+	srvtext := services.NewText(sl, init.cfg.UserConfig)
+	srvlogin := services.NewLogin(sl)
+	srvbinary := services.NewBinary(sl)
+	srvcard := services.NewCard(sl)
+
+
 
 	// init.cfg.UserID = "userID123456789"
 	// init.cfg.AppID = "appID123456789"
@@ -43,20 +58,16 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	// init.cfg.UserLogin = "userlogin12345"
 	// init.cfg.UserPsw = "userpassw12345"
 
-
 	// err = srvusers.CreateUser(ctx, &init.cfg.UserConfig)
 	// if err != nil {
 	// 	log.Print("create user error:", err)
 	// }
 
-	init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
-	if err != nil {
-		log.Print("no user data exist:", err)
-	}
 
 	log.Print(init.cfg.UserLogin)
+	log.Print(init.cfg.UserPsw)
 
-	ui := ui.NewUI(ctx, init.cfg, srvusers)
+	ui := ui.NewUI(ctx, init.cfg, srvusers, srvtext, srvlogin, srvbinary, srvcard)
 	ui.Init(uiLog)
 	go ui.UIRun()
 
@@ -83,7 +94,7 @@ func (init *Init) test(ctx context.Context) {
 		log.Print("storage new error:", err)
 	}
 
-	srvtext := services.NewText(sl)
+	srvtext := services.NewText(sl, init.cfg.UserConfig)
 
 	testMsg := models.TextRecord{
 		RecordID:  uuid.NewString(),

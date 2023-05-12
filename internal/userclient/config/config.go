@@ -47,6 +47,7 @@ type UserConfig struct {
 	AppID     string
 	UserLogin string
 	UserPsw   string
+	Key       string
 }
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения,
@@ -59,8 +60,6 @@ func New() *ServiceConfig {
 // конфиг файла, а так же значений по умолчанию.
 func (cfg *ServiceConfig) Parse() {
 
-
-	
 	// описываем флаги
 	cfgFlag := flag.String("c", "", "config json path")
 	// парсим флаги в переменные
@@ -92,8 +91,4 @@ func (cfg *ServiceConfig) Parse() {
 	// 	log.Printf("write config file error: %s", err)
 	// }
 
-
-
 }
-
-

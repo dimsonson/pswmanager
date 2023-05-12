@@ -1,10 +1,9 @@
 package ui
 
-type ServicesProvider interface {
-	UsersServicesProvider
-	// CardStorageProviver
-	// TextStorageProviver
-	// BinaryStorageProviver
-	// LoginStorageProviver
-	// UsersStorageProviver
-}
+// type ServicesProvider interface {
+// 	UsersServicesProvider
+// 	TextServicesProvider 
+// 	LoginServicesProvider
+// 	CardServicesProvider
+// 	BinaryServicesProvider 	
+// }

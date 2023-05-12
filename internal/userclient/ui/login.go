@@ -7,6 +7,7 @@ import (
 
 	"github.com/derailed/tcell/v2"
 	"github.com/derailed/tview"
+	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/rs/zerolog"
@@ -17,6 +18,22 @@ type UsersServicesProvider interface {
 	ReadUser(ctx context.Context) (config.UserConfig, error)
 	CheckUser(ctx context.Context, login string, passwHex string) error
 }
+
+type LoginServicesProvider interface {
+	ProcessingLogin(ctx context.Context, record models.LoginRecord) error
+	SearchLogin(ctx context.Context, searchInput string) ([]models.LoginRecord, error)
+}
+
+type CardServicesProvider interface {
+	ProcessingCard(ctx context.Context, record models.CardRecord) error
+	SearchCard(ctx context.Context, searchInput string) ([]models.CardRecord, error)
+}
+
+type BinaryServicesProvider interface {
+	ProcessingBinary(ctx context.Context, record models.BinaryRecord) error
+	SearchBinary(ctx context.Context, searchInput string) ([]models.BinaryRecord, error)
+}
+
 
 func (ui *UI) FlexLogin() {
 	ui.flexLogin = ui.NewCustomFlex(ui.listLogin, 10)
@@ -69,7 +86,7 @@ func (ui *UI) loginFrm() *tview.Form {
 		tmpUserCfg.UserPsw = upsw
 	})
 	ui.loginform.AddButton("Login", func() {
-		err := ui.s.CheckUser(ui.ctx, tmpUserCfg.UserLogin, tmpUserCfg.UserPsw)
+		err := ui.u.CheckUser(ui.ctx, tmpUserCfg.UserLogin, tmpUserCfg.UserPsw)
 		if err != nil {
 			ui.ShowConfirm("Wrong password or username", "Do you like try again?",
 				func() {
@@ -111,7 +128,7 @@ func (ui *UI) registerFrm() *tview.Form {
 		ui.cfg.UserPsw = upsw
 	})
 	ui.regform.AddButton("Register", func() {
-		err := ui.s.CreateUser(ui.ctx, &ui.cfg.UserConfig)
+		err := ui.u.CreateUser(ui.ctx, &ui.cfg.UserConfig)
 		if err != nil {
 			log.Print("registration error:", err)
 			ui.ShowOk("Registration error.", func() {

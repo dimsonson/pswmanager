@@ -84,7 +84,8 @@ func New(dsn string) (*SQLite, error) {
 		"ulogin" TEXT NOT NULL,
 		"upsw" TEXT,
 		"uid" TEXT,
-		"appid" TEXT		
+		"appid" TEXT,
+		"key" TEXT		
 	);
 
 	`

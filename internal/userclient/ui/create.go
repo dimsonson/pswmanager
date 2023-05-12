@@ -1,13 +1,21 @@
 package ui
 
 import (
+	"context"
 	"strconv"
+	"time"
 
 	"github.com/derailed/tcell/v2"
 	"github.com/derailed/tview"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/pkg/log"
+	"github.com/google/uuid"
 )
+
+type TextServicesProvider interface {
+	ProcessingText(ctx context.Context, record models.TextRecord) error
+	SearchText(ctx context.Context, searchInput string) ([]models.TextRecord, error)
+}
 
 func (ui *UI) FlexCreate() {
 	ui.flexTextCreate = ui.NewCustomFlex(ui.createTextForm, 12)
@@ -60,7 +68,14 @@ func (ui *UI) createTextFrm() *tview.Form {
 		textRecord.Text = textdata
 	})
 	ui.createTextForm.AddButton("Create Item", func() {
-		if textRecord.Metadata == "0" {
+		textRecord.UID = ui.cfg.UserID
+		textRecord.AppID = ui.cfg.AppID
+		textRecord.Operation = models.Create
+		textRecord.ChngTime = time.Now()
+		textRecord.RecordID = uuid.NewString()
+		err := ui.t.ProcessingText(ui.ctx, textRecord)
+		if err != nil {
+			log.Print("save text data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
 					log.Print("new text 1")
@@ -72,15 +87,12 @@ func (ui *UI) createTextFrm() *tview.Form {
 					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
-		if textRecord.Metadata == "1" {
-			log.Print("user login 0")
+		if err == nil {
 			ui.ShowOk("New Text Item recorded to database", func() {
 				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
-		if textRecord.Metadata != "1" && textRecord.Metadata != "0" {
-			ui.pages.SwitchToPage(MainPage)
-		}
+
 	})
 	ui.createTextForm.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(MainPage)
