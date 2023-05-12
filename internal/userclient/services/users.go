@@ -5,12 +5,13 @@ import (
 
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersStorageProviver interface {
 	CreateUser(ctx context.Context, ucfg config.UserConfig) error
 	ReadUser(ctx context.Context) (config.UserConfig, error)
-	CheckUser(ctx context.Context, login string, passwHex string) error
+	CheckUser(ctx context.Context, login string) (string, error)
 }
 
 // Services структура конструктора бизнес логики.
@@ -26,28 +27,16 @@ func NewUsers(s StorageProvider) *UserServices {
 }
 
 // TextRec.
-func (sr *UserServices) CreateUser(ctx context.Context, ucfg config.UserConfig) error {
-	var err error
-	// switch record.Operation {
-	// case models.Create:
-	// 	err := sr.sl.CreateText(ctx, record)
-	// 	if err != nil {
-	// 		log.Print("create text record error: ", err)
-	// 	}
-	// 	return err
-	// case models.Update:
-	// 	err := sr.sl.UpdateText(ctx, record)
-	// 	if err != nil {
-	// 		log.Print("update text record error: ", err)
-	// 	}
-	// 	return err
-	// case models.Delete:
-	// 	err := sr.sl.DeleteText(ctx, record)
-	// 	if err != nil {
-	// 		log.Print("delete text record error: ", err)
-	// 	}
-	// 	return err
-	// }
+func (sr *UserServices) CreateUser(ctx context.Context, ucfg *config.UserConfig) error {
+	passHex, err := bcrypt.GenerateFromPassword([]byte(ucfg.UserPsw), bcrypt.DefaultCost)
+	if err != nil {
+		log.Print("generate hex error: ", err)
+	}
+	ucfg.UserPsw = string(passHex)
+	err = sr.sl.CreateUser(ctx, *ucfg)
+	if err != nil {
+		log.Print("create user error: ", err)
+	}
 	return err
 }
 
@@ -59,11 +48,14 @@ func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error)
 	return ucfg, err
 }
 
-func (sr *UserServices) CheckUser(ctx context.Context, ulogin string, passw string) error {
-	textRecords, err := sr.sl.SearchText(ctx, ulogin)
+func (sr *UserServices) CheckUser(ctx context.Context, ulogin, upsw string) error {
+	passwDB, err := sr.sl.CheckUser(ctx, ulogin)
 	if err != nil {
 		log.Print("check user cfg error: ", err)
 	}
-	_ = textRecords
+	err = bcrypt.CompareHashAndPassword([]byte(passwDB), []byte(upsw))
+	if err != nil {
+		log.Print("check psw error: ", err)
+	}
 	return err
 }

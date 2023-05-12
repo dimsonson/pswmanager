@@ -13,7 +13,7 @@ import (
 )
 
 type UsersServicesProvider interface {
-	CreateUser(ctx context.Context, ucfg config.UserConfig) error
+	CreateUser(ctx context.Context, ucfg *config.UserConfig) error
 	ReadUser(ctx context.Context) (config.UserConfig, error)
 	CheckUser(ctx context.Context, login string, passwHex string) error
 }
@@ -34,7 +34,14 @@ func (ui *UI) ListLogin() {
 		AddItem("Registration", "", 'b', func() {
 			ui.regform.Clear(true)
 			ui.registerFrm()
-			ui.pages.SwitchToPage(RegisterForm)
+			if ui.cfg.UserLogin != "" {
+				ui.ShowOk("App already registered for user. Please login to App.", func() {
+					ui.pages.SwitchToPage(LoginPage)
+				})
+			}
+			if ui.cfg.UserLogin == "" {
+				ui.pages.SwitchToPage(RegisterForm)
+			}
 		}).
 		AddItem("Quit", "", 'q', func() {
 			log.Logg = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
@@ -62,10 +69,10 @@ func (ui *UI) loginFrm() *tview.Form {
 		tmpUserCfg.UserPsw = upsw
 	})
 	ui.loginform.AddButton("Login", func() {
-		if tmpUserCfg.UserLogin != ui.cfg.UserLogin {
+		err := ui.s.CheckUser(ui.ctx, tmpUserCfg.UserLogin, tmpUserCfg.UserPsw)
+		if err != nil {
 			ui.ShowConfirm("Wrong password or username", "Do you like try again?",
 				func() {
-					log.Print("user login 1")
 					ui.loginform.SetFocus(0)
 					ui.pages.ShowPage(LoginForm)
 				},
@@ -73,14 +80,9 @@ func (ui *UI) loginFrm() *tview.Form {
 					ui.pages.SwitchToPage(LoginPage)
 				})
 		}
-		err := ui.s.CheckUser(ui.ctx, tmpUserCfg.UserLogin, tmpUserCfg.UserPsw)
-		if err != nil {
-			
+		if err == nil {
+			ui.pages.SwitchToPage(MainPage)
 		}
-		// if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
-		// 	ui.pages.SwitchToPage(LoginForm)
-		// }
-
 	})
 	ui.loginform.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(LoginPage)
@@ -88,39 +90,38 @@ func (ui *UI) loginFrm() *tview.Form {
 	return ui.loginform
 }
 
-type U struct {
-	uLogin string
-	uPsw   string
-}
+// + проверяем, зарегистрировано ли приложение на пользователя
+// + если да, выводим сообщение
+// + если нет, идем дальше к вводу логина и пароля
+// + принимаем логин и пароль
+// - проверяем пароль на длинну
+// - отправляем структуру конфигурации пользователя в сервис создания пользователей
+// - если err == nil возвращаем пользователю сообщение об успешной регистрации и переводим в меню входа
 
 func (ui *UI) registerFrm() *tview.Form {
-	loginpsw := U{}
 	ui.regform.AddInputField("Login:", "", 20, nil, func(ulogin string) {
-		loginpsw.uLogin = ulogin
+		ui.cfg.UserLogin = ulogin
 	})
 	ui.regform.AddPasswordField("Password", "", 20, '*', func(upsw string) {
-		loginpsw.uPsw = upsw
+		if len(upsw) >= 72 {
+			ui.ShowOk("Maximun password leght is 71 character. \nPlease enter shorter password", func() {
+				ui.pages.SwitchToPage(RegisterForm)
+			})
+		}
+		ui.cfg.UserPsw = upsw
 	})
 	ui.regform.AddButton("Register", func() {
-		if loginpsw.uLogin == "0" {
-			log.Print("user reg 0")
+		err := ui.s.CreateUser(ui.ctx, &ui.cfg.UserConfig)
+		if err != nil {
+			log.Print("registration error:", err)
+			ui.ShowOk("Registration error.", func() {
+				ui.pages.SwitchToPage(RegisterForm)
+			})
+		}
+		if err == nil {
 			ui.ShowOk("Registration successful. \n Please, keep your credentials safe.", func() {
 				ui.pages.SwitchToPage(LoginPage)
 			})
-		}
-		if loginpsw.uLogin == "1" {
-			ui.ShowConfirm("Username already exist", "Do you like try again?",
-				func() {
-					log.Print("user reg 1")
-					ui.regform.SetFocus(0)
-					ui.pages.ShowPage(RegisterForm)
-				},
-				func() {
-					ui.pages.SwitchToPage(LoginPage)
-				})
-		}
-		if loginpsw.uLogin != "1" && loginpsw.uLogin != "0" {
-			ui.pages.SwitchToPage(LoginForm)
 		}
 	})
 	ui.regform.AddButton("Cancel", func() {

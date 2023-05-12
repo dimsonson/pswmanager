@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/derailed/tview"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"github.com/google/uuid"
-	"github.com/derailed/tview"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
@@ -37,10 +37,24 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	srvusers := services.NewUsers(sl)
 
+	// init.cfg.UserID = "userID123456789"
+	// init.cfg.AppID = "appID123456789"
+
+	// init.cfg.UserLogin = "userlogin12345"
+	// init.cfg.UserPsw = "userpassw12345"
+
+
+	// err = srvusers.CreateUser(ctx, &init.cfg.UserConfig)
+	// if err != nil {
+	// 	log.Print("create user error:", err)
+	// }
+
 	init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
 	if err != nil {
 		log.Print("no user data exist:", err)
 	}
+
+	log.Print(init.cfg.UserLogin)
 
 	ui := ui.NewUI(ctx, init.cfg, srvusers)
 	ui.Init(uiLog)
@@ -55,8 +69,6 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	<-ctx.Done()
 }
-
-
 
 func (init *Init) ConnClose(ctx context.Context) {
 	if init.cfg.SQLight.Conn != nil {
