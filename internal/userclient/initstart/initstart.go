@@ -29,7 +29,6 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	init.cfg = config.New()
 	// парсинг конфигурациии клиента
 	init.cfg.Parse()
-	
 
 	sl, err := storage.New(init.cfg.SQLight.Dsn)
 	if err != nil {
@@ -38,19 +37,21 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	srvusers := services.NewUsers(sl, init.cfg)
 
-	init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
-	if err != nil {
-		log.Print("no user data exist:", err)
-	}
+	// init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
+	// if err != nil {
+	// 	log.Print("no user data exist:", err)
+	// }
 
-	log.Print(init.cfg.UserConfig.Key)
+	log.Print(string(init.cfg.UserConfig.Key))
 
 	srvtext := services.NewText(sl, init.cfg)
 	srvlogin := services.NewLogin(sl)
 	srvbinary := services.NewBinary(sl)
 	srvcard := services.NewCard(sl)
 
+	// testRSearchResults, err := srvtext.SearchText(ctx, "test")
 
+	// log.Print(testRSearchResults)
 
 	// init.cfg.UserID = "userID123456789"
 	// init.cfg.AppID = "appID123456789"
@@ -62,7 +63,6 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	// if err != nil {
 	// 	log.Print("create user error:", err)
 	// }
-
 
 	log.Print(init.cfg.UserLogin)
 	log.Print(init.cfg.UserPsw)

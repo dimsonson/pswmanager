@@ -30,10 +30,13 @@ func (ui *UI) ListSelectRead() {
 			ui.searchForm.Clear(true)
 			ui.searchFrm(
 				func() {
-					log.Print("searchdata: ", ui.searchdata)
 					ui.listTextSearchResult.Clear()
+					var err error
+					ui.TextSearchResult, err = ui.t.SearchText(ui.ctx, ui.searchdata)
+					if err != nil {
+						log.Print("search text error: ", err)
+					}
 					ui.addTextItemsList()
-					log.Print("addTextItems: ", ui.listTextSearchResult)
 					ui.pages.SwitchToPage(TextSearchResult)
 				})
 			ui.pages.SwitchToPage(searchForm)

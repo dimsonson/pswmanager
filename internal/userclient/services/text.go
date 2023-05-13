@@ -19,16 +19,16 @@ type TextStorageProviver interface {
 // Services структура конструктора бизнес логики.
 type TextServices struct {
 	cfg *config.ServiceConfig
-	sl   StorageProvider
-	c    CryptProvider
+	sl  StorageProvider
+	c   CryptProvider
 }
 
 // New.
 func NewText(s StorageProvider, cfg *config.ServiceConfig) *TextServices {
 	return &TextServices{
-		sl:   s,
+		sl:  s,
 		cfg: cfg,
-		c: &Crypt{},
+		c:   &Crypt{},
 	}
 }
 
@@ -37,16 +37,14 @@ func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRe
 	var err error
 
 	log.Print(sr.cfg.UserPsw)
-
-	
 	log.Print(sr.cfg.Key)
 
-	//key:= string([]byte(sr.ucfg.UserPsw)[1:])   +"00000"
 	record.Text, err = sr.c.EncryptAES(sr.cfg.Key, record.Text)
 	if err != nil {
 		log.Print("encrypt error: ", err)
 		return err
 	}
+
 	switch record.Operation {
 	case models.Create:
 		err := sr.sl.CreateText(ctx, record)
@@ -75,5 +73,15 @@ func (sr *TextServices) SearchText(ctx context.Context, searchInput string) ([]m
 	if err != nil {
 		log.Print("rearch text record error: ", err)
 	}
+
+	for i := range textRecords {
+
+		textRecords[i].Text, err = sr.c.DecryptAES(sr.cfg.Key, textRecords[i].Text)
+		if err != nil {
+			log.Print("encrypt error: ", err)
+			return nil, err
+		}
+	}
+
 	return textRecords, err
 }

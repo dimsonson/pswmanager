@@ -34,7 +34,6 @@ type BinaryServicesProvider interface {
 	SearchBinary(ctx context.Context, searchInput string) ([]models.BinaryRecord, error)
 }
 
-
 func (ui *UI) FlexLogin() {
 	ui.flexLogin = ui.NewCustomFlex(ui.listLogin, 10)
 	ui.flexLog = ui.NewCustomFlex(ui.loginform, 10)
@@ -98,6 +97,12 @@ func (ui *UI) loginFrm() *tview.Form {
 				})
 		}
 		if err == nil {
+			ui.cfg.UserLogin = tmpUserCfg.UserLogin
+			ui.cfg.UserPsw = tmpUserCfg.UserPsw
+			ui.cfg.UserConfig, err = ui.u.ReadUser(ui.ctx)
+			if err != nil {
+				log.Print("no user data exist:", err)
+			}
 			ui.pages.SwitchToPage(MainPage)
 		}
 	})
@@ -130,12 +135,12 @@ func (ui *UI) registerFrm() *tview.Form {
 	ui.regform.AddButton("Register", func() {
 		err := ui.u.CreateUser(ui.ctx)
 		if err != nil {
-			log.Print("registration error:", err)
 			ui.ShowOk("Registration error.", func() {
 				ui.pages.SwitchToPage(RegisterForm)
 			})
 		}
 		if err == nil {
+			log.Print(ui.cfg.UserPsw)
 			ui.ShowOk("Registration successful. \n Please, keep your credentials safe.", func() {
 				ui.pages.SwitchToPage(LoginPage)
 			})

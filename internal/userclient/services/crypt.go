@@ -17,8 +17,8 @@ type CryptProvider interface {
 
 type Crypt struct{}
 
-func (c *Crypt) EncryptAES(key, plaintext string) (string, error) {
-
+func (c *Crypt) EncryptAES(key, plaintxt string) (string, error) {
+	plaintext := []byte(plaintxt)
 	keyHex, _ := hex.DecodeString(key)
 
 	block, err := aes.NewCipher(keyHex)
@@ -35,31 +35,15 @@ func (c *Crypt) EncryptAES(key, plaintext string) (string, error) {
 	}
 
 	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(plaintext))
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], plaintext)
 
 	return hex.EncodeToString(ciphertext), err
-	// log.Print(key, "key")
-	// keyHex, err := hex.DecodeString(key)
-	// if err != nil {
-	// 	log.Print("encrypt error: ", err)
-	// 	return "", err
-	// }
-
-	// log.Print(keyHex)
-
-	// cipher, err := aes.NewCipher(keyHex)
-	// if err != nil {
-	// 	log.Print("encrypt error: ", err)
-	// 	return "", err
-	// }
-
-	// out := make([]byte, len(plaintext))
-	// cipher.Encrypt(out, []byte(plaintext))
 }
 
 func (c *Crypt) DecryptAES(key, ciphertxt string) (string, error) {
-	ciphertext, _ := hex.DecodeString(ciphertxt)
 	keyHex, _ := hex.DecodeString(key)
+	ciphertext, _ := hex.DecodeString(ciphertxt)
+
 	block, err := aes.NewCipher(keyHex)
 	if err != nil {
 		log.Print("decrypt error: ", err)
@@ -76,42 +60,8 @@ func (c *Crypt) DecryptAES(key, ciphertxt string) (string, error) {
 
 	stream.XORKeyStream(ciphertext, ciphertext)
 
-
-	return hex.EncodeToString(ciphertext), err
-
-	// keyHex, _ := hex.DecodeString(key)
-	// ciphertext, _ := hex.DecodeString(ciphertxt)
-	// cipher, err := aes.NewCipher(keyHex)
-	// if err != nil {
-	// 	log.Print("decrypt error: ", err)
-	// 	return "", err
-	// }
-	// pt := make([]byte, len(ciphertext))
-	// cipher.Decrypt(pt, ciphertext)
-	// s := string(pt[:])
+	return string(ciphertext), err
+	//return hex.EncodeToString(ciphertext), err
 
 }
 
-// // RandProvider интерфейс для вызова метода генератора псевдо случайной последовательности знаков.
-// type RandProvider interface {
-// 	RandSeq(n int) (random string, ok error)
-// }
-
-// // Rand структура для вызова метода генератора псевдо случайной последовательности знаков.
-// type Rand struct{}
-
-// // RandSeq функция генерации псевдо случайной последовательности знаков.
-// func (r *Rand) RandSeq(n int) (random string, ok error) {
-// 	if n < 1 {
-// 		err := fmt.Errorf("wromg argument: number %v less than 1\n ", n)
-// 		return "", err
-// 	}
-// 	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-// 	rand.Seed(time.Now().UnixNano())
-// 	b := make([]rune, n)
-// 	for i := range b {
-// 		b[i] = letters[rand.Intn(len(letters))]
-// 	}
-// 	random = string(b)
-// 	return random, nil
-// }

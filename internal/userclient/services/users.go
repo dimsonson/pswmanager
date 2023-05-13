@@ -42,10 +42,12 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 		return err
 	}
 
+	keyString := hex.EncodeToString(key)
+
 	psw256 := sha256.Sum256([]byte(sr.cfg.UserPsw))
 	psw256string := hex.EncodeToString(psw256[:])
 
-	keyDB, err := sr.c.EncryptAES(psw256string, string(key))
+	keyDB, err := sr.c.EncryptAES(psw256string, keyString)
 	if err != nil {
 		log.Print("create keyDB error: ", err)
 	}
@@ -57,7 +59,7 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 	}
 
 	sr.cfg.UserPsw = string(passHex)
-	sr.cfg.Key = string(key)
+	sr.cfg.Key = keyString
 
 	err = sr.sl.CreateUser(ctx, sr.cfg.UserConfig, keyDB)
 	if err != nil {
@@ -72,11 +74,12 @@ func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error)
 	if err != nil {
 		log.Print("read user cfg error: ", err)
 	}
+
 	psw256 := sha256.Sum256([]byte(sr.cfg.UserPsw))
 	psw256string := hex.EncodeToString(psw256[:])
 
 	ucfg.Key, err = sr.c.DecryptAES(psw256string, ucfg.Key)
-log.Print(ucfg.Key, " key from ReadUser")
+
 	return ucfg, err
 }
 
