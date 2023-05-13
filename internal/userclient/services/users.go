@@ -2,8 +2,10 @@ package services
 
 import (
 	"context"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"io"
 
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
@@ -34,28 +36,33 @@ func NewUsers(s StorageProvider, cfg *config.ServiceConfig) *UserServices {
 
 // TextRec.
 func (sr *UserServices) CreateUser(ctx context.Context) error {
-	// key := make([]byte, 32)
-	// if _, err := io.ReadFull(rand.Reader, key); err != nil {
-	// 	panic(err.Error())
-	// }
+	key := make([]byte, 32)
+	if _, err := io.ReadFull(rand.Reader, key); err != nil {
+		log.Print("generate key error: ", err)
+		return err
+	}
+
 	psw256 := sha256.Sum256([]byte(sr.cfg.UserPsw))
-	keyDB := hex.EncodeToString(psw256[:])
-	//keyDB, err := sr.c.EncryptAES(p, string(key))
-	// if err != nil {
-	// 	log.Print("create keyDB error: ", err)
-	// }
+	psw256string := hex.EncodeToString(psw256[:])
+
+	keyDB, err := sr.c.EncryptAES(psw256string, string(key))
+	if err != nil {
+		log.Print("create keyDB error: ", err)
+	}
 
 	passHex, err := bcrypt.GenerateFromPassword([]byte(sr.cfg.UserPsw), bcrypt.DefaultCost)
 	if err != nil {
 		log.Print("generate hex error: ", err)
+		return err
 	}
 
 	sr.cfg.UserPsw = string(passHex)
-	sr.cfg.Key = keyDB
+	sr.cfg.Key = string(key)
 
 	err = sr.sl.CreateUser(ctx, sr.cfg.UserConfig, keyDB)
 	if err != nil {
 		log.Print("create user error: ", err)
+		return err
 	}
 	return err
 }
@@ -65,6 +72,11 @@ func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error)
 	if err != nil {
 		log.Print("read user cfg error: ", err)
 	}
+	psw256 := sha256.Sum256([]byte(sr.cfg.UserPsw))
+	psw256string := hex.EncodeToString(psw256[:])
+
+	ucfg.Key, err = sr.c.DecryptAES(psw256string, ucfg.Key)
+log.Print(ucfg.Key, " key from ReadUser")
 	return ucfg, err
 }
 

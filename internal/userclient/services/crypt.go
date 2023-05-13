@@ -59,9 +59,11 @@ func (c *Crypt) EncryptAES(key, plaintext string) (string, error) {
 
 func (c *Crypt) DecryptAES(key, ciphertxt string) (string, error) {
 	ciphertext, _ := hex.DecodeString(ciphertxt)
-	block, err := aes.NewCipher([]byte(key))
+	keyHex, _ := hex.DecodeString(key)
+	block, err := aes.NewCipher(keyHex)
 	if err != nil {
-		panic(err)
+		log.Print("decrypt error: ", err)
+		return "", err
 	}
 	if len(ciphertext) < aes.BlockSize {
 		log.Print("decrypt error: ", err)
@@ -73,7 +75,9 @@ func (c *Crypt) DecryptAES(key, ciphertxt string) (string, error) {
 	stream := cipher.NewCFBDecrypter(block, iv)
 
 	stream.XORKeyStream(ciphertext, ciphertext)
-	return string(ciphertext), err
+
+
+	return hex.EncodeToString(ciphertext), err
 
 	// keyHex, _ := hex.DecodeString(key)
 	// ciphertext, _ := hex.DecodeString(ciphertxt)

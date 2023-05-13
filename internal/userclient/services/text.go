@@ -37,6 +37,8 @@ func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRe
 	var err error
 
 	log.Print(sr.cfg.UserPsw)
+
+	
 	log.Print(sr.cfg.Key)
 
 	//key:= string([]byte(sr.ucfg.UserPsw)[1:])   +"00000"
