@@ -14,7 +14,7 @@ import (
 )
 
 type UsersServicesProvider interface {
-	CreateUser(ctx context.Context, ucfg *config.UserConfig) error
+	CreateUser(ctx context.Context) error
 	ReadUser(ctx context.Context) (config.UserConfig, error)
 	CheckUser(ctx context.Context, login string, passwHex string) error
 }
@@ -128,7 +128,7 @@ func (ui *UI) registerFrm() *tview.Form {
 		ui.cfg.UserPsw = upsw
 	})
 	ui.regform.AddButton("Register", func() {
-		err := ui.u.CreateUser(ui.ctx, &ui.cfg.UserConfig)
+		err := ui.u.CreateUser(ui.ctx)
 		if err != nil {
 			log.Print("registration error:", err)
 			ui.ShowOk("Registration error.", func() {

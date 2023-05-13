@@ -36,7 +36,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Print("storage new error:", err)
 	}
 
-	srvusers := services.NewUsers(sl, init.cfg.UserConfig)
+	srvusers := services.NewUsers(sl, init.cfg)
 
 	init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
 	if err != nil {
@@ -45,7 +45,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	log.Print(init.cfg.UserConfig.Key)
 
-	srvtext := services.NewText(sl, init.cfg.UserConfig)
+	srvtext := services.NewText(sl, init.cfg)
 	srvlogin := services.NewLogin(sl)
 	srvbinary := services.NewBinary(sl)
 	srvcard := services.NewCard(sl)
@@ -94,7 +94,7 @@ func (init *Init) test(ctx context.Context) {
 		log.Print("storage new error:", err)
 	}
 
-	srvtext := services.NewText(sl, init.cfg.UserConfig)
+	srvtext := services.NewText(sl, init.cfg)
 
 	testMsg := models.TextRecord{
 		RecordID:  uuid.NewString(),

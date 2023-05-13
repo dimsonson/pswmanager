@@ -27,8 +27,9 @@ type ServiceConfig struct {
 	SQLight        SQLight        `json:"sqlite"`
 	GRPC           GRPC           `json:"grpc"`
 	Wg             sync.WaitGroup `json:"-"`
-	UserConfig
+	UserConfig                    //`json:"ucfg"`
 }
+
 
 // GRPC.
 type GRPC struct {

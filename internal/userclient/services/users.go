@@ -18,43 +18,42 @@ type UsersStorageProviver interface {
 
 // Services структура конструктора бизнес логики.
 type UserServices struct {
-	ucfg config.UserConfig
-	sl   StorageProvider
-	c    CryptProvider
+	cfg *config.ServiceConfig
+	sl  StorageProvider
+	c   CryptProvider
 }
 
 // New.
-func NewUsers(s StorageProvider, ucfg config.UserConfig) *UserServices {
+func NewUsers(s StorageProvider, cfg *config.ServiceConfig) *UserServices {
 	return &UserServices{
-		sl:   s,
-		ucfg: ucfg,
-		c:    &Crypt{},
+		sl:  s,
+		cfg: cfg,
+		c:   &Crypt{},
 	}
 }
 
 // TextRec.
-func (sr *UserServices) CreateUser(ctx context.Context, ucfg *config.UserConfig) error {
+func (sr *UserServices) CreateUser(ctx context.Context) error {
 	// key := make([]byte, 32)
 	// if _, err := io.ReadFull(rand.Reader, key); err != nil {
 	// 	panic(err.Error())
 	// }
-	psw256 := sha256.Sum256([]byte(ucfg.UserPsw))
+	psw256 := sha256.Sum256([]byte(sr.cfg.UserPsw))
 	keyDB := hex.EncodeToString(psw256[:])
 	//keyDB, err := sr.c.EncryptAES(p, string(key))
 	// if err != nil {
 	// 	log.Print("create keyDB error: ", err)
 	// }
 
-	passHex, err := bcrypt.GenerateFromPassword([]byte(ucfg.UserPsw), bcrypt.DefaultCost)
+	passHex, err := bcrypt.GenerateFromPassword([]byte(sr.cfg.UserPsw), bcrypt.DefaultCost)
 	if err != nil {
 		log.Print("generate hex error: ", err)
 	}
 
-	ucfg.UserPsw = string(passHex)
+	sr.cfg.UserPsw = string(passHex)
+	sr.cfg.Key = keyDB
 
-	ucfg.Key = keyDB
-
-	err = sr.sl.CreateUser(ctx, *ucfg, keyDB)
+	err = sr.sl.CreateUser(ctx, sr.cfg.UserConfig, keyDB)
 	if err != nil {
 		log.Print("create user error: ", err)
 	}

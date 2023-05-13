@@ -23,13 +23,15 @@ func (c *Crypt) EncryptAES(key, plaintext string) (string, error) {
 
 	block, err := aes.NewCipher(keyHex)
 	if err != nil {
-		panic(err)
+		log.Print("encrypt error: ", err)
+		return "", err
 	}
 
 	ciphertext := make([]byte, aes.BlockSize+len(plaintext))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		panic(err)
+		log.Print("encrypt error: ", err)
+		return "", err
 	}
 
 	stream := cipher.NewCFBEncrypter(block, iv)
@@ -56,17 +58,34 @@ func (c *Crypt) EncryptAES(key, plaintext string) (string, error) {
 }
 
 func (c *Crypt) DecryptAES(key, ciphertxt string) (string, error) {
-	keyHex, _ := hex.DecodeString(key)
 	ciphertext, _ := hex.DecodeString(ciphertxt)
-	cipher, err := aes.NewCipher(keyHex)
+	block, err := aes.NewCipher([]byte(key))
 	if err != nil {
+		panic(err)
+	}
+	if len(ciphertext) < aes.BlockSize {
 		log.Print("decrypt error: ", err)
 		return "", err
 	}
-	pt := make([]byte, len(ciphertext))
-	cipher.Decrypt(pt, ciphertext)
-	s := string(pt[:])
-	return s, err
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+
+	stream := cipher.NewCFBDecrypter(block, iv)
+
+	stream.XORKeyStream(ciphertext, ciphertext)
+	return string(ciphertext), err
+
+	// keyHex, _ := hex.DecodeString(key)
+	// ciphertext, _ := hex.DecodeString(ciphertxt)
+	// cipher, err := aes.NewCipher(keyHex)
+	// if err != nil {
+	// 	log.Print("decrypt error: ", err)
+	// 	return "", err
+	// }
+	// pt := make([]byte, len(ciphertext))
+	// cipher.Decrypt(pt, ciphertext)
+	// s := string(pt[:])
+
 }
 
 // // RandProvider интерфейс для вызова метода генератора псевдо случайной последовательности знаков.

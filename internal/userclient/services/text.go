@@ -18,16 +18,16 @@ type TextStorageProviver interface {
 
 // Services структура конструктора бизнес логики.
 type TextServices struct {
-	ucfg config.UserConfig
+	cfg *config.ServiceConfig
 	sl   StorageProvider
 	c    CryptProvider
 }
 
 // New.
-func NewText(s StorageProvider, ucfg config.UserConfig) *TextServices {
+func NewText(s StorageProvider, cfg *config.ServiceConfig) *TextServices {
 	return &TextServices{
 		sl:   s,
-		ucfg: ucfg,
+		cfg: cfg,
 		c: &Crypt{},
 	}
 }
@@ -36,11 +36,11 @@ func NewText(s StorageProvider, ucfg config.UserConfig) *TextServices {
 func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRecord) error {
 	var err error
 
-	log.Print(sr.ucfg.UserPsw)
-	log.Print(sr.ucfg.Key)
+	log.Print(sr.cfg.UserPsw)
+	log.Print(sr.cfg.Key)
 
 	//key:= string([]byte(sr.ucfg.UserPsw)[1:])   +"00000"
-	record.Text, err = sr.c.EncryptAES(sr.ucfg.Key, record.Text)
+	record.Text, err = sr.c.EncryptAES(sr.cfg.Key, record.Text)
 	if err != nil {
 		log.Print("encrypt error: ", err)
 		return err
