@@ -2,6 +2,8 @@ package ui
 
 import (
 	"context"
+	"encoding/hex"
+	"os"
 	"strconv"
 	"time"
 
@@ -140,11 +142,12 @@ func (ui *UI) createLoginPairFrm() *tview.Form {
 
 func (ui *UI) createBinaryFrm() *tview.Form {
 	binaryRecord := models.BinaryRecord{}
+	var binaryPath string
 	ui.createBinaryForm.AddInputField("Metadata:", "", 20, nil, func(metadata string) {
 		binaryRecord.Metadata = metadata
 	})
 	ui.createBinaryForm.AddInputField("Path to Binary data:", "", 20, nil, func(binarydata string) {
-		binaryRecord.Binary = binarydata
+		binaryPath = binarydata
 	})
 	ui.createBinaryForm.AddButton("Create Item", func() {
 		binaryRecord.UID = ui.cfg.UserID
@@ -152,7 +155,12 @@ func (ui *UI) createBinaryFrm() *tview.Form {
 		binaryRecord.Operation = models.Create
 		binaryRecord.ChngTime = time.Now()
 		binaryRecord.RecordID = uuid.NewString()
-		err := ui.b.ProcessingBinary(ui.ctx, binaryRecord)
+		binary, err := os.ReadFile(binaryPath)
+		if err != nil {
+			log.Print("reading config file error:", err)
+		}
+		binaryRecord.Binary = hex.EncodeToString(binary)
+		err = ui.b.ProcessingBinary(ui.ctx, binaryRecord)
 		if err != nil {
 			log.Print("save login data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",

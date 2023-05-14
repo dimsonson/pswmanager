@@ -46,7 +46,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	srvtext := services.NewText(sl, init.cfg)
 	srvlogin := services.NewLogin(sl, init.cfg)
-	srvbinary := services.NewBinary(sl)
+	srvbinary := services.NewBinary(sl, init.cfg)
 	srvcard := services.NewCard(sl, init.cfg)
 
 	// testRSearchResults, err := srvtext.SearchText(ctx, "test")
@@ -166,7 +166,7 @@ func (init *Init) test(ctx context.Context) {
 
 	log.Print(resultSearch)
 
-	srvBinary := services.NewBinary(sl)
+	srvBinary := services.NewBinary(sl, init.cfg)
 
 	msgBinary := models.BinaryRecord{
 		RecordID:  uuid.NewString(),

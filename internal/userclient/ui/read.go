@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"encoding/hex"
+	"os"
 	"strconv"
 
 	"github.com/derailed/tcell/v2"
@@ -293,6 +295,14 @@ func (ui *UI) readBinaryFrm(item models.BinaryRecord) *tview.Form {
 		item.Binary = binarydata
 	})
 	ui.readBinaryForm.AddButton("OK", func() {
+		binaryFile, err := hex.DecodeString(item.Binary)
+		if err != nil {
+			log.Print("decode binary file error:", err)
+		}
+		err = os.WriteFile("binaryfile.tmp", binaryFile, 0666)
+		if err != nil {
+			log.Print("write binary file error:", err)
+		}
 		ui.pages.SwitchToPage(MainPage)
 	})
 	ui.readBinaryForm.AddButton("Update Item", func() {
