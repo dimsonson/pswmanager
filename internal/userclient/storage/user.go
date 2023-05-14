@@ -9,7 +9,8 @@ import (
 )
 
 // добавление нового пользователя в хранилище, запись в две таблицы в транзакции
-func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig, keyDB string) error {
+func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig) error {
+//func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig, keyDB string) error {
 	// создаем текст запроса
 	q := `INSERT INTO ucfg
 			VALUES (
@@ -19,7 +20,7 @@ func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig, keyDB 
 			$4,
 			$5			
 			)`
-	_, err := sl.db.ExecContext(ctx, q, ucfg.UserLogin, ucfg.UserPsw, ucfg.UserID, ucfg.AppID, keyDB)
+	_, err := sl.db.ExecContext(ctx, q, ucfg.UserLogin, ucfg.UserPsw, ucfg.UserID, ucfg.AppID, ucfg.Key)
 	return err
 }
 

@@ -16,15 +16,15 @@ type TextStorageProviver interface {
 	SearchText(ctx context.Context, searchInput string) ([]models.TextRecord, error)
 }
 
-// Services структура конструктора бизнес логики.
+// TextServices структура конструктора бизнес логики.
 type TextServices struct {
 	cfg *config.ServiceConfig
-	sl  StorageProvider
+	sl  TextStorageProviver
 	c   CryptProvider
 }
 
-// New.
-func NewText(s StorageProvider, cfg *config.ServiceConfig) *TextServices {
+// NewText конструктор сервиса текстовых записей.
+func NewText(s TextStorageProviver, cfg *config.ServiceConfig) *TextServices {
 	return &TextServices{
 		sl:  s,
 		cfg: cfg,
@@ -32,19 +32,14 @@ func NewText(s StorageProvider, cfg *config.ServiceConfig) *TextServices {
 	}
 }
 
-// TextRec.
+// ProcessingText метод обратботки данных в хранилище в зависимости от типа операции.
 func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRecord) error {
 	var err error
-
-	log.Print(sr.cfg.UserPsw)
-	log.Print(sr.cfg.Key)
-
 	record.Text, err = sr.c.EncryptAES(sr.cfg.Key, record.Text)
 	if err != nil {
 		log.Print("encrypt error: ", err)
 		return err
 	}
-
 	switch record.Operation {
 	case models.Create:
 		err := sr.sl.CreateText(ctx, record)
@@ -68,20 +63,18 @@ func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRe
 	return err
 }
 
+// SearchText метод поиск в хранилицще текстовых данных.
 func (sr *TextServices) SearchText(ctx context.Context, searchInput string) ([]models.TextRecord, error) {
 	textRecords, err := sr.sl.SearchText(ctx, searchInput)
 	if err != nil {
 		log.Print("rearch text record error: ", err)
 	}
-
 	for i := range textRecords {
-
 		textRecords[i].Text, err = sr.c.DecryptAES(sr.cfg.Key, textRecords[i].Text)
 		if err != nil {
 			log.Print("encrypt error: ", err)
 			return nil, err
 		}
 	}
-
 	return textRecords, err
 }

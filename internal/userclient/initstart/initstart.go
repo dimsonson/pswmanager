@@ -45,9 +45,9 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	log.Print(string(init.cfg.UserConfig.Key))
 
 	srvtext := services.NewText(sl, init.cfg)
-	srvlogin := services.NewLogin(sl)
+	srvlogin := services.NewLogin(sl, init.cfg)
 	srvbinary := services.NewBinary(sl)
-	srvcard := services.NewCard(sl)
+	srvcard := services.NewCard(sl, init.cfg)
 
 	// testRSearchResults, err := srvtext.SearchText(ctx, "test")
 
@@ -130,7 +130,7 @@ func (init *Init) test(ctx context.Context) {
 
 	log.Print(resultTextSearch)
 
-	srvlogin := services.NewLogin(sl)
+	srvlogin := services.NewLogin(sl, init.cfg)
 
 	msgLogin := models.LoginRecord{
 		RecordID:  uuid.NewString(),
@@ -203,7 +203,7 @@ func (init *Init) test(ctx context.Context) {
 
 	log.Print(binaryResultSearch)
 
-	srcvCard := services.NewCard(sl)
+	srcvCard := services.NewCard(sl, init.cfg)
 
 	msgCard := models.CardRecord{
 		RecordID:  uuid.NewString(),

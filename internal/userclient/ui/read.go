@@ -36,8 +36,14 @@ func (ui *UI) ListSelectRead() {
 					if err != nil {
 						log.Print("search text error: ", err)
 					}
-					ui.addTextItemsList()
-					ui.pages.SwitchToPage(TextSearchResult)
+					if len(ui.TextSearchResult) != 0 {
+						ui.addTextItemsList()
+						ui.pages.SwitchToPage(TextSearchResult)
+					}
+					if len(ui.TextSearchResult) == 0 {
+						ui.ShowOk("Nothing found for this request.", func() {
+						})
+					}
 				})
 			ui.pages.SwitchToPage(searchForm)
 		}).
@@ -45,10 +51,21 @@ func (ui *UI) ListSelectRead() {
 			ui.searchForm.Clear(true)
 			ui.searchFrm(
 				func() {
-					log.Print("searchdata ", ui.searchdata)
 					ui.listLoginsSearchResult.Clear()
 					ui.addLoginItemsList()
-					ui.pages.SwitchToPage(LoginsSearchResult)
+					var err error
+					ui.LoginsSearchResult, err = ui.l.SearchLogin(ui.ctx, ui.searchdata)
+					if err != nil {
+						log.Print("search logins error: ", err)
+					}
+					if len(ui.LoginsSearchResult) != 0 {
+						ui.addLoginItemsList()
+						ui.pages.SwitchToPage(LoginsSearchResult)
+					}
+					if len(ui.LoginsSearchResult) == 0 {
+						ui.ShowOk("Nothing found for this request.", func() {
+						})
+					}
 				})
 			ui.pages.SwitchToPage(searchForm)
 		}).
@@ -56,10 +73,20 @@ func (ui *UI) ListSelectRead() {
 			ui.searchForm.Clear(true)
 			ui.searchFrm(
 				func() {
-					log.Print("searchdata", ui.searchdata)
 					ui.listBinarySearchResult.Clear()
-					ui.addBinaryItemsList()
-					ui.pages.SwitchToPage(BinarySearchResult)
+					var err error
+					ui.BinarySearchResult, err = ui.b.SearchBinary(ui.ctx, ui.searchdata)
+					if err != nil {
+						log.Print("search binary error: ", err)
+					}
+					if len(ui.BinarySearchResult) != 0 {
+						ui.addBinaryItemsList()
+						ui.pages.SwitchToPage(BinarySearchResult)
+					}
+					if len(ui.BinarySearchResult) == 0 {
+						ui.ShowOk("Nothing found for this request.", func() {
+						})
+					}
 				})
 			ui.pages.SwitchToPage(searchForm)
 		}).
@@ -67,10 +94,20 @@ func (ui *UI) ListSelectRead() {
 			ui.searchForm.Clear(true)
 			ui.searchFrm(
 				func() {
-					log.Print("searchdata", ui.searchdata)
 					ui.listCardSearchResult.Clear()
-					ui.addCardItemsList()
-					ui.pages.SwitchToPage(CardSearchResult)
+					var err error
+					ui.CardSearchResult, err = ui.c.SearchCard(ui.ctx, ui.searchdata)
+					if err != nil {
+						log.Print("search card error: ", err)
+					}
+					if len(ui.TextSearchResult) != 0 {
+						ui.addCardItemsList()
+						ui.pages.SwitchToPage(CardSearchResult)
+					}
+					if len(ui.TextSearchResult) == 0 {
+						ui.ShowOk("Nothing found for this request.", func() {
+						})
+					}
 				})
 			ui.pages.SwitchToPage(searchForm)
 		}).
@@ -86,7 +123,7 @@ func (ui *UI) ListSelectRead() {
 }
 
 func (ui *UI) addTextItemsList() {
-	//ui.listTextSearchResult.Clear()
+	ui.listTextSearchResult.Clear()
 	for index, item := range ui.TextSearchResult {
 		ui.listTextSearchResult.AddItem(item.Metadata+" "+item.Text, "", rune(49+index), func() {
 			ui.readTextForm.Clear(true)
@@ -97,7 +134,7 @@ func (ui *UI) addTextItemsList() {
 }
 
 func (ui *UI) addLoginItemsList() {
-	//ui.listLoginsSearchResult.Clear()
+	ui.listLoginsSearchResult.Clear()
 	for index, item := range ui.LoginsSearchResult {
 		ui.listLoginsSearchResult.AddItem(item.Metadata+" "+item.Login, "", rune(49+index), func() {
 			ui.readLoginPairForm.Clear(true)
@@ -137,37 +174,47 @@ func (ui *UI) readTextFrm(item models.TextRecord) *tview.Form {
 		item.Text = textdata
 	})
 	ui.readTextForm.AddButton("OK", func() {
-		if item.Metadata == "0" {
+		ui.pages.SwitchToPage(MainPage)
+	})
+	ui.readTextForm.AddButton("Update Item", func() {
+		item.Operation = models.Update
+		err := ui.t.ProcessingText(ui.ctx, item)
+		if err != nil {
+			log.Print("save text data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
-					log.Print("new text 1")
-					ui.readTextForm.SetFocus(0)
-					ui.pages.ShowPage(ReadTextForm)
+					ui.createTextForm.SetFocus(0)
+				},
+				func() {
+					ui.pages.SwitchToPage(SelectCreatePage)
+				})
+		}
+		if err == nil {
+			ui.ShowOk("New Text Item recorded to database", func() {
+				ui.pages.SwitchToPage(SelectCreatePage)
+			})
+		}
+		ui.pages.SwitchToPage(MainPage)
+	})
+	ui.readTextForm.AddButton("Delete Item", func() {
+		item.Operation = models.Delete
+		err := ui.t.ProcessingText(ui.ctx, item)
+		if err != nil {
+			log.Print("save text data error:", err)
+			ui.ShowConfirm("Error record to database", "Do you like try again?",
+				func() {
+					ui.createTextForm.SetFocus(0)
 				},
 				func() {
 
-					ui.pages.SwitchToPage(SelectReadPage)
+					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
-		if item.Metadata == "1" {
-			log.Print("user login 0")
+		if err == nil {
 			ui.ShowOk("New Text Item recorded to database", func() {
-				ui.pages.SwitchToPage(SelectReadPage)
+				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
-		if item.Metadata != "1" && item.Metadata != "0" {
-			ui.pages.SwitchToPage(MainPage)
-		}
-	})
-	ui.readTextForm.AddButton("Update Item", func() {
-		ui.pages.SwitchToPage(MainPage)
-	})
-
-	ui.readTextForm.AddButton("Delete Item", func() {
-		ui.pages.SwitchToPage(MainPage)
-	})
-
-	ui.readTextForm.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(MainPage)
 	})
 	ui.readTextForm.SetFocus(2)
@@ -178,52 +225,60 @@ func (ui *UI) readTextFrm(item models.TextRecord) *tview.Form {
 }
 
 func (ui *UI) readLoginPairFrm(item models.LoginRecord) *tview.Form {
-	loginPairRecord := models.LoginRecord{}
 	ui.readLoginPairForm.AddInputField("Metadata:", item.Metadata, 20, nil, func(metadata string) {
-		loginPairRecord.Metadata = metadata
+		item.Metadata = metadata
 	})
 	ui.readLoginPairForm.AddInputField("Login data:", item.Login, 20, nil, func(logindata string) {
-		loginPairRecord.Login = logindata
+		item.Login = logindata
 	})
-	ui.readLoginPairForm.AddPasswordField("Password data:", item.Psw, 20, '*', func(pswdata string) {
-		loginPairRecord.Psw = pswdata
+	ui.readLoginPairForm.AddInputField("Password data:", item.Psw, 20, nil, func(pswdata string) {
+		item.Psw = pswdata
 	})
 	ui.readLoginPairForm.AddButton("OK", func() {
-		if loginPairRecord.Metadata == "0" {
+		ui.pages.SwitchToPage(MainPage)
+	})
+	ui.readLoginPairForm.AddButton("Update Item", func() {
+		item.Operation = models.Update
+		err := ui.l.ProcessingLogin(ui.ctx, item)
+		if err != nil {
+			log.Print("save logins data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
-					log.Print("new login pair 1")
-					ui.readLoginPairForm.SetFocus(0)
-					ui.pages.ShowPage(ReadLoginPairForm)
+					ui.createTextForm.SetFocus(0)
+				},
+				func() {
+					ui.pages.SwitchToPage(SelectCreatePage)
+				})
+		}
+		if err == nil {
+			ui.ShowOk("New Login Item recorded to database", func() {
+				ui.pages.SwitchToPage(SelectCreatePage)
+			})
+		}
+		ui.pages.SwitchToPage(MainPage)
+	})
+	ui.readLoginPairForm.AddButton("Delete Item", func() {
+		item.Operation = models.Delete
+		err := ui.l.ProcessingLogin(ui.ctx, item)
+		if err != nil {
+			log.Print("save login data error:", err)
+			ui.ShowConfirm("Error record to database", "Do you like try again?",
+				func() {
+					ui.createTextForm.SetFocus(0)
 				},
 				func() {
 
-					ui.pages.SwitchToPage(SelectReadPage)
+					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
-		if loginPairRecord.Metadata == "1" {
-			log.Print("user login 0")
+		if err == nil {
 			ui.ShowOk("New Text Item recorded to database", func() {
-				ui.pages.SwitchToPage(SelectReadPage)
+				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
-		if loginPairRecord.Metadata != "1" && loginPairRecord.Metadata != "0" {
-			ui.pages.SwitchToPage(MainPage)
-		}
-	})
-	ui.readLoginPairForm.AddButton("Update Item", func() {
-		ui.pages.SwitchToPage(MainPage)
-	})
-
-	ui.readLoginPairForm.AddButton("Delete Item", func() {
-		ui.pages.SwitchToPage(MainPage)
-	})
-
-	ui.readLoginPairForm.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(MainPage)
 	})
 	ui.readLoginPairForm.SetFocus(3)
-
 	ui.readLoginPairForm.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(MainPage)
 	})
@@ -231,50 +286,57 @@ func (ui *UI) readLoginPairFrm(item models.LoginRecord) *tview.Form {
 }
 
 func (ui *UI) readBinaryFrm(item models.BinaryRecord) *tview.Form {
-	binaryRecord := models.BinaryRecord{}
 	ui.readBinaryForm.AddInputField("Metadata:", item.Metadata, 20, nil, func(metadata string) {
-		binaryRecord.Metadata = metadata
+		item.Metadata = metadata
 	})
 	ui.readBinaryForm.AddInputField("Path to Binary data:", item.Binary, 20, nil, func(binarydata string) {
-		binaryRecord.Binary = binarydata
+		item.Binary = binarydata
 	})
 	ui.readBinaryForm.AddButton("OK", func() {
-		if binaryRecord.Metadata == "0" {
+		ui.pages.SwitchToPage(MainPage)
+	})
+	ui.readBinaryForm.AddButton("Update Item", func() {
+		item.Operation = models.Update
+		err := ui.b.ProcessingBinary(ui.ctx, item)
+		if err != nil {
+			log.Print("save binary data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
-					log.Print("new text 1")
-					ui.readBinaryForm.SetFocus(0)
-					ui.pages.ShowPage(NewTextForm)
+					ui.createTextForm.SetFocus(0)
+				},
+				func() {
+					ui.pages.SwitchToPage(SelectCreatePage)
+				})
+		}
+		if err == nil {
+			ui.ShowOk("New Text Item recorded to database", func() {
+				ui.pages.SwitchToPage(SelectCreatePage)
+			})
+		}
+		ui.pages.SwitchToPage(MainPage)
+	})
+	ui.readBinaryForm.AddButton("Delete Item", func() {
+		item.Operation = models.Delete
+		err := ui.b.ProcessingBinary(ui.ctx, item)
+		if err != nil {
+			log.Print("save binary data error:", err)
+			ui.ShowConfirm("Error record to database", "Do you like try again?",
+				func() {
+					ui.createTextForm.SetFocus(0)
 				},
 				func() {
 
 					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
-		if binaryRecord.Metadata == "1" {
-			log.Print("user login 0")
+		if err == nil {
 			ui.ShowOk("New Text Item recorded to database", func() {
 				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
-		if binaryRecord.Metadata != "1" && binaryRecord.Metadata != "0" {
-			ui.pages.SwitchToPage(MainPage)
-		}
-	})
-
-	ui.readBinaryForm.AddButton("Update Item", func() {
-		ui.pages.SwitchToPage(MainPage)
-	})
-
-	ui.readBinaryForm.AddButton("Delete Item", func() {
-		ui.pages.SwitchToPage(MainPage)
-	})
-
-	ui.readBinaryForm.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(MainPage)
 	})
 	ui.readBinaryForm.SetFocus(2)
-
 	ui.readBinaryForm.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(MainPage)
 	})
@@ -282,59 +344,70 @@ func (ui *UI) readBinaryFrm(item models.BinaryRecord) *tview.Form {
 }
 
 func (ui *UI) readCardFrm(item models.CardRecord) *tview.Form {
-	cardRecord := models.CardRecord{}
 	var brand = []string{"MIR", "MC", "VISA", "AMEX"}
 	ui.readCardForm.AddInputField("Metadata:", item.Metadata, 20, nil, func(metadata string) {
-		cardRecord.Metadata = metadata
+		item.Metadata = metadata
 	})
 	ui.readCardForm.AddDropDown("Brand:", brand, int(item.Brand), func(branddata string, index int) {
-		cardRecord.Brand = models.CardType(index)
+		item.Brand = models.CardType(index)
 	})
 	ui.readCardForm.AddInputField("Number:", item.Number, 20, nil, func(numberdata string) {
-		cardRecord.Number = numberdata
+		item.Number = numberdata
 	})
 	ui.readCardForm.AddInputField("Valid Date:", item.ValidDate, 20, nil, func(validdata string) {
-		cardRecord.ValidDate = validdata
+		item.ValidDate = validdata
 	})
 	ui.readCardForm.AddInputField("Code:", "001_int", 20, nil, func(codedata string) {
 		//var err error
-		cardRecord.Code, _ = strconv.Atoi(codedata)
+		item.Code, _ = strconv.Atoi(codedata)
 	})
 	ui.readCardForm.AddInputField("Holder:", item.Holder, 20, nil, func(holderdata string) {
-		cardRecord.Holder = holderdata
+		item.Holder = holderdata
 	})
 	ui.readCardForm.AddButton("OK", func() {
-		if cardRecord.Metadata == "0" {
+		ui.pages.SwitchToPage(MainPage)
+	})
+	ui.readCardForm.AddButton("Update Item", func() {
+		item.Operation = models.Update
+		err := ui.c.ProcessingCard(ui.ctx, item)
+		if err != nil {
+			log.Print("save card data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
-					log.Print("new text 1")
-					ui.readCardForm.SetFocus(0)
-					ui.pages.ShowPage(NewCardForm)
+					ui.createTextForm.SetFocus(0)
+				},
+				func() {
+					ui.pages.SwitchToPage(SelectCreatePage)
+				})
+		}
+		if err == nil {
+			ui.ShowOk("New Text Item recorded to database", func() {
+				ui.pages.SwitchToPage(SelectCreatePage)
+			})
+		}
+		ui.pages.SwitchToPage(MainPage)
+	})
+	ui.readCardForm.AddButton("Delete Item", func() {
+		item.Operation = models.Delete
+		err := ui.c.ProcessingCard(ui.ctx, item)
+		if err != nil {
+			log.Print("save card data error:", err)
+			ui.ShowConfirm("Error record to database", "Do you like try again?",
+				func() {
+					ui.createTextForm.SetFocus(0)
 				},
 				func() {
 
 					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
-		if cardRecord.Metadata == "1" {
-			log.Print("user login 0")
+		if err == nil {
 			ui.ShowOk("New Text Item recorded to database", func() {
 				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
-		if cardRecord.Metadata != "1" && cardRecord.Metadata != "0" {
-			ui.pages.SwitchToPage(MainPage)
-		}
-	})
-
-	ui.readCardForm.AddButton("Update Item", func() {
 		ui.pages.SwitchToPage(MainPage)
 	})
-
-	ui.readCardForm.AddButton("Delete Item", func() {
-		ui.pages.SwitchToPage(MainPage)
-	})
-
 	ui.readCardForm.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(MainPage)
 	})

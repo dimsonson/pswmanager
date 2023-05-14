@@ -78,12 +78,10 @@ func (ui *UI) createTextFrm() *tview.Form {
 			log.Print("save text data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
-					log.Print("new text 1")
 					ui.createTextForm.SetFocus(0)
 					ui.pages.ShowPage(NewTextForm)
 				},
 				func() {
-
 					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
@@ -92,7 +90,6 @@ func (ui *UI) createTextFrm() *tview.Form {
 				ui.pages.SwitchToPage(SelectCreatePage)
 			})
 		}
-
 	})
 	ui.createTextForm.AddButton("Cancel", func() {
 		ui.pages.SwitchToPage(MainPage)
@@ -112,26 +109,27 @@ func (ui *UI) createLoginPairFrm() *tview.Form {
 		loginPairRecord.Psw = pswdata
 	})
 	ui.createLoginPairForm.AddButton("Create Item", func() {
-		if loginPairRecord.Metadata == "0" {
+		loginPairRecord.UID = ui.cfg.UserID
+		loginPairRecord.AppID = ui.cfg.AppID
+		loginPairRecord.Operation = models.Create
+		loginPairRecord.ChngTime = time.Now()
+		loginPairRecord.RecordID = uuid.NewString()
+		err := ui.l.ProcessingLogin(ui.ctx, loginPairRecord)
+		if err != nil {
+			log.Print("save login data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
-					log.Print("new login pair 1")
-					ui.createLoginPairForm.SetFocus(0)
+					ui.createTextForm.SetFocus(0)
 					ui.pages.ShowPage(NewLoginPairForm)
 				},
 				func() {
-
 					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
-		if loginPairRecord.Metadata == "1" {
-			log.Print("user login 0")
-			ui.ShowOk("New Text Item recorded to database", func() {
+		if err == nil {
+			ui.ShowOk("New Login Item recorded to database", func() {
 				ui.pages.SwitchToPage(SelectCreatePage)
 			})
-		}
-		if loginPairRecord.Metadata != "1" && loginPairRecord.Metadata != "0" {
-			ui.pages.SwitchToPage(MainPage)
 		}
 	})
 	ui.createLoginPairForm.AddButton("Cancel", func() {
@@ -149,26 +147,27 @@ func (ui *UI) createBinaryFrm() *tview.Form {
 		binaryRecord.Binary = binarydata
 	})
 	ui.createBinaryForm.AddButton("Create Item", func() {
-		if binaryRecord.Metadata == "0" {
+		binaryRecord.UID = ui.cfg.UserID
+		binaryRecord.AppID = ui.cfg.AppID
+		binaryRecord.Operation = models.Create
+		binaryRecord.ChngTime = time.Now()
+		binaryRecord.RecordID = uuid.NewString()
+		err := ui.b.ProcessingBinary(ui.ctx, binaryRecord)
+		if err != nil {
+			log.Print("save login data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
-					log.Print("new text 1")
-					ui.createBinaryForm.SetFocus(0)
-					ui.pages.ShowPage(NewTextForm)
+					ui.createTextForm.SetFocus(0)
+					ui.pages.ShowPage(NewBinaryForm)
 				},
 				func() {
-
 					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
-		if binaryRecord.Metadata == "1" {
-			log.Print("user login 0")
-			ui.ShowOk("New Text Item recorded to database", func() {
+		if err == nil {
+			ui.ShowOk("New Login Item recorded to database", func() {
 				ui.pages.SwitchToPage(SelectCreatePage)
 			})
-		}
-		if binaryRecord.Metadata != "1" && binaryRecord.Metadata != "0" {
-			ui.pages.SwitchToPage(MainPage)
 		}
 	})
 	ui.createBinaryForm.AddButton("Cancel", func() {
@@ -200,26 +199,27 @@ func (ui *UI) createCardFrm() *tview.Form {
 		cardRecord.Holder = holderdata
 	})
 	ui.createCardForm.AddButton("Create Item", func() {
-		if cardRecord.Metadata == "0" {
+		cardRecord.UID = ui.cfg.UserID
+		cardRecord.AppID = ui.cfg.AppID
+		cardRecord.Operation = models.Create
+		cardRecord.ChngTime = time.Now()
+		cardRecord.RecordID = uuid.NewString()
+		err := ui.c.ProcessingCard(ui.ctx, cardRecord)
+		if err != nil {
+			log.Print("save card data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
 				func() {
-					log.Print("new text 1")
-					ui.createCardForm.SetFocus(0)
-					ui.pages.ShowPage(NewCardForm)
+					ui.createTextForm.SetFocus(0)
+					ui.pages.ShowPage(NewLoginPairForm)
 				},
 				func() {
-
 					ui.pages.SwitchToPage(SelectCreatePage)
 				})
 		}
-		if cardRecord.Metadata == "1" {
-			log.Print("user login 0")
-			ui.ShowOk("New Text Item recorded to database", func() {
+		if err == nil {
+			ui.ShowOk("New Card Item recorded to database", func() {
 				ui.pages.SwitchToPage(SelectCreatePage)
 			})
-		}
-		if cardRecord.Metadata != "1" && cardRecord.Metadata != "0" {
-			ui.pages.SwitchToPage(MainPage)
 		}
 	})
 	ui.createCardForm.AddButton("Cancel", func() {

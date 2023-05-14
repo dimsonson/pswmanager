@@ -17,11 +17,11 @@ type BinaryStorageProviver interface {
 
 // Services структура конструктора бизнес логики.
 type BinaryServices struct {
-	storage StorageProvider
+	storage BinaryStorageProviver
 }
 
 // New.
-func NewBinary(s StorageProvider) *BinaryServices {
+func NewBinary(s BinaryStorageProviver) *BinaryServices {
 	return &BinaryServices{
 		s,
 	}
