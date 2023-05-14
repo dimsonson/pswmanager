@@ -205,10 +205,10 @@ func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*p
 			ChngTime:  timestamppb.New(v.ChngTime),
 			UID:       v.UID,
 			AppID:     v.AppID,
-			Brand:     int64(v.Brand),
+			Brand:     v.Brand,
 			Number:    v.Number,
 			ValidDate: v.ValidDate,
-			Code:      int64(v.Code),
+			Code:      v.Code,
 			Holder:    v.Holder,
 			Metadata:  v.Metadata,
 		}

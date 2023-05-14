@@ -532,10 +532,10 @@ func msgCardTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppC
 		ChngTime:  time.Now(),
 		UID:       newUserCfg.UserID,
 		AppID:     newAppCfg.Appid,
-		Brand:     1,
+		Brand:     "1",
 		ValidDate: "01/28",
 		Number:    "2202245445789856",
-		Code:      123,
+		Code:      "123",
 		Holder:    "DMTIRY BO",
 		Metadata:  "meta data card description sample",
 		Operation: models.Create,
@@ -573,7 +573,7 @@ func msgCardTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppC
 		newReadData.SetCardRec[0].RecordID != msgCard.RecordID ||
 		newReadData.SetCardRec[0].ValidDate != msgCard.ValidDate ||
 		newReadData.SetCardRec[0].Number != msgCard.Number ||
-		newReadData.SetCardRec[0].Code != int64(msgCard.Code) ||
+		newReadData.SetCardRec[0].Code != msgCard.Code ||
 		newReadData.SetCardRec[0].Holder != msgCard.Holder ||
 		!newReadData.SetCardRec[0].ChngTime.AsTime().Round(time.Second).
 			Equal(msgCard.ChngTime.UTC().Round(time.Second)) {
@@ -613,7 +613,7 @@ func msgCardTest(ctx context.Context, newUserCfg *pb.CreateUserResponse, newAppC
 		newReadUpdate.SetCardRec[0].RecordID != msgCard.RecordID ||
 		newReadUpdate.SetCardRec[0].ValidDate != msgCard.ValidDate ||
 		newReadUpdate.SetCardRec[0].Number != msgCard.Number ||
-		newReadUpdate.SetCardRec[0].Code != int64(msgCard.Code) ||
+		newReadUpdate.SetCardRec[0].Code != msgCard.Code ||
 		newReadUpdate.SetCardRec[0].Holder != msgCard.Holder ||
 		!newReadUpdate.SetCardRec[0].ChngTime.AsTime().Round(time.Minute).
 			Equal(msgCard.ChngTime.UTC().Round(time.Minute)) {

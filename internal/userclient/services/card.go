@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/dimsonson/pswmanager/pkg/log"
 
@@ -25,7 +24,7 @@ type CardServices struct {
 }
 
 // New.
-func NewCard(s CardStorageProviver,  cfg *config.ServiceConfig) *CardServices {
+func NewCard(s CardStorageProviver, cfg *config.ServiceConfig) *CardServices {
 	return &CardServices{
 		sl:  s,
 		cfg: cfg,
@@ -36,7 +35,7 @@ func NewCard(s CardStorageProviver,  cfg *config.ServiceConfig) *CardServices {
 // CardRec.
 func (sr *CardServices) ProcessingCard(ctx context.Context, record models.CardRecord) error {
 	var err error
-	
+
 	record.Brand, err = sr.c.EncryptAES(sr.cfg.Key, record.Brand)
 	if err != nil {
 		log.Print("encrypt error: ", err)
@@ -65,14 +64,7 @@ func (sr *CardServices) ProcessingCard(ctx context.Context, record models.CardRe
 	if err != nil {
 		log.Print("encrypt error: ", err)
 		return err
-	}	
-
-	record.Metadata, err = sr.c.EncryptAES(sr.cfg.Key, record.Metadata)
-	if err != nil {
-		log.Print("encrypt error: ", err)
-		return err
-	}	
-
+	}
 
 	switch record.Operation {
 	case models.Create:
@@ -98,10 +90,38 @@ func (sr *CardServices) ProcessingCard(ctx context.Context, record models.CardRe
 	return err
 }
 
+// SearchCard.
 func (sr *CardServices) SearchCard(ctx context.Context, searchInput string) ([]models.CardRecord, error) {
 	cardRecords, err := sr.sl.SearchCard(ctx, searchInput)
 	if err != nil {
 		log.Print("search binary record error: ", err)
+	}
+	for i := range cardRecords {
+		cardRecords[i].Brand, err = sr.c.DecryptAES(sr.cfg.Key, cardRecords[i].Brand)
+		if err != nil {
+			log.Print("decrypt error: ", err)
+			return nil, err
+		}
+		cardRecords[i].Number, err = sr.c.DecryptAES(sr.cfg.Key, cardRecords[i].Number)
+		if err != nil {
+			log.Print("decrypt error: ", err)
+			return nil, err
+		}
+		cardRecords[i].ValidDate, err = sr.c.DecryptAES(sr.cfg.Key, cardRecords[i].ValidDate)
+		if err != nil {
+			log.Print("decrypt error: ", err)
+			return nil, err
+		}
+		cardRecords[i].Code, err = sr.c.DecryptAES(sr.cfg.Key, cardRecords[i].Code)
+		if err != nil {
+			log.Print("decrypt error: ", err)
+			return nil, err
+		}
+		cardRecords[i].Holder, err = sr.c.DecryptAES(sr.cfg.Key, cardRecords[i].Holder)
+		if err != nil {
+			log.Print("decrypt error: ", err)
+			return nil, err
+		}
 	}
 	return cardRecords, err
 }

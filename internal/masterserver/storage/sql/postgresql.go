@@ -61,10 +61,10 @@ func New(p string) *StorageSQL {
 		
 		CREATE TABLE IF NOT EXISTS card_records (
 			"metadata" TEXT NOT NULL,
-			"brand" DECIMAL,
+			"brand" TEXT,
 			"num" TEXT,
 			"date" TEXT,
-			"code" DECIMAL,
+			"code" TEXT,
 			"holder" TEXT,
 			"uid" TEXT NOT NULL,
 			"appid" TEXT NOT NULL,

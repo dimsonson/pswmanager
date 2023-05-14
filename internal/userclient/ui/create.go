@@ -183,7 +183,8 @@ func (ui *UI) createCardFrm() *tview.Form {
 		cardRecord.Metadata = metadata
 	})
 	ui.createCardForm.AddDropDown("Brand:", brand, 0, func(branddata string, index int) {
-		cardRecord.Brand = models.CardType(index)
+		indexBrand := strconv.Itoa(index)
+		cardRecord.Brand = indexBrand
 	})
 	ui.createCardForm.AddInputField("Number:", "", 20, nil, func(numberdata string) {
 		cardRecord.Number = numberdata
@@ -193,7 +194,7 @@ func (ui *UI) createCardFrm() *tview.Form {
 	})
 	ui.createCardForm.AddInputField("Code:", "", 20, nil, func(codedata string) {
 		//var err error
-		cardRecord.Code, _ = strconv.Atoi(codedata)
+		cardRecord.Code = codedata
 	})
 	ui.createCardForm.AddInputField("Holder:", "", 20, nil, func(holderdata string) {
 		cardRecord.Holder = holderdata

@@ -100,11 +100,11 @@ func (ui *UI) ListSelectRead() {
 					if err != nil {
 						log.Print("search card error: ", err)
 					}
-					if len(ui.TextSearchResult) != 0 {
+					if len(ui.CardSearchResult) != 0 {
 						ui.addCardItemsList()
 						ui.pages.SwitchToPage(CardSearchResult)
 					}
-					if len(ui.TextSearchResult) == 0 {
+					if len(ui.CardSearchResult) == 0 {
 						ui.ShowOk("Nothing found for this request.", func() {
 						})
 					}
@@ -345,11 +345,15 @@ func (ui *UI) readBinaryFrm(item models.BinaryRecord) *tview.Form {
 
 func (ui *UI) readCardFrm(item models.CardRecord) *tview.Form {
 	var brand = []string{"MIR", "MC", "VISA", "AMEX"}
+	itemBrand, err := strconv.Atoi(item.Brand)
+	if err != nil {
+		log.Print("itemBrand conversion error:", err)
+	}
 	ui.readCardForm.AddInputField("Metadata:", item.Metadata, 20, nil, func(metadata string) {
 		item.Metadata = metadata
 	})
-	ui.readCardForm.AddDropDown("Brand:", brand, int(item.Brand), func(branddata string, index int) {
-		item.Brand = models.CardType(index)
+	ui.readCardForm.AddDropDown("Brand:", brand, itemBrand, func(branddata string, index int) {
+		item.Brand = strconv.Itoa(index)
 	})
 	ui.readCardForm.AddInputField("Number:", item.Number, 20, nil, func(numberdata string) {
 		item.Number = numberdata
@@ -357,9 +361,8 @@ func (ui *UI) readCardFrm(item models.CardRecord) *tview.Form {
 	ui.readCardForm.AddInputField("Valid Date:", item.ValidDate, 20, nil, func(validdata string) {
 		item.ValidDate = validdata
 	})
-	ui.readCardForm.AddInputField("Code:", "001_int", 20, nil, func(codedata string) {
-		//var err error
-		item.Code, _ = strconv.Atoi(codedata)
+	ui.readCardForm.AddInputField("Code:", item.Code, 20, nil, func(codedata string) {
+		item.Code = codedata
 	})
 	ui.readCardForm.AddInputField("Holder:", item.Holder, 20, nil, func(holderdata string) {
 		item.Holder = holderdata

@@ -74,10 +74,10 @@ type CardRecord struct {
 	ChngTime  time.Time
 	UID       string
 	AppID     string
-	Brand     CardType
+	Brand     string
 	Number    string
 	ValidDate string
-	Code      int
+	Code      string
 	Holder    string
 	Metadata  string
 	Operation MsgType

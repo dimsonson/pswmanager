@@ -112,10 +112,10 @@ message CardRec {
   google.protobuf.Timestamp ChngTime = 2;
   string UID = 3;
   string AppID = 4;
-  int64 Brand = 5;
+  string Brand = 5;
   string Number = 6;
   string ValidDate = 7;
-  int64 Code = 8;
+  string Code = 8;
   string Holder = 9;
   string Metadata = 10;
 }

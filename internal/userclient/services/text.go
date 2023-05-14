@@ -72,7 +72,7 @@ func (sr *TextServices) SearchText(ctx context.Context, searchInput string) ([]m
 	for i := range textRecords {
 		textRecords[i].Text, err = sr.c.DecryptAES(sr.cfg.Key, textRecords[i].Text)
 		if err != nil {
-			log.Print("encrypt error: ", err)
+			log.Print("decrypt error: ", err)
 			return nil, err
 		}
 	}
