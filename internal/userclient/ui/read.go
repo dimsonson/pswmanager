@@ -288,6 +288,7 @@ func (ui *UI) readLoginPairFrm(item models.LoginRecord) *tview.Form {
 }
 
 func (ui *UI) readBinaryFrm(item models.BinaryRecord) *tview.Form {
+
 	ui.readBinaryForm.AddInputField("Metadata:", item.Metadata, 20, nil, func(metadata string) {
 		item.Metadata = metadata
 	})
@@ -307,7 +308,12 @@ func (ui *UI) readBinaryFrm(item models.BinaryRecord) *tview.Form {
 	})
 	ui.readBinaryForm.AddButton("Update Item", func() {
 		item.Operation = models.Update
-		err := ui.b.ProcessingBinary(ui.ctx, item)
+		binary, err := os.ReadFile(item.Binary)
+		if err != nil {
+			log.Print("reading config file error:", err)
+		}
+		item.Binary = hex.EncodeToString(binary)
+		err = ui.b.ProcessingBinary(ui.ctx, item)
 		if err != nil {
 			log.Print("save binary data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
