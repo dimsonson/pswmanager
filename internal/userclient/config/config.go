@@ -81,8 +81,9 @@ func (cfg *ServiceConfig) Parse() {
 			}
 		}
 	}
+	cfg.SQLight.Dsn = "./base.db" // "file:./db?_auth&_auth_user=admin&_auth_pass=admin&_auth_crypt=sha1"
+	
 	//сохранение congig.json
-	// cfg.SQLight.Dsn = "db" // "file:./db?_auth&_auth_user=admin&_auth_pass=admin&_auth_crypt=sha1"
 	// configFile, err := json.MarshalIndent(cfg, "", "  ")
 	// if err != nil {
 	// 	log.Printf("marshal config file error: %s", err)
