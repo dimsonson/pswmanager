@@ -25,7 +25,7 @@ var (
 
 func main() {
 	// Вывод данных о версии, дате, коммите сборки.
-	//log.Printf("version=%s, date=%s, commit=%s", buildVersion, buildDate, buildCommit)
+	log.Printf("version=%s, date=%s, commit=%s", buildVersion, buildDate, buildCommit)
 	var wg sync.WaitGroup
 	// опередяляем контекст уведомления о сигнале прерывания
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)

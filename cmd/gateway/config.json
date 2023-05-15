@@ -1,0 +1,66 @@
+{
+  "server_address": "localhost:8080",
+  "enable_tls": false,
+  "rabbitmq": {
+    "User": "rmuser",
+    "Psw": "rmpassword",
+    "Host": "localhost",
+    "Port": "5672",
+    "ClientRMQ": {},
+    "Exchange": {
+      "Name": "records",
+      "Kind": "topic",
+      "Durable": true,
+      "AutoDelete": false,
+      "Internal": false,
+      "NoWait": false,
+      "Args": null
+    },
+    "Queue": {
+      "Name": "master",
+      "Durable": true,
+      "AutoDelete": true,
+      "Exclusive": false,
+      "NoWait": false,
+      "Args": null
+    },
+    "QoS": {
+      "PrefetchCount": 0,
+      "PrefetchSize": 0
+    },
+    "Consumer": {
+      "ConsumerName": "master",
+      "AutoAck": false,
+      "ConsumerArgs": null
+    },
+    "Controllers": [
+      {
+        "RoutingKey": "all.*.*.text"
+      },
+      {
+        "RoutingKey": "all.*.*.login"
+      },
+      {
+        "RoutingKey": "all.*.*.binary"
+      },
+      {
+        "RoutingKey": "all.*.*.card"
+      }
+    ],
+    "RoutingWorkers": 8
+  },
+  "redis": {
+    "Username": "",
+    "Password": "",
+    "Network": "tcp",
+    "Addr": "localhost:6379",
+    "DB": 0
+  },
+  "postgre": {
+    "postgre_dsn": "postgres://postgres:1818@localhost:5432/pswm"
+  },
+  "grpc": {
+    "Network": "tcp",
+    "Port": ":8080"
+  }
+}
