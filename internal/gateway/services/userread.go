@@ -1,28 +1,22 @@
 package services
 
-import (
-	"context"
+// type ReadUserStorageProviver interface {
+// 	ReadUserRecords(ctx context.Context, userID string) (*models.SetOfRecords, error)
+// }
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/models"
-)
+// // Services структура конструктора бизнес логики.
+// type ReadUserServices struct {
+// 	storage StorageProvider
+// }
 
-type ReadUserStorageProviver interface {
-	ReadUserRecords(ctx context.Context, userID string) (*models.SetOfRecords, error)
-}
+// // New.
+// func NewReadUser(s StorageProvider) *ReadUserServices {
+// 	return &ReadUserServices{
+// 		s,
+// 	}
+// }
 
-// Services структура конструктора бизнес логики.
-type ReadUserServices struct {
-	storage StorageProvider
-}
-
-// New.
-func NewReadUser(s StorageProvider) *ReadUserServices {
-	return &ReadUserServices{
-		s,
-	}
-}
-
-func (sr *ReadUserServices) ReadUser(ctx context.Context, uid string) (models.SetOfRecords, error) {
-	setRecords, err := sr.storage.ReadUserRecords(ctx, uid)
-	return *setRecords, err
-}
+// func (sr *ReadUserServices) ReadUser(ctx context.Context, uid string) (models.SetOfRecords, error) {
+// 	setRecords, err := sr.storage.ReadUserRecords(ctx, uid)
+// 	return *setRecords, err
+// }

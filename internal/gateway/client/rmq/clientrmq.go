@@ -5,9 +5,9 @@ import (
 
 	"github.com/dimsonson/pswmanager/pkg/log"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/config"
+	"github.com/dimsonson/pswmanager/internal/gateway/config"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
-	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
+	"github.com/dimsonson/pswmanager/internal/gateway/settings"
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 )

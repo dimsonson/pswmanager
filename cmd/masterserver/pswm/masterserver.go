@@ -13,7 +13,7 @@ import (
 )
 
 func init() {
-	log.LogInit()
+	//log.LogInit()
 }
 
 // Глобальные переменные для использования при сборке - go run -ldflags "-X main.buildVersion=v0.0.1 -X 'main.buildDate=$(date +'%Y/%m/%d')' -X main.buildCommit=final"  main.go.

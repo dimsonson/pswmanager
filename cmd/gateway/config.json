@@ -49,18 +49,10 @@
     ],
     "RoutingWorkers": 8
   },
-  "redis": {
-    "Username": "",
-    "Password": "",
-    "Network": "tcp",
-    "Addr": "localhost:6379",
-    "DB": 0
-  },
-  "postgre": {
-    "postgre_dsn": "postgres://postgres:1818@localhost:5432/pswm"
-  },
   "grpc": {
-    "Network": "tcp",
-    "Port": ":8080"
+    "ServerNetwork": "tcp",
+    "ServerPort": ":8081",
+    "ClientConn": null,
+    "MasterAddres": "localhost:8080"
   }
 }

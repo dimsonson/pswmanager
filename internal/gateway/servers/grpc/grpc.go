@@ -6,9 +6,9 @@ import (
 	"net"
 	"sync"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/config"
+	"github.com/dimsonson/pswmanager/internal/gateway/config"
+	"github.com/dimsonson/pswmanager/internal/gateway/services"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
-	"github.com/dimsonson/pswmanager/internal/masterserver/services"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	grpczerolog "github.com/grpc-ecosystem/go-grpc-middleware/providers/zerolog/v2"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
@@ -16,7 +16,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // Server структура для хранения серверов.
@@ -31,7 +30,7 @@ type Server struct {
 
 type UserServices struct {
 	user *services.UserServices
-	read *services.ReadUserServices
+	//read *services.ReadUserServices
 	pb.UnimplementedUserServicesServer
 	Server
 }
@@ -47,9 +46,9 @@ func NewServer(ctx context.Context, stop context.CancelFunc, cfg config.GRPC, wg
 }
 
 // InitGRPC инциализация GRPC сервера.
-func (srv *Server) InitGRPCservice(readUser *services.ReadUserServices, user *services.UserServices) {
+func (srv *Server) InitGRPCservice(user *services.UserServices) {
 	srv.UserService = &UserServices{}
-	srv.UserService.read = readUser
+	//srv.UserService.read = readUser
 	srv.UserService.user = user
 	// Обявление customFunc для использования в обработке паники.
 	customFunc := func(p interface{}) (err error) {
@@ -70,7 +69,7 @@ func (srv *Server) InitGRPCservice(readUser *services.ReadUserServices, user *se
 
 // StartGRPC запуск GRPC сервера.
 func (srv *Server) StartGRPC() {
-	listen, err := net.Listen(srv.Cfg.Network, srv.Cfg.Port)
+	listen, err := net.Listen(srv.Cfg.ServerNetwork, srv.Cfg.ServerPort)
 	if err != nil {
 		log.Printf("gRPC listener error: %v", err)
 	}
@@ -96,130 +95,130 @@ func (srv *Server) GrpcGracefullShotdown() {
 	}()
 }
 
-func (s *UserServices) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	var out pb.CreateUserResponse
-	var err error
-	usercfg, err := s.user.CreateUser(ctx, in.Login, in.Psw)
-	out.UserID = usercfg.UserID
-	out.RmqHost = usercfg.RmqHost
-	out.RmqPort = usercfg.RmqPort
-	out.RmqUID = usercfg.RmqUID
-	out.ExchangeName = usercfg.ExchangeName
-	out.ExchangeKind = usercfg.ExchangeKind
+// func (s *UserServices) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+// 	var out pb.CreateUserResponse
+// 	var err error
+// 	usercfg, err := s.user.CreateUser(ctx, in.Login, in.Psw)
+// 	out.UserID = usercfg.UserID
+// 	out.RmqHost = usercfg.RmqHost
+// 	out.RmqPort = usercfg.RmqPort
+// 	out.RmqUID = usercfg.RmqUID
+// 	out.ExchangeName = usercfg.ExchangeName
+// 	out.ExchangeKind = usercfg.ExchangeKind
 
-	for _, v := range usercfg.Apps {
-		strout := &pb.App{
-			AppID:        v.AppID,
-			RoutingKey:   v.RoutingKey,
-			ConsumeQueue: v.ConsumeQueue,
-			ConsumerName: v.ConsumerName,
-		}
-		out.Apps = append(out.Apps, strout)
-	}
+// 	for _, v := range usercfg.Apps {
+// 		strout := &pb.App{
+// 			AppID:        v.AppID,
+// 			RoutingKey:   v.RoutingKey,
+// 			ConsumeQueue: v.ConsumeQueue,
+// 			ConsumerName: v.ConsumerName,
+// 		}
+// 		out.Apps = append(out.Apps, strout)
+// 	}
 
-	if err != nil {
-		log.Printf("call Put error: %v", err)
-		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
-		out.Error = codes.Internal.String()
-	}
+// 	if err != nil {
+// 		log.Printf("call Put error: %v", err)
+// 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
+// 		out.Error = codes.Internal.String()
+// 	}
 
-	return &out, err
-}
+// 	return &out, err
+// }
 
-func (s *UserServices) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
-	var out pb.CreateAppResponse
-	var err error
-	appid, usercfg, err := s.user.CreateApp(ctx, in.Uid, in.Psw)
-	out.Appid = appid
-	out.UserID = usercfg.UserID
-	out.RmqHost = usercfg.RmqHost
-	out.RmqPort = usercfg.RmqPort
-	out.RmqUID = usercfg.RmqUID
-	out.ExchangeName = usercfg.ExchangeName
-	out.ExchangeKind = usercfg.ExchangeKind
+// func (s *UserServices) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
+// 	var out pb.CreateAppResponse
+// 	var err error
+// 	appid, usercfg, err := s.user.CreateApp(ctx, in.Uid, in.Psw)
+// 	out.Appid = appid
+// 	out.UserID = usercfg.UserID
+// 	out.RmqHost = usercfg.RmqHost
+// 	out.RmqPort = usercfg.RmqPort
+// 	out.RmqUID = usercfg.RmqUID
+// 	out.ExchangeName = usercfg.ExchangeName
+// 	out.ExchangeKind = usercfg.ExchangeKind
 
-	for _, v := range usercfg.Apps {
-		strout := &pb.App{
-			AppID:        v.AppID,
-			RoutingKey:   v.RoutingKey,
-			ConsumeQueue: v.ConsumeQueue,
-			ConsumerName: v.ConsumerName,
-		}
-		out.Apps = append(out.Apps, strout)
-	}
+// 	for _, v := range usercfg.Apps {
+// 		strout := &pb.App{
+// 			AppID:        v.AppID,
+// 			RoutingKey:   v.RoutingKey,
+// 			ConsumeQueue: v.ConsumeQueue,
+// 			ConsumerName: v.ConsumerName,
+// 		}
+// 		out.Apps = append(out.Apps, strout)
+// 	}
 
-	if err != nil {
-		log.Printf("call Put error: %v", err)
-		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
-		out.Error = codes.Internal.String()
-	}
+// 	if err != nil {
+// 		log.Printf("call Put error: %v", err)
+// 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
+// 		out.Error = codes.Internal.String()
+// 	}
 
-	return &out, err
-}
+// 	return &out, err
+// }
 
-func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
-	var out pb.ReadUserResponse
-	var err error
-	setrecords, err := s.read.ReadUser(ctx, in.Uid)
+// func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
+// 	var out pb.ReadUserResponse
+// 	var err error
+// 	setrecords, err := s.read.ReadUser(ctx, in.Uid)
 
-	for _, v := range setrecords.SetTextRec {
-		strout := &pb.TextRec{
-			RecordID: v.RecordID,
-			ChngTime: timestamppb.New(v.ChngTime),
-			UID:      v.UID,
-			AppID:    v.AppID,
-			Text:     v.Text,
-			Metadata: v.Metadata,
-		}
-		out.SetTextRec = append(out.SetTextRec, strout)
-	}
+// 	for _, v := range setrecords.SetTextRec {
+// 		strout := &pb.TextRec{
+// 			RecordID: v.RecordID,
+// 			ChngTime: timestamppb.New(v.ChngTime),
+// 			UID:      v.UID,
+// 			AppID:    v.AppID,
+// 			Text:     v.Text,
+// 			Metadata: v.Metadata,
+// 		}
+// 		out.SetTextRec = append(out.SetTextRec, strout)
+// 	}
 
-	for _, v := range setrecords.SetBinaryRec {
-		strout := &pb.BinaryRec{
-			RecordID: v.RecordID,
-			ChngTime: timestamppb.New(v.ChngTime),
-			UID:      v.UID,
-			AppID:    v.AppID,
-			Binary:   v.Binary,
-			Metadata: v.Metadata,
-		}
-		out.SetBinaryRec = append(out.SetBinaryRec, strout)
-	}
+// 	for _, v := range setrecords.SetBinaryRec {
+// 		strout := &pb.BinaryRec{
+// 			RecordID: v.RecordID,
+// 			ChngTime: timestamppb.New(v.ChngTime),
+// 			UID:      v.UID,
+// 			AppID:    v.AppID,
+// 			Binary:   v.Binary,
+// 			Metadata: v.Metadata,
+// 		}
+// 		out.SetBinaryRec = append(out.SetBinaryRec, strout)
+// 	}
 
-	for _, v := range setrecords.SetLoginRec {
-		strout := &pb.LoginRec{
-			RecordID: v.RecordID,
-			ChngTime: timestamppb.New(v.ChngTime),
-			UID:      v.UID,
-			AppID:    v.AppID,
-			Login:    v.Login,
-			Psw:      v.Psw,
-			Metadata: v.Metadata,
-		}
-		out.SetLoginRec = append(out.SetLoginRec, strout)
-	}
+// 	for _, v := range setrecords.SetLoginRec {
+// 		strout := &pb.LoginRec{
+// 			RecordID: v.RecordID,
+// 			ChngTime: timestamppb.New(v.ChngTime),
+// 			UID:      v.UID,
+// 			AppID:    v.AppID,
+// 			Login:    v.Login,
+// 			Psw:      v.Psw,
+// 			Metadata: v.Metadata,
+// 		}
+// 		out.SetLoginRec = append(out.SetLoginRec, strout)
+// 	}
 
-	for _, v := range setrecords.SetCardRec {
-		strout := &pb.CardRec{
-			RecordID:  v.RecordID,
-			ChngTime:  timestamppb.New(v.ChngTime),
-			UID:       v.UID,
-			AppID:     v.AppID,
-			Brand:     v.Brand,
-			Number:    v.Number,
-			ValidDate: v.ValidDate,
-			Code:      v.Code,
-			Holder:    v.Holder,
-			Metadata:  v.Metadata,
-		}
-		out.SetCardRec = append(out.SetCardRec, strout)
-	}
+// 	for _, v := range setrecords.SetCardRec {
+// 		strout := &pb.CardRec{
+// 			RecordID:  v.RecordID,
+// 			ChngTime:  timestamppb.New(v.ChngTime),
+// 			UID:       v.UID,
+// 			AppID:     v.AppID,
+// 			Brand:     v.Brand,
+// 			Number:    v.Number,
+// 			ValidDate: v.ValidDate,
+// 			Code:      v.Code,
+// 			Holder:    v.Holder,
+// 			Metadata:  v.Metadata,
+// 		}
+// 		out.SetCardRec = append(out.SetCardRec, strout)
+// 	}
 
-	if err != nil {
-		log.Printf("call Put error: %v", err)
-		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
-		out.Error = codes.Internal.String()
-	}
+// 	if err != nil {
+// 		log.Printf("call Put error: %v", err)
+// 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
+// 		out.Error = codes.Internal.String()
+// 	}
 
-	return &out, err
-}
+// 	return &out, err
+// }
