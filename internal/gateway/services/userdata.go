@@ -3,8 +3,6 @@ package services
 import (
 	"context"
 
-	"github.com/dimsonson/pswmanager/pkg/log"
-
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
@@ -30,24 +28,20 @@ type ClientRMQProvider interface {
 
 type ClientGRPCProvider interface {
 	NewUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error)
-	NewApp(ctx context.Context, uid string, psw string) (*pb.CreateAppResponse, error)
-	ReadUser(ctx context.Context, newAppCfg *pb.CreateAppResponse) (*pb.ReadUserResponse, error)
+	NewApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error)
+	ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error)
 }
 
 // Services структура конструктора бизнес логики.
 type UserServices struct {
-	//storage    UserStorageProviver
-	cfg *config.ServiceConfig
-	//AppCfg *pb.CreateAppResponse
-	//clientRMQ  ClientRMQProvider
+	cfg        *config.ServiceConfig
 	clientGRPC ClientGRPCProvider
 }
 
 // New.
 func NewUserData(cfg *config.ServiceConfig, clientGRPC ClientGRPCProvider) *UserServices {
 	return &UserServices{
-		cfg: cfg,
-		//	clientRMQ:  clientrmq,
+		cfg:        cfg,
 		clientGRPC: clientGRPC,
 	}
 }
@@ -58,23 +52,14 @@ func (s *UserServices) CreateUser(ctx context.Context, in *pb.CreateUserRequest)
 	return out, err
 }
 
-// CreateUser получаем psw хешированный base64 и .
-func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (*pb.CreateAppResponse, error) {
-	//c := pb.NewUserServicesClient(s.cfg.GRPC.ClientConn)
-	out, err := s.clientGRPC.NewApp(ctx, uid, psw)
-	if err != nil {
-		log.Printf("gRPC create app service error: %v", err)
-	}
-	//s.AppCfg = out
+// CreateApp .
+func (s *UserServices) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
+	out, err := s.clientGRPC.NewApp(ctx, in)
 	return out, err
 }
 
-func (s *UserServices) ReadUser(ctx context.Context, uid string) (*pb.ReadUserResponse, error) {
-	//c := pb.NewUserServicesClient(s.cfg.GRPC.ClientConn)
-	AppResp := &pb.CreateAppResponse{}
-	out, err := s.clientGRPC.ReadUser(ctx, AppResp)
-	if err != nil {
-		log.Printf("gRPC read user service error: %v", err)
-	}
+// ReadUser.
+func (s *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
+	out, err := s.clientGRPC.ReadUser(ctx, in)
 	return out, err
 }

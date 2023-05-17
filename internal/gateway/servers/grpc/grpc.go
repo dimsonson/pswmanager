@@ -9,6 +9,7 @@ import (
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
 	"github.com/dimsonson/pswmanager/internal/gateway/services"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
+
 	//pbgw "github.com/dimsonson/pswmanager/internal/gateway/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	grpczerolog "github.com/grpc-ecosystem/go-grpc-middleware/providers/zerolog/v2"
@@ -66,6 +67,7 @@ func (srv *Server) InitGRPCservice(user *services.UserServices) {
 			grpc_recovery.UnaryServerInterceptor(opts...),
 		),
 	)
+	pb.RegisterUserServicesServer(srv.GRPCserver, srv.UserService)
 }
 
 // StartGRPC запуск GRPC сервера.
@@ -74,7 +76,6 @@ func (srv *Server) StartGRPC() {
 	if err != nil {
 		log.Printf("gRPC listener error: %v", err)
 	}
-	pb.RegisterUserServicesServer(srv.GRPCserver, srv.UserService)
 	log.Print("gRPCServer ListenAndServe starting listening")
 	// запуск gRPC сервера
 	if err := srv.GRPCserver.Serve(listen); err != nil {
@@ -106,7 +107,7 @@ func (svs *UserServices) CreateUser(ctx context.Context, in *pb.CreateUserReques
 }
 
 func (svs *UserServices) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
-	out, err := svs.user.CreateApp(ctx, in.Uid, in.Psw)
+	out, err := svs.user.CreateApp(ctx, in)
 	if err != nil {
 		log.Printf("call Put error: %v", err)
 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
@@ -116,7 +117,7 @@ func (svs *UserServices) CreateApp(ctx context.Context, in *pb.CreateAppRequest)
 }
 
 func (svs *UserServices) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
-	out, err := svs.user.ReadUser(ctx, in.Uid)
+	out, err := svs.user.ReadUser(ctx, in)
 	if err != nil {
 		log.Printf("call Put error: %v", err)
 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))

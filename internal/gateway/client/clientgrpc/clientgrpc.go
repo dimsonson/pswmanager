@@ -30,43 +30,8 @@ func NewClientGRPC(cfg config.GRPC) (*ClientGRPC, error) {
 	}, err
 }
 
-// func NewUserApp(ctx context.Context, c pb.UserServicesClient) (*pb.CreateUserResponse, *pb.CreateAppResponse, error) {
-// 	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
-// 	newuser := &pb.CreateUserRequest{
-// 		Login: uuid.NewString(),
-// 		Psw:   "passw123test",
-// 	}
-// 	newUserCfg, err := c.CreateUser(ctx, newuser)
-// 	if err != nil {
-// 		log.Print("create user error: ", err)
-// 	}
-// 	newapp := &pb.CreateAppRequest{
-// 		Uid: newUserCfg.UserID,
-// 		Psw: "passw123test",
-// 	}
-// 	newAppCfg, err := c.CreateApp(ctx, newapp)
-// 	if err != nil {
-// 		log.Print("create app error: ", err)
-// 	}
-// 	return newUserCfg, newAppCfg, err
-// }
-
-// func (cl *ClientGRPC) NewUser(ctx context.Context, login string, psw string) (*pb.CreateUserResponse, error) {
-// 	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
-// 	newuser := &pb.CreateUserRequest{
-// 		Login: login,
-// 		Psw:   psw,
-// 	}
-// 	newUserCfg, err := cl.UserPBconn.CreateUser(ctx, newuser)
-// 	if err != nil {
-// 		log.Print("create user error: ", err)
-// 	}
-// 	return newUserCfg, err
-// }
-
 func (cl *ClientGRPC) NewUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
-	
 	newUserCfg, err := cl.UserPBconn.CreateUser(ctx, in)
 	if err != nil {
 		log.Print("create user error: ", err)
@@ -74,26 +39,18 @@ func (cl *ClientGRPC) NewUser(ctx context.Context, in *pb.CreateUserRequest) (*p
 	return newUserCfg, err
 }
 
-func (cl *ClientGRPC) NewApp(ctx context.Context, uid string, psw string) (*pb.CreateAppResponse, error) {
+func (cl *ClientGRPC) NewApp(ctx context.Context,in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
 	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
-	newapp := &pb.CreateAppRequest{
-		Uid: uid,
-		Psw: psw,
-	}
-	newAppCfg, err := cl.UserPBconn.CreateApp(ctx, newapp)
+	newAppCfg, err := cl.UserPBconn.CreateApp(ctx, in)
 	if err != nil {
 		log.Print("create app error: ", err)
 	}
 	return newAppCfg, err
 }
 
-func (cl *ClientGRPC) ReadUser(ctx context.Context, newAppCfg *pb.CreateAppResponse) (*pb.ReadUserResponse, error) {
-	// переменная запроса всех записей пользователя
-	newread := &pb.ReadUserRequest{
-		Uid: newAppCfg.UserID,
-	}
+func (cl *ClientGRPC) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
 	// запрос всех записей пользователя
-	newRead, err := cl.UserPBconn.ReadUser(ctx, newread)
+	newRead, err := cl.UserPBconn.ReadUser(ctx, in)
 	if err != nil {
 		log.Print("read records error: ", err)
 	}

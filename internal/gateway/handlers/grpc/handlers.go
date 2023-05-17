@@ -4,37 +4,37 @@ import (
 	"context"
 
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
-	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-type ReadUserServicesProvider interface {
-	ReadUser(ctx context.Context, uid string) (models.SetOfRecords, error)
-}
+// type ReadUserServicesProvider interface {
+// 	ReadUser(ctx context.Context, uid string) (models.SetOfRecords, error)
+// }
 
 type UserServicesProvider interface {
-	CreateUser(ctx context.Context, login string, psw string) (*pb.CreateUserResponse, error)
+	CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error)
 	CreateApp(ctx context.Context, uid string, psw string) (*pb.CreateAppResponse, error)
 	ReadUser(ctx context.Context, uid string) (*pb.ReadUserResponse, error)
 }
 
 type UserHandlers struct {
 	Ctx context.Context
-	ReadUserServicesProvider
-	UserServicesProvider
+	//ReadUserServicesProvider
+	UserSvs UserServicesProvider
 	pb.UnimplementedUserServicesServer
 }
 
-func NewUserHandlers(ctx context.Context) *UserHandlers {
+func NewUserHandlers(ctx context.Context, userSvs UserServicesProvider) *UserHandlers {
 	return &UserHandlers{
-		Ctx: ctx,
+		Ctx:     ctx,
+		UserSvs: userSvs,
 	}
 }
 
 func (h *UserHandlers) CreateUsers(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
-	out, err := h.UserServicesProvider.CreateUser(ctx, in.Login, in.Psw)
+	out, err := h.UserSvs.CreateUser(ctx, in)
 	if err != nil {
 		log.Printf("call Put error: %v", err)
 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
@@ -44,7 +44,7 @@ func (h *UserHandlers) CreateUsers(ctx context.Context, in *pb.CreateUserRequest
 }
 
 func (h *UserHandlers) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
-	out, err := h.UserServicesProvider.CreateApp(ctx, in.Uid, in.Psw)
+	out, err := h.UserSvs.CreateApp(ctx, in.Uid, in.Psw)
 	if err != nil {
 		log.Printf("call Put error: %v", err)
 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
@@ -54,7 +54,7 @@ func (h *UserHandlers) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (
 }
 
 func (h *UserHandlers) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
-	out, err := h.UserServicesProvider.ReadUser(ctx, in.Uid)
+	out, err := h.UserSvs.ReadUser(ctx, in.Uid)
 	if err != nil {
 		log.Printf("call Put error: %v", err)
 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
