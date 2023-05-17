@@ -49,9 +49,9 @@ func NewServer(ctx context.Context, stop context.CancelFunc, cfg config.GRPC, wg
 
 // InitGRPC инциализация GRPC сервера.
 func (srv *Server) InitGRPCservice(user *services.UserServices) {
-	srv.UserService = &UserServices{}
+	srv.UserService = &UserServices{user: user}
 	//srv.UserService.read = readUser
-	srv.UserService.user = user
+	//srv.UserService.user = user
 	// Обявление customFunc для использования в обработке паники.
 	customFunc := func(p interface{}) (err error) {
 		return status.Errorf(codes.Unknown, "panic triggered: %v", p)
