@@ -9,6 +9,8 @@ import (
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
 	"github.com/dimsonson/pswmanager/internal/gateway/servers/grpc"
 	"github.com/dimsonson/pswmanager/internal/gateway/services"
+	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
+	"github.com/google/uuid"
 )
 
 type Init struct {
@@ -56,17 +58,28 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	}
 	//c := pb.NewUserServicesClient(clientGRPC.Conn)
 
-	// newuser := &pb.CreateUserRequest{
-	// 	Login: uuid.NewString(),
-	// 	Psw:   "passw123test",
-	// }
+	newuser := &pb.CreateUserRequest{
+		Login: uuid.NewString(),
+		Psw:   "passw123test",
+	}
 
-	// newUserCfg, err := clientGRPC.UserPBconn.CreateUser(ctx, newuser)
-	// if err != nil {
-	// 	log.Print("create user error: ", err)
-	// }
+	newUserCfg, err := clientGRPC.UserPBconn.CreateUser(ctx, newuser)
+	if err != nil {
+		log.Print("create user error: ", err)
+	}
+	log.Print(newUserCfg)
 
-	// log.Print(newUserCfg)
+	newapp := &pb.CreateAppRequest{
+		Uid: newUserCfg.UserID,
+		Psw:   "passw123test",
+	}
+
+	newUserApp, err := clientGRPC.UserPBconn.CreateApp(ctx, newapp)
+	if err != nil {
+		log.Print("create user error: ", err)
+	}
+
+	log.Print(newUserApp)
 
 	// clientGRPC.NewUser(ctx, )
 

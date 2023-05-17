@@ -32,7 +32,6 @@ type Server struct {
 
 type UserServices struct {
 	user *services.UserServices
-	//read *services.ReadUserServices
 	pb.UnimplementedUserServicesServer
 	Server
 }
