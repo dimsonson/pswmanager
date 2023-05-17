@@ -29,53 +29,50 @@ type ClientRMQProvider interface {
 }
 
 type ClientGRPCProvider interface {
-	NewUser(ctx context.Context, c pb.UserServicesClient, login string, psw string) (*pb.CreateUserResponse, error)
-	NewApp(ctx context.Context, c pb.UserServicesClient, uid string, psw string) (*pb.CreateAppResponse, error)
-	ReadUser(ctx context.Context, c pb.UserServicesClient, newAppCfg *pb.CreateAppResponse) (*pb.ReadUserResponse, error)
+	NewUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error)
+	NewApp(ctx context.Context, uid string, psw string) (*pb.CreateAppResponse, error)
+	ReadUser(ctx context.Context, newAppCfg *pb.CreateAppResponse) (*pb.ReadUserResponse, error)
 }
 
 // Services структура конструктора бизнес логики.
 type UserServices struct {
 	//storage    UserStorageProviver
-	cfg        *config.ServiceConfig
-	AppCfg     *pb.CreateAppResponse
-	clientRMQ  ClientRMQProvider
+	cfg *config.ServiceConfig
+	//AppCfg *pb.CreateAppResponse
+	//clientRMQ  ClientRMQProvider
 	clientGRPC ClientGRPCProvider
 }
 
 // New.
-func NewUserData(cfg *config.ServiceConfig, /*clientrmq ClientRMQProvider,*/ clientgrpc ClientGRPCProvider) *UserServices {
+func NewUserData(cfg *config.ServiceConfig, clientGRPC ClientGRPCProvider) *UserServices {
 	return &UserServices{
-		cfg:        cfg,
-	//	clientRMQ:  clientrmq,
-		clientGRPC: clientgrpc,
+		cfg: cfg,
+		//	clientRMQ:  clientrmq,
+		clientGRPC: clientGRPC,
 	}
 }
 
 // CreateUser.
-func (s *UserServices) CreateUser(ctx context.Context, login string, psw string) (*pb.CreateUserResponse, error) {
-	c := pb.NewUserServicesClient(s.cfg.GRPC.ClientConn)
-	out, err := s.clientGRPC.NewUser(ctx, c, login, psw)
-	if err != nil {
-		log.Printf("gRPC create user service error: %v", err)
-	}
+func (s *UserServices) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
+	out, err := s.clientGRPC.NewUser(ctx, in)
 	return out, err
 }
 
 // CreateUser получаем psw хешированный base64 и .
 func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (*pb.CreateAppResponse, error) {
-	c := pb.NewUserServicesClient(s.cfg.GRPC.ClientConn)
-	out, err := s.clientGRPC.NewApp(ctx, c, uid, psw)
+	//c := pb.NewUserServicesClient(s.cfg.GRPC.ClientConn)
+	out, err := s.clientGRPC.NewApp(ctx, uid, psw)
 	if err != nil {
 		log.Printf("gRPC create app service error: %v", err)
 	}
-	s.AppCfg = out
+	//s.AppCfg = out
 	return out, err
 }
 
 func (s *UserServices) ReadUser(ctx context.Context, uid string) (*pb.ReadUserResponse, error) {
-	c := pb.NewUserServicesClient(s.cfg.GRPC.ClientConn)
-	out, err := s.clientGRPC.ReadUser(ctx, c, s.AppCfg)
+	//c := pb.NewUserServicesClient(s.cfg.GRPC.ClientConn)
+	AppResp := &pb.CreateAppResponse{}
+	out, err := s.clientGRPC.ReadUser(ctx, AppResp)
 	if err != nil {
 		log.Printf("gRPC read user service error: %v", err)
 	}

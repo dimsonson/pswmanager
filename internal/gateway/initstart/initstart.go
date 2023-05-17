@@ -54,6 +54,21 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Printf("new gRPC client error: %s", err)
 		return
 	}
+	//c := pb.NewUserServicesClient(clientGRPC.Conn)
+
+	// newuser := &pb.CreateUserRequest{
+	// 	Login: uuid.NewString(),
+	// 	Psw:   "passw123test",
+	// }
+
+	// newUserCfg, err := clientGRPC.UserPBconn.CreateUser(ctx, newuser)
+	// if err != nil {
+	// 	log.Print("create user error: ", err)
+	// }
+
+	// log.Print(newUserCfg)
+
+	// clientGRPC.NewUser(ctx, )
 
 	cfgUser := services.NewUserData(init.cfg, clientGRPC) //clientRMQ, clientGRPC)
 
@@ -69,7 +84,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	wg.Add(1)
 	grpcSrv.GrpcGracefullShotdown()
 	wg.Add(1)
-	//go 
+	//go
 	grpcSrv.StartGRPC()
 
 	//handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
