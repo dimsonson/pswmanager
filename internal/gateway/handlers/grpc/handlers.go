@@ -9,19 +9,15 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-// type ReadUserServicesProvider interface {
-// 	ReadUser(ctx context.Context, uid string) (models.SetOfRecords, error)
-// }
 
 type UserServicesProvider interface {
 	CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error)
-	CreateApp(ctx context.Context, uid string, psw string) (*pb.CreateAppResponse, error)
-	ReadUser(ctx context.Context, uid string) (*pb.ReadUserResponse, error)
+	CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) 
+	ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) 
 }
 
 type UserHandlers struct {
 	Ctx context.Context
-	//ReadUserServicesProvider
 	UserSvs UserServicesProvider
 	pb.UnimplementedUserServicesServer
 }
@@ -44,7 +40,7 @@ func (h *UserHandlers) CreateUsers(ctx context.Context, in *pb.CreateUserRequest
 }
 
 func (h *UserHandlers) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
-	out, err := h.UserSvs.CreateApp(ctx, in.Uid, in.Psw)
+	out, err := h.UserSvs.CreateApp(ctx, in)
 	if err != nil {
 		log.Printf("call Put error: %v", err)
 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
@@ -54,7 +50,7 @@ func (h *UserHandlers) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (
 }
 
 func (h *UserHandlers) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error) {
-	out, err := h.UserSvs.ReadUser(ctx, in.Uid)
+	out, err := h.UserSvs.ReadUser(ctx, in)
 	if err != nil {
 		log.Printf("call Put error: %v", err)
 		status.Errorf(codes.Internal, `server error %s`, error.Error(err))
