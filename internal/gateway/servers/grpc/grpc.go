@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
+	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_hanglers/proto"
 	"github.com/dimsonson/pswmanager/internal/gateway/services"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 
@@ -18,21 +19,31 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+
+	//"github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_hanglers"
+	grpchanglers "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_hanglers"
 )
 
 // Server структура для хранения серверов.
 type Server struct {
-	GRPCserver  *grpc.Server
-	Wg          *sync.WaitGroup
-	Ctx         context.Context
-	Stop        context.CancelFunc
-	Cfg         config.GRPC
-	UserService *UserServices
+	GRPCserver        *grpc.Server
+	Wg                *sync.WaitGroup
+	Ctx               context.Context
+	Stop              context.CancelFunc
+	Cfg               config.GRPC
+	UserService       *UserServices
+	ClientRMQhandlers *ClientRMQhandlers
 }
 
 type UserServices struct {
 	user *services.UserServices
 	pb.UnimplementedUserServicesServer
+	Server
+}
+
+type ClientRMQhandlers struct {
+	pub *grpchanglers.ClientRMQhandlers
+	pbpub.UnimplementedClientRMQhandlersServer
 	Server
 }
 
@@ -47,8 +58,9 @@ func NewServer(ctx context.Context, stop context.CancelFunc, cfg config.GRPC, wg
 }
 
 // InitGRPC инциализация GRPC сервера.
-func (srv *Server) InitGRPCservice(user *services.UserServices) {
+func (srv *Server) InitGRPCservice(user *services.UserServices, clientRMQ *grpchanglers.ClientRMQhandlers) {
 	srv.UserService = &UserServices{user: user}
+	srv.ClientRMQhandlers = &ClientRMQhandlers{pub: clientRMQ}
 	//srv.UserService.read = readUser
 	//srv.UserService.user = user
 	// Обявление customFunc для использования в обработке паники.
@@ -67,6 +79,7 @@ func (srv *Server) InitGRPCservice(user *services.UserServices) {
 		),
 	)
 	pb.RegisterUserServicesServer(srv.GRPCserver, srv.UserService)
+	pbpub.RegisterClientRMQhandlersServer(srv.GRPCserver, clientRMQ)
 }
 
 // StartGRPC запуск GRPC сервера.

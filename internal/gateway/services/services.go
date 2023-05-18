@@ -2,7 +2,7 @@ package services
 
 type StorageProvider interface {
 	CardStorageProviver
-	TextStorageProviver
+	//TextStorageProviver
 	BinaryStorageProviver
 	LoginStorageProviver
 	//ReadUserStorageProviver

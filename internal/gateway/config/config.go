@@ -28,8 +28,6 @@ type ServiceConfig struct {
 	Rabbitmq       RabbitmqSrv    `json:"rabbitmq"`
 	GRPC           GRPC           `json:"grpc"`
 	Wg             sync.WaitGroup `json:"-"`
-	// Redis          Redis          `json:"redis"`
-	// Postgree       PostgreSQL     `json:"postgre"`
 }
 
 // GRPC.

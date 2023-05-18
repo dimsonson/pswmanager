@@ -12,7 +12,6 @@ import (
 
 type ClientGRPC struct {
 	Cfg        config.GRPC
-	Conn       *grpc.ClientConn
 	UserPBconn pb.UserServicesClient
 }
 
@@ -21,11 +20,11 @@ func NewClientGRPC(cfg config.GRPC) (*ClientGRPC, error) {
 	if err != nil {
 		log.Print(err)
 	}
+	cfg.ClientConn = connGRPC
 	log.Print(connGRPC.GetState().String())
 	c := pb.NewUserServicesClient(connGRPC)
 	return &ClientGRPC{
 		Cfg:  cfg,
-		Conn: connGRPC,
 		UserPBconn: c,
 	}, err
 }
@@ -64,4 +63,8 @@ func (cl *ClientGRPC) ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb
 		log.Print("read records error: ", err)
 	}
 	return newRead, err
+}
+
+func (cl *ClientGRPC) Close() {
+	cl.Cfg.ClientConn.Close()
 }
