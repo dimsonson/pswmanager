@@ -8,15 +8,6 @@ import (
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 )
 
-type UserStorageProviver interface {
-	// Close()
-	// CreateUser(ctx context.Context, login string, psw string, uid string, usercfg config.UserConfig) error
-	// ReadUserCfg(ctx context.Context, uid string) (config.UserConfig, error)
-	// UpdateUser(ctx context.Context, uid string, usercfg config.UserConfig) error
-	// CheckPsw(ctx context.Context, uid string, psw string) (bool, error)
-	// IsUserLoginExist(ctx context.Context, login string) (bool, error)
-}
-
 type ClientRMQProvider interface {
 	Close()
 	ExchangeDeclare(exchName string) error
