@@ -3,15 +3,17 @@ import "google/protobuf/timestamp.proto";
 
 package proto;
 
-option go_package = "internal/gateway/handlers/grpc_hanglers";
+option go_package = "internal/gateway/handlers/grpc_handlers";
 
 service ClientRMQhandlers {
   rpc PublishText(PublishTextRequest) returns (PublishTextResponse);
+  rpc PublishLogins(PublishLoginsRequest) returns (PublishLoginsResponse);
+  rpc PublishBinary(PublishBinaryRequest) returns (PublishBinaryResponse);
+  rpc PublishCard(PublishCardRequest) returns (PublishCardResponse);
 
 }
 
 // PublishTextRecord
-
 message PublishTextRequest {
   string exchName = 1;
   string routingKey = 2;
@@ -19,6 +21,39 @@ message PublishTextRequest {
 }
 
 message PublishTextResponse {
+  string error = 1; // ошибка
+}
+
+// PublishLoginRecord
+message PublishLoginsRequest {
+  string exchName = 1;
+  string routingKey = 2;
+  LoginRecord loginsRecord = 3;
+}
+
+message PublishLoginsResponse {
+  string error = 1; // ошибка
+}
+
+// PublishBianryRecord
+message PublishBinaryRequest {
+  string exchName = 1;
+  string routingKey = 2;
+  BinaryRecord binaryRecord = 3;
+}
+
+message PublishBinaryResponse {
+  string error = 1; // ошибка
+}
+
+// PublishCardRecord
+message PublishCardRequest {
+  string exchName = 1;
+  string routingKey = 2;
+  CardRecord cardRecord = 3;
+}
+
+message PublishCardResponse {
   string error = 1; // ошибка
 }
 
@@ -41,6 +76,7 @@ message LoginRecord {
   string Login = 5;
   string Psw = 6;
   string Metadata = 7;
+  int64 Operation = 8;
 }
 
 // BinaryRec структура сообщния для опараций с бинарными данными пользователя.
@@ -51,6 +87,7 @@ message BinaryRecord {
   string AppID = 4;
   string Binary = 5;
   string Metadata = 6;
+  int64 Operation = 7;
 }
 
 // CardRec структура сообщния для опараций с данными карт пользователя.
@@ -65,6 +102,7 @@ message CardRecord {
   string Code = 8;
   string Holder = 9;
   string Metadata = 10;
+  int64 Operation = 11;
 }
 
 /*

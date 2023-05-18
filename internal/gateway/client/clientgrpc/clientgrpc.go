@@ -2,7 +2,8 @@ package clientgrpc
 
 import (
 	"context"
-	"log"
+
+	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
@@ -21,10 +22,10 @@ func NewClientGRPC(cfg config.GRPC) (*ClientGRPC, error) {
 		log.Print(err)
 	}
 	cfg.ClientConn = connGRPC
-	log.Print(connGRPC.GetState().String())
+	log.Print("clientGRPC status: ", connGRPC.GetState().String())
 	c := pb.NewUserServicesClient(connGRPC)
 	return &ClientGRPC{
-		Cfg:  cfg,
+		Cfg:        cfg,
 		UserPBconn: c,
 	}, err
 }
@@ -41,7 +42,7 @@ func (cl *ClientGRPC) NewUser(ctx context.Context, in *pb.CreateUserRequest) (*p
 	return newUserCfg, err
 }
 
-func (cl *ClientGRPC) NewApp(ctx context.Context,in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
+func (cl *ClientGRPC) NewApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error) {
 	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
 	newAppCfg, err := cl.UserPBconn.CreateApp(ctx, in)
 	if newAppCfg == nil {

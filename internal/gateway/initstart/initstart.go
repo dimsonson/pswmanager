@@ -11,7 +11,7 @@ import (
 	"github.com/dimsonson/pswmanager/internal/gateway/servers/grpc"
 	"github.com/dimsonson/pswmanager/internal/gateway/services"
 	//pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
-	"github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_hanglers"
+	"github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers"
 )
 
 type Init struct {
@@ -54,7 +54,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	clientRMQsvs := services.NewTextPub(clientRMQ)
 
-	handlersRMQpub := grpchanglers.NewClientRMQhandlers(ctx, clientRMQsvs)
+	hndlRMQpub := grpchandlers.NewClientRMQhandlers(ctx, clientRMQsvs)
 
 	clientGRPC, err := clientgrpc.NewClientGRPC(init.cfg.GRPC)
 	if err != nil {
@@ -110,7 +110,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	// clientGRPC.NewUser(ctx, )
 
-	svsUser := services.NewUserData(init.cfg, clientGRPC) //clientRMQ, clientGRPC)
+	svsUsers := services.NewUserData(init.cfg, clientGRPC) //clientRMQ, clientGRPC)
 
 	// servLoginRec := services.NewLogin(SQLstorage)
 	// servTextRec := services.NewText(SQLstorage)
@@ -120,7 +120,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 	//cfgReadUsers := services.NewReadUser(SQLstorage)
 
 	grpcSrv := grpc.NewServer(ctx, stop, init.cfg.GRPC, wg)
-	grpcSrv.InitGRPCservice(svsUser, handlersRMQpub)
+	grpcSrv.InitGRPCservice(svsUsers, hndlRMQpub)
 	wg.Add(1)
 	grpcSrv.GrpcGracefullShotdown()
 	wg.Add(1)

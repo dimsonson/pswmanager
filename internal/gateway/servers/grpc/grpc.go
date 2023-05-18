@@ -7,11 +7,10 @@ import (
 	"sync"
 
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
-	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_hanglers/proto"
+	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/proto"
 	"github.com/dimsonson/pswmanager/internal/gateway/services"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 
-	//pbgw "github.com/dimsonson/pswmanager/internal/gateway/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/pkg/log"
 	grpczerolog "github.com/grpc-ecosystem/go-grpc-middleware/providers/zerolog/v2"
 	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
@@ -20,8 +19,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	//"github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_hanglers"
-	grpchanglers "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_hanglers"
+	grpchandlers "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers"
 )
 
 // Server структура для хранения серверов.
@@ -42,7 +40,7 @@ type UserServices struct {
 }
 
 type ClientRMQhandlers struct {
-	pub *grpchanglers.ClientRMQhandlers
+	pub *grpchandlers.ClientRMQhandlers
 	pbpub.UnimplementedClientRMQhandlersServer
 	Server
 }
@@ -58,11 +56,9 @@ func NewServer(ctx context.Context, stop context.CancelFunc, cfg config.GRPC, wg
 }
 
 // InitGRPC инциализация GRPC сервера.
-func (srv *Server) InitGRPCservice(user *services.UserServices, clientRMQ *grpchanglers.ClientRMQhandlers) {
+func (srv *Server) InitGRPCservice(user *services.UserServices, clientRMQ *grpchandlers.ClientRMQhandlers) {
 	srv.UserService = &UserServices{user: user}
 	srv.ClientRMQhandlers = &ClientRMQhandlers{pub: clientRMQ}
-	//srv.UserService.read = readUser
-	//srv.UserService.user = user
 	// Обявление customFunc для использования в обработке паники.
 	customFunc := func(p interface{}) (err error) {
 		return status.Errorf(codes.Unknown, "panic triggered: %v", p)

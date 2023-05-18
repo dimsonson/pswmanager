@@ -36,8 +36,9 @@ func NewClientRMQ(cfg config.RabbitmqSrv) (*ClientRMQ, error) {
 		log.Print("rabbitmq chanel creation error: ", err)
 		return nil, err
 	}
-	 if !conn.IsClosed() {log.Print("rmq connection open")}
-	
+	if !conn.IsClosed() {
+		log.Print("clientRMQ connection open")
+	}
 	return &ClientRMQ{
 		Cfg:  cfg,
 		Conn: conn,
