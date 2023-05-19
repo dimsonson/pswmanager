@@ -10,24 +10,24 @@ import (
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 )
 
-type ClientRMQProviver interface {
+type ServerRMQProviver interface {
 	PublishRecord(exchName string, routingKey string, body []byte) error
 }
 
 // Services структура конструктора бизнес логики.
-type ClientRMQservices struct {
+type ServerRMQservices struct {
 	clientRMQ ClientRMQProviver
 }
 
 // New.
-func NewPub(cRMQ ClientRMQProviver) *ClientRMQservices {
+func NewConsume(cRMQ ClientRMQProviver) *ClientRMQservices {
 	return &ClientRMQservices{
 		clientRMQ: cRMQ,
 	}
 }
 
 // TextRec.
-func (sr *ClientRMQservices) PublishRecord(ctx context.Context, exchName string, routingKey string, record interface{}) error {
+func (sr *ClientRMQservices) ConsumeRecord(ctx context.Context, exchName string, routingKey string, record interface{}) error {
 	switch record.(type) {
 	case models.LoginRecord, models.TextRecord, models.BinaryRecord, models.CardRecord:
 		msgJSON, err := json.Marshal(record)

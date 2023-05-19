@@ -1,4 +1,4 @@
-package rabbitmq
+package rmqsrv
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 	"github.com/MashinIvan/rabbitmq"
 	"github.com/MashinIvan/rabbitmq/pkg/backoff"
 
-	"github.com/dimsonson/pswmanager/internal/masterserver/config"
-	"github.com/dimsonson/pswmanager/internal/masterserver/settings"
+	"github.com/dimsonson/pswmanager/internal/gateway/config"
+	"github.com/dimsonson/pswmanager/internal/gateway/settings"
 	"github.com/streadway/amqp"
 )
 

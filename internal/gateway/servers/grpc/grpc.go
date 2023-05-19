@@ -6,20 +6,21 @@ import (
 	"net"
 	"sync"
 
-	"github.com/dimsonson/pswmanager/internal/gateway/config"
-	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protopub"
-	"github.com/dimsonson/pswmanager/internal/gateway/services"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
-
+	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protopub"
+	pbconsume "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protoconsume"
+	grpchandlers "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers"
+	"github.com/dimsonson/pswmanager/internal/gateway/config"
+	"github.com/dimsonson/pswmanager/internal/gateway/services"
 	"github.com/dimsonson/pswmanager/pkg/log"
+
 	grpczerolog "github.com/grpc-ecosystem/go-grpc-middleware/providers/zerolog/v2"
-	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	grpc_recovery "github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/recovery"
+	"github.com/grpc-ecosystem/go-grpc-middleware/v2/interceptors/logging"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	grpchandlers "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers"
 )
 
 // Server структура для хранения серверов.
@@ -45,6 +46,12 @@ type ClientRMQhandlers struct {
 	Server
 }
 
+type ServerRMQhandlers struct {
+	consume *grpchandlers.ServerRMQhandlers
+	pbconsume.UnimplementedServerRMQhandlersServer
+	Server
+}
+
 // NewServer конструктор создания нового сервера в соответствии с существующей конфигурацией.
 func NewServer(ctx context.Context, stop context.CancelFunc, cfg config.GRPC, wg *sync.WaitGroup) *Server {
 	return &Server{
@@ -56,7 +63,7 @@ func NewServer(ctx context.Context, stop context.CancelFunc, cfg config.GRPC, wg
 }
 
 // InitGRPC инциализация GRPC сервера.
-func (srv *Server) InitGRPCservice(user *services.UserServices, clientRMQ *grpchandlers.ClientRMQhandlers) {
+func (srv *Server) InitGRPCservice(user *services.UserServices, clientRMQ *grpchandlers.ClientRMQhandlers, serverRMQ *grpchandlers.ServerRMQhandlers) {
 	srv.UserService = &UserServices{user: user}
 	srv.ClientRMQhandlers = &ClientRMQhandlers{pub: clientRMQ}
 	// Обявление customFunc для использования в обработке паники.
@@ -76,6 +83,7 @@ func (srv *Server) InitGRPCservice(user *services.UserServices, clientRMQ *grpch
 	)
 	pb.RegisterUserServicesServer(srv.GRPCserver, srv.UserService)
 	pbpub.RegisterClientRMQhandlersServer(srv.GRPCserver, clientRMQ)
+	pbconsume.RegisterServerRMQhandlersServer(srv.GRPCserver, serverRMQ)
 }
 
 // StartGRPC запуск GRPC сервера.
