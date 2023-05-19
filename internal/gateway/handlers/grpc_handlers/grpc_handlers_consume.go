@@ -38,8 +38,10 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 	var out pbconsume.ConsumeResponse
 	var err error
 
+	//hc.Cfg.Consumer.ConsumerName = "all.02e0094f-667e-4958-9392-049b0aeea125.4e54529d-0eb4-42b9-b046-7d8b6e4ea84b"
+	hc.Cfg.Consumer.ConsumerName = in.ConsumerQname
 	hc.Cfg.Controllers[0].RoutingKey = in.RoutingKey
-
+	log.Print("CONSUME")
 
 	// out.Record = []byte{1}
 	// err = stream.Send(&out)
@@ -51,6 +53,8 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 	router := rabbitmq.NewRouter()
 	f := func(ctx *rabbitmq.DeliveryContext) {
 
+		log.Print(" TO STREAM")
+		
 		out.Record = ctx.Delivery.Body
 		// err = status.Errorf(codes.Internal, `server error %s`, error.Error(err))
 		// if err != nil {

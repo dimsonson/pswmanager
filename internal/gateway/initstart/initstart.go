@@ -90,11 +90,11 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 // ConnClose закрываем соединения при завершении работы.
 func (init *Init) ConnClose(ctx context.Context) {
-	if init.cfg.Rabbitmq.ClientRMQ.Conn != nil {
-		init.cfg.Rabbitmq.ClientRMQ.Conn.Close()
-	}
 	if init.cfg.Rabbitmq.ClientRMQ.Ch != nil {
 		init.cfg.Rabbitmq.ClientRMQ.Ch.Close()
+	}
+	if init.cfg.Rabbitmq.ClientRMQ.Conn != nil {
+		init.cfg.Rabbitmq.ClientRMQ.Conn.Close()
 	}
 	if init.cfg.GRPC.ClientConn != nil {
 		init.cfg.GRPC.ClientConn.Close()

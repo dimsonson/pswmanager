@@ -16,7 +16,8 @@ service ServerRMQhandlers {
 // PublishTextRecord
 message ConsumeRequest {
   string exchName = 1;
-  string routingKey = 2;
+  string consumerQname = 2;
+  string routingKey = 3;
 }
 
 message ConsumeResponse {

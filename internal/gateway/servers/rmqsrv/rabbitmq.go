@@ -74,6 +74,7 @@ func (rmqs *Server) Shutdown() {
 		if err != nil {
 			log.Print("rabbitmq server shutdown error: ", settings.ColorRed, err, settings.ColorReset)
 		}
+		rmqs.RabbitConn.Close()
 		rmqs.Wg.Done()
 	}()
 }
