@@ -2,7 +2,9 @@ package grpchandlers
 
 import (
 	"context"
+	"os/signal"
 	"sync"
+	"syscall"
 
 	"github.com/MashinIvan/rabbitmq"
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
@@ -102,13 +104,11 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 		Route(hc.Cfg.Controllers[3].RoutingKey, f)
 
 	hc.ServerRMQ.Init()
-
-	//streamCtx, _ := context.WithCancel(ctx, stream.Context())
-
+	ctxStream, _ := signal.NotifyContext(stream.Context(), syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	hc.Wg.Add(1)
-	hc.ServerRMQ.Shutdown(stream.Context())
+	hc.ServerRMQ.Shutdown(ctxStream)
 	hc.Wg.Add(1)
-	hc.ServerRMQ.Start(stream.Context(), router)
+	hc.ServerRMQ.Start(ctxStream, router)
 
 	// var txtRecord models.TextRecord
 	// txtRecord.RecordID = in.TextRecord.RecordID
