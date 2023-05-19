@@ -46,6 +46,8 @@ func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg config.
 
 // CreateUser.
 func (s *UserServices) CreateUser(ctx context.Context, login string, psw string) (config.UserConfig, error) {
+	log.Print("TEST USER C")
+	
 	// проверка существования пользователя
 	ok, err := s.storage.IsUserLoginExist(ctx, login)
 	if ok {
@@ -80,6 +82,9 @@ func (s *UserServices) CreateUser(ctx context.Context, login string, psw string)
 
 // CreateUser получаем psw хешированный base64 и .
 func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (string, config.UserConfig, error) {
+
+	log.Print("TEST1")
+
 	// проекрка логина и пароля пользователя
 	ok, err := s.storage.CheckPsw(ctx, uid, psw)
 	if !ok {
@@ -110,12 +115,15 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 		log.Print("rabbitmq queue bindings error: ", err)
 		return "", config.UserConfig{}, err
 	}
+
+	log.Print("userapp ROUTING KEY", userapp.RoutingKey)
+
 	// добавляем routingkey в биндинги всех приложений клиента
 	// добавление routingkey в очереди rabbit (bindings)
-	for _, v := range usercfg.Apps {
-		v.ExchangeBindings = append(v.ExchangeBindings, userapp.RoutingKey)
+	for i := range usercfg.Apps {
+		usercfg.Apps[i].ExchangeBindings = append(usercfg.Apps[i].ExchangeBindings, userapp.RoutingKey)
 		err = s.clientRMQ.QueueBind(
-			v.ConsumeQueue,     // queue name
+			usercfg.Apps[i].ConsumeQueue,     // queue name
 			userapp.RoutingKey, // routing key
 		)
 		if err != nil {
@@ -125,8 +133,14 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 	}
 	// добавлем новое приложение в структуру конфигурации
 	usercfg.Apps = append(usercfg.Apps, userapp)
+
+	log.Print("userCFG print", usercfg.Apps[0].ExchangeBindings)
+	
 	// сохраняем в хранилище
-	s.storage.UpdateUser(ctx, uid, usercfg)
+	err = s.storage.UpdateUser(ctx, uid, usercfg)
+	if err != nil {
+		log.Print("update usercfg Apps error: ", err)
+	}
 	// возвращаем AppID и конфигурацию приложению клиента
 	return userapp.AppID, usercfg, err
 }
