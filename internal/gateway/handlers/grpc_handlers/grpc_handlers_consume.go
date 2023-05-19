@@ -41,12 +41,12 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 	hc.Cfg.Controllers[0].RoutingKey = in.RoutingKey
 
 
-	out.Record = []byte{1}
-	err = stream.Send(&out)
-	if err != nil {
-		log.Print("sending to stream error")
-		return err
-	}
+	// out.Record = []byte{1}
+	// err = stream.Send(&out)
+	// if err != nil {
+	// 	log.Print("sending to stream error")
+	// 	return err
+	// }
 
 	router := rabbitmq.NewRouter()
 	f := func(ctx *rabbitmq.DeliveryContext) {
