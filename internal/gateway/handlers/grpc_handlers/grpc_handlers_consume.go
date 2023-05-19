@@ -43,6 +43,13 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 	hc.Cfg.Controllers[0].RoutingKey = in.RoutingKey
 	log.Print("CONSUME")
 
+	// select {
+	// case <-stream.Context().Done():
+	// 	hc.ServerRMQ.RabbitSrv.Shutdown(hc.Ctx)
+	// 	log.Print("stream.Context().Done() shutdown")
+	// default:
+	// }
+
 	// out.Record = []byte{1}
 	// err = stream.Send(&out)
 	// if err != nil {
@@ -54,7 +61,7 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 	f := func(ctx *rabbitmq.DeliveryContext) {
 
 		log.Print(" TO STREAM")
-		
+
 		out.Record = ctx.Delivery.Body
 		// err = status.Errorf(codes.Internal, `server error %s`, error.Error(err))
 		// if err != nil {
@@ -96,10 +103,12 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 
 	hc.ServerRMQ.Init()
 
+	//streamCtx, _ := context.WithCancel(ctx, stream.Context())
+
 	hc.Wg.Add(1)
-	hc.ServerRMQ.Shutdown()
+	hc.ServerRMQ.Shutdown(stream.Context())
 	hc.Wg.Add(1)
-	hc.ServerRMQ.Start(hc.Ctx, router)
+	hc.ServerRMQ.Start(stream.Context(), router)
 
 	// var txtRecord models.TextRecord
 	// txtRecord.RecordID = in.TextRecord.RecordID

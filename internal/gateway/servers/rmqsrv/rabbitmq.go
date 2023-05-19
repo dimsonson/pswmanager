@@ -54,27 +54,27 @@ func (rmqs *Server) Init() {
 }
 
 func (rmqs *Server) Start(ctx context.Context, router *rabbitmq.Router) {
-
+	defer rmqs.Wg.Done()
 	rmqs.RabbitSrv = rabbitmq.NewServer(rmqs.RabbitConn, router)
 	err := rmqs.RabbitSrv.ListenAndServe(rmqs.Ctx)
 	if err != nil {
 		log.Print("rabbitmq server starting error:", settings.ColorRed, err, settings.ColorReset)
 	}
 	log.Print("rabbitmq server shutting down...")
-	rmqs.Wg.Done()
 
 }
 
-func (rmqs *Server) Shutdown() {
+func (rmqs *Server) Shutdown(ctx context.Context) {
 	go func() {
+		defer rmqs.Wg.Done()
 		// получаем сигнал о завершении приложения
-		<-rmqs.Ctx.Done()
+		//<-rmqs.Ctx.Done()
+		<-ctx.Done()
 		log.Print("rmqSrv got signal, attempting graceful shutdown")
-		err := rmqs.RabbitSrv.Shutdown(rmqs.Ctx)
+		err := rmqs.RabbitSrv.Shutdown(ctx)
 		if err != nil {
 			log.Print("rabbitmq server shutdown error: ", settings.ColorRed, err, settings.ColorReset)
 		}
 		rmqs.RabbitConn.Close()
-		rmqs.Wg.Done()
 	}()
 }

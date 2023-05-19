@@ -192,12 +192,12 @@ func (cfg *ServiceConfig) Parse() {
 
 	//сохранение congig.json
 
-	configFile, err := json.MarshalIndent(cfg, "", "  ")
-	if err != nil {
-		log.Printf("marshal config file error: %s", err)
-	}
-	err = os.WriteFile("config.json", configFile, 0666)
-	if err != nil {
-		log.Printf("write config file error: %s", err)
-	}
+	// configFile, err := json.MarshalIndent(cfg, "", "  ")
+	// if err != nil {
+	// 	log.Printf("marshal config file error: %s", err)
+	// }
+	// err = os.WriteFile("config.json", configFile, 0666)
+	// if err != nil {
+	// 	log.Printf("write config file error: %s", err)
+	// }
 }
