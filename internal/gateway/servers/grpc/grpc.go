@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
-	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/proto"
+	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protopub"
 	"github.com/dimsonson/pswmanager/internal/gateway/services"
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 
