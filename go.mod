@@ -41,3 +41,7 @@ require (
 	google.golang.org/genproto v0.0.0-20230331144136-dcfb400f0633 // indirect
 // github.com/rs/zerolog v1.29.0
 )
+
+replace github.com/MashinIvan/rabbitmq => github.com/dimsonson/rabbitmq v0.0.0-20230521180522-7f3c8f0d2f7e
+
+//replace github.com/MashinIvan/rabbitmq => github.com/dimsonson/rabbitmq latest
