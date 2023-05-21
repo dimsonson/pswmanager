@@ -25,3 +25,4 @@ cmd/pswm/.DS_Store
 .DS_Store
 internal/userclient/config/config.go
 cmd/userclient/db
+cmd/userclient/base.db
