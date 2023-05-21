@@ -5,12 +5,11 @@ import (
 	"log"
 	"sync"
 
-
-	"github.com/dimsonson/pswmanager/internal/gateway/servers/rmqsrv"
 	"github.com/dimsonson/pswmanager/internal/gateway/client/clientgrpc"
 	clientrmq "github.com/dimsonson/pswmanager/internal/gateway/client/rmq"
 	"github.com/dimsonson/pswmanager/internal/gateway/config"
 	"github.com/dimsonson/pswmanager/internal/gateway/servers/grpc"
+	"github.com/dimsonson/pswmanager/internal/gateway/servers/rmqsrv"
 	"github.com/dimsonson/pswmanager/internal/gateway/services"
 
 	grpchandlers "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers"
@@ -28,20 +27,6 @@ func New(cfg *config.ServiceConfig) *Init {
 
 // InitAndStart инициализация и старт clientRMQ, serverRMQ, serverGRPC, clientGRPC.
 func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg *sync.WaitGroup) {
-
-	// //инициализируем и стартуем clientRMQ, serverRMQ, clientGRPC,  clientGRPC, serverGRPC :
-	// clientRMQ нициализация конфигурацией и старт
-	// инициализация сервисов
-	// handlersRMQ инициализация сервисами
-	// routerRMQ  инициализация конфигом, хендлерами
-	// serverRMQ инициализация конфигом, роутером
-	// serverRMQ graceful Shutdown
-	// serverRMQ старт
-
-	// serverGRPC инциализация конфигурацией
-	// serverGRPC graceful Shutdown
-	// serverGRPC старт
-
 	clientRMQ, err := clientrmq.NewClientRMQ(init.cfg.Rabbitmq)
 	if err != nil {
 		log.Printf("new client error: %s", err)
@@ -64,28 +49,14 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	srvRMQ := rmqsrv.NewServer(ctx, stop, init.cfg.Rabbitmq, wg)
 
-	hndlRMQconsume :=  grpchandlers.NewServerRMQhandlers(ctx, init.cfg.Rabbitmq, srvRMQ, wg)
+	hndlRMQconsume := grpchandlers.NewServerRMQhandlers(ctx, init.cfg.Rabbitmq, srvRMQ, wg)
 
 	grpcSrv := grpc.NewServer(ctx, stop, init.cfg.GRPC, wg)
 	grpcSrv.InitGRPCservice(svsUsers, hndlRMQpub, hndlRMQconsume)
 	wg.Add(1)
 	grpcSrv.GrpcGracefullShotdown()
 	wg.Add(1)
-	//go
 	grpcSrv.StartGRPC()
-
-	//handlers := rmq.New(servTextRec, servLoginRec, servBinaryRec, servCardRec)
-	//rmqRouter := router.New(ctx, init.cfg.Rabbitmq, *handlers)
-
-	
-	
-	
-	//rmqSrv.Init()
-	// wg.Add(1)
-	// rmqSrv.Shutdown()
-	// wg.Add(1)
-	// rmqSrv.Start(ctx, rmqRouter)
-
 }
 
 // ConnClose закрываем соединения при завершении работы.

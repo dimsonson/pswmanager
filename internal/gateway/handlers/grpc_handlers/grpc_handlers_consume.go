@@ -93,7 +93,7 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 			Durable: true},
 		rabbitmq.QualityOfService{},
 		rabbitmq.ConsumerParams{},
-		rabbitmq.WithRouterEngine(rabbitmq.NewTopicRouterEngine()), // .NewDirectRouterEngine()), // use direct to speed up routing
+		rabbitmq.WithRouterEngine(rabbitmq.NewTopicRouterEngine()),
 		rabbitmq.WithNumWorkers(hc.Cfg.RoutingWorkers),
 	)
 	routerGroup.
@@ -107,4 +107,3 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 	hc.ServerRMQ.Start(ctxStream, router)
 	return err
 }
-
