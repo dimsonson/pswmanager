@@ -3,6 +3,7 @@ package grpchandlers
 import (
 	"context"
 	"os/signal"
+	"strings"
 	"sync"
 	"syscall"
 
@@ -11,7 +12,10 @@ import (
 	pbconsume "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protoconsume"
 	"github.com/dimsonson/pswmanager/internal/gateway/servers/rmqsrv"
 	"github.com/dimsonson/pswmanager/internal/gateway/settings"
+	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/pkg/log"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type ServerRMQServicesProvider interface {
@@ -45,31 +49,21 @@ func (hc *ServerRMQhandlers) Consume(in *pbconsume.ConsumeRequest, stream pbcons
 	hc.Cfg.Controllers[0].RoutingKey = in.RoutingKey
 	log.Print("CONSUME")
 
-	// select {
-	// case <-stream.Context().Done():
-	// 	hc.ServerRMQ.RabbitSrv.Shutdown(hc.Ctx)
-	// 	log.Print("stream.Context().Done() shutdown")
-	// default:
-	// }
-
-	// out.Record = []byte{1}
-	// err = stream.Send(&out)
-	// if err != nil {
-	// 	log.Print("sending to stream error")
-	// 	return err
-	// }
-
 	router := rabbitmq.NewRouter()
 	f := func(ctx *rabbitmq.DeliveryContext) {
+		routing := strings.Split(ctx.Delivery.RoutingKey, ".")
+		if routing[len(routing)-1] == "text" {
+			out.RecordType = int64(models.TextType)
+		}
+		out.Record = ctx.Delivery.Body
 
 		log.Print(" TO STREAM")
 
-		out.Record = ctx.Delivery.Body
-		// err = status.Errorf(codes.Internal, `server error %s`, error.Error(err))
-		// if err != nil {
-		// 	log.Print("status.Errorf error")
-		// }
-		// out.Error = codes.Internal.String()
+		err = status.Errorf(codes.Internal, `server error %s`, error.Error(err))
+		if err != nil {
+			log.Print("status.Errorf error")
+		}
+		out.Error = codes.Internal.String()
 
 		err = stream.Send(&out)
 		if err != nil {

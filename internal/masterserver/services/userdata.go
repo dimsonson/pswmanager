@@ -101,13 +101,24 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 	// генерируем AppID
 	// генерируем очередь и routingkey
 	userapp := s.clientRMQ.AppInit(usercfg)
-	// добавляем очередь для нового приложения пользователя
+	// добавляем очереди для нового приложения пользователя
 	q, err := s.clientRMQ.QueueDeclare(userapp.ConsumeQueue)
 	if err != nil {
 		log.Print("rabbitmq queue creation error: ", err)
 		return "", config.UserConfig{}, err
 	}
-	err = s.clientRMQ.QueueBind(q.Name, userapp.RoutingKey)
+	for i := range usercfg.Apps[0].ExchangeBindings {
+		userapp.ExchangeBindings = append(userapp.ExchangeBindings, usercfg.Apps[0].ExchangeBindings[i] )
+		err = s.clientRMQ.QueueBind(
+			q.Name, // queue name
+			usercfg.Apps[0].ExchangeBindings[i])          // routing key
+			if err != nil {
+			log.Print("rabbitmq queue bindings error: ", err)
+			return "", config.UserConfig{}, err
+		}
+	}
+	userapp.ExchangeBindings = append(userapp.ExchangeBindings, usercfg.Apps[0].ConsumeQueue)
+	err = s.clientRMQ.QueueBind(q.Name, usercfg.Apps[0].ConsumeQueue)
 	if err != nil {
 		log.Print("rabbitmq queue bindings error: ", err)
 		return "", config.UserConfig{}, err
@@ -119,7 +130,7 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 		err = s.clientRMQ.QueueBind(
 			usercfg.Apps[i].ConsumeQueue, // queue name
 			userapp.RoutingKey)          // routing key
-		if err != nil {
+			if err != nil {
 			log.Print("rabbitmq queue bindings error: ", err)
 			return "", config.UserConfig{}, err
 		}

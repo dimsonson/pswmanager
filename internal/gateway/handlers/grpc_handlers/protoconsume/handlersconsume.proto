@@ -21,8 +21,9 @@ message ConsumeRequest {
 }
 
 message ConsumeResponse {
-  bytes   record = 1;
-  string error = 2; // ошибка
+  bytes  record = 1;
+  int64  recordType = 2;
+  string error = 3; // ошибка
 }
 
 

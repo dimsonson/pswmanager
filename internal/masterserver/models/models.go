@@ -7,6 +7,9 @@ import (
 // MsgType тип исплльзуемый для проставления признака типа сообщения / операции.
 type MsgType int
 
+// MsgType тип исплльзуемый для проставления признака типа сообщения / операции.
+type RecordType int
+
 // Константы типа MsgType исплльзуемые для проставления признака типа сообщения / операции.
 const (
 	Create MsgType = iota + 1
@@ -15,12 +18,20 @@ const (
 	Delete
 )
 
+// Константы типа MsgType исплльзуемые для проставления признака типа сообщения / операции.
+const (
+	TextType RecordType = iota + 1
+	LoginsType
+	BinaryType
+	CardType
+)
+
 // CardType тип исплльзуемый для проставления признака типа банковской карты.
-type CardType int
+type TypeOfCard int
 
 // Константы типа CardType исплльзуемые для проставления признака типа банковской карты.
 const (
-	Mir CardType = iota 
+	Mir TypeOfCard = iota 
 	MasterCard
 	Visa
 	AmEx
