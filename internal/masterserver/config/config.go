@@ -110,6 +110,7 @@ type ClientRMQ struct {
 // UserConfig.
 type UserConfig struct {
 	UserID       string `redis:"userid"`
+	CryptoKey    string
 	RmqHost      string `redis:"rmqhost"`
 	RmqPort      string `redis:"rmqpost"`
 	RmqUID       string `redis:"rmquid"`

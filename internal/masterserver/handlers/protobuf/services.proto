@@ -16,6 +16,7 @@ service UserServices {
 message CreateUserRequest {
   string login = 1;
   string psw = 2;
+  string cKey = 3;
 }
 
 message CreateUserResponse {
@@ -47,14 +48,15 @@ message CreateAppRequest {
 message CreateAppResponse {
   string Appid = 1;
   string UserID = 2;
-  string RmqHost = 3;
-  string RmqPort = 4;
-  string RmqUID = 5;
-  string RmqPsw = 6;
-  string ExchangeName = 7;
-  string ExchangeKind = 8;
-  repeated App Apps = 9;
-  string error = 10; // ошибка
+  string cKey = 3;
+  string RmqHost = 4;
+  string RmqPort = 5;
+  string RmqUID = 6;
+  string RmqPsw = 7;
+  string ExchangeName = 8;
+  string ExchangeKind = 9;
+  repeated App Apps = 10;
+  string error = 11; // ошибка
 }
 
 // message App {

@@ -56,5 +56,7 @@ func (c *Crypt) DecryptAES(key, ciphertxt string) (string, error) {
 	ciphertext = ciphertext[aes.BlockSize:]
 	stream := cipher.NewCFBDecrypter(block, iv)
 	stream.XORKeyStream(ciphertext, ciphertext)
+
+	//return hex.EncodeToString(ciphertext), err
 	return string(ciphertext), err
 }

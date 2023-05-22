@@ -69,6 +69,12 @@ func (rdb *StorageNoSQL) CreateUser(ctx context.Context, login string, psw strin
 		return err
 	}
 
+	err = pipe.HSet(ctx, "key", uid, usercfg.CryptoKey).Err()
+	if err != nil {
+		log.Print("psw set to redis error: ", err)
+		return err
+	}
+
 	err = pipe.HSet(ctx, "usercfg", uid, bytesUserCfg).Err()
 	if err != nil {
 		log.Print("usercfg set to redis error: ", err)

@@ -45,7 +45,7 @@ func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg config.
 }
 
 // CreateUser.
-func (s *UserServices) CreateUser(ctx context.Context, login string, psw string) (config.UserConfig, error) {
+func (s *UserServices) CreateUser(ctx context.Context, login string, psw string, cKey string) (config.UserConfig, error) {
 	// проверка существования пользователя
 	uid, ok, err := s.storage.IsUserLoginExist(ctx, login)
 	if ok {
@@ -68,6 +68,7 @@ func (s *UserServices) CreateUser(ctx context.Context, login string, psw string)
 		log.Print("rabbitmq queue creation error: ", err)
 		return config.UserConfig{}, err
 	}
+	usercfg.CryptoKey = cKey
 	// сохраняем в хранилище
 	err = s.storage.CreateUser(ctx, login, psw, usercfg.UserID, usercfg)
 	if err != nil {

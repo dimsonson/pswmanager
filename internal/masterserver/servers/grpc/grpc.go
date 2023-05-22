@@ -99,7 +99,7 @@ func (srv *Server) GrpcGracefullShotdown() {
 func (s *UserServices) CreateUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
 	var out pb.CreateUserResponse
 	var err error
-	usercfg, err := s.user.CreateUser(ctx, in.Login, in.Psw)
+	usercfg, err := s.user.CreateUser(ctx, in.Login, in.Psw, in.CKey)
 	out.UserID = usercfg.UserID
 	out.RmqHost = usercfg.RmqHost
 	out.RmqPort = usercfg.RmqPort

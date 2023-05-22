@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
-	"crypto/sha512"
 	"encoding/hex"
 	"errors"
 	"io"
@@ -19,6 +18,13 @@ type UsersStorageProviver interface {
 	CreateUser(ctx context.Context, ucfg config.UserConfig) error
 	ReadUser(ctx context.Context) (config.UserConfig, error)
 	CheckUser(ctx context.Context, login string) (string, error)
+}
+
+type ClientGRPCProvider interface {
+	NewUser(ctx context.Context, in *pb.CreateUserRequest) (*pb.CreateUserResponse, error)
+	NewApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error)
+	ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error)
+	IsOnline() bool
 }
 
 // Services структура конструктора бизнес логики.
@@ -64,7 +70,7 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 	}
 	// создание хеша пароля пользователя для хранения в базе данных
 
-	psw512 := sha512.Sum512([]byte(sr.cfg.UserPsw))
+	psw512 := sha256.Sum256([]byte(sr.cfg.UserPsw))
 	passHex := hex.EncodeToString(psw512[:])
 
 	// passHex, err := bcrypt.GenerateFromPassword([]byte(sr.cfg.UserPsw), bcrypt.DefaultCost)
@@ -74,13 +80,13 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 	// }
 
 	// сохранение ключа шифрования и пароля в БД
-	sr.cfg.UserPsw = string(passHex)
-	log.Printf("string(passHex) %s already exist", sr.cfg.UserPsw)
+	sr.cfg.UserPsw = passHex
 	sr.cfg.Key = keyDB
 
 	uConfig, err := sr.clientGRPC.NewUser(ctx, &pb.CreateUserRequest{
 		Login: sr.cfg.UserLogin,
 		Psw:   sr.cfg.UserPsw,
+		CKey:  keyDB,
 	})
 	if err != nil {
 		log.Print("gRPC call NewUser error: ", err)
@@ -89,8 +95,6 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 	l := len(uConfig.Apps) - 1
 	if l < 0 {
 		sr.cfg.UserID = uConfig.UserID
-		log.Printf("userid %s already exist", sr.cfg.UserID)
-		log.Printf("passw %s already exist", sr.cfg.UserPsw)
 
 		log.Printf("login %s already exist", sr.cfg.UserLogin)
 		uConfigApp, err := sr.clientGRPC.NewApp(ctx, &pb.CreateAppRequest{
@@ -103,6 +107,7 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 		}
 		lApp := len(uConfigApp.Apps) - 1
 		//sr.cfg.UserID = uConfig.UserID
+		sr.cfg.Key = uConfigApp.CKey
 		sr.cfg.AppID = uConfigApp.Apps[lApp].AppID
 		sr.cfg.ExchName = uConfigApp.ExchangeName
 		sr.cfg.RoutingKey = uConfigApp.Apps[lApp].RoutingKey
@@ -138,8 +143,17 @@ func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error)
 	// генерация из пароля ключа, которым будет расшифрован ключ шифрования данных
 	psw256 := sha256.Sum256([]byte(sr.cfg.UserPsw))
 	psw256string := hex.EncodeToString(psw256[:])
+
+	log.Print("psw256string", psw256string)
+
 	// сохранение в память расшифрованного ключа пользователя
 	ucfg.Key, err = sr.c.DecryptAES(psw256string, ucfg.Key)
+	if err != nil {
+		log.Print("dicrypt user key error: ", err)
+	}
+
+	log.Print("Read User ucfg.Key", ucfg.Key)
+
 	return ucfg, err
 }
 
@@ -150,7 +164,7 @@ func (sr *UserServices) CheckUser(ctx context.Context, ulogin, upsw string) erro
 		log.Print("check user cfg error: ", err)
 	}
 
-	psw512 := sha512.Sum512([]byte(upsw))
+	psw512 := sha256.Sum256([]byte(upsw))
 	passHex := hex.EncodeToString(psw512[:])
 
 	if passHex != passwDB {

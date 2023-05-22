@@ -35,6 +35,9 @@ func NewText(s TextStorageProviver, cfg *config.ServiceConfig) *TextServices {
 // ProcessingText метод обратботки данных в хранилище в зависимости от типа операции.
 func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRecord) error {
 	var err error
+
+	log.Print("ProcessingText ucfg.Key", sr.cfg.Key)
+
 	record.Text, err = sr.c.EncryptAES(sr.cfg.Key, record.Text)
 	if err != nil {
 		log.Print("encrypt error: ", err)
