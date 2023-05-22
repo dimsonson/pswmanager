@@ -18,9 +18,24 @@ func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig) error 
 			$2,
 			$3,
 			$4,
-			$5			
+			$5,
+			$6,
+			$7,
+			$8,
+			$9		
 			)`
-	_, err := sl.db.ExecContext(ctx, q, ucfg.UserLogin, ucfg.UserPsw, ucfg.UserID, ucfg.AppID, ucfg.Key)
+	_, err := sl.db.ExecContext(
+		ctx, 
+		q, 
+		ucfg.UserLogin, 
+		ucfg.UserPsw, 
+		ucfg.UserID, 
+		ucfg.AppID, 
+		ucfg.Key,
+		ucfg.ExchName,
+		ucfg.RoutingKey,
+		ucfg.ConsumeQueue,
+		ucfg.ConsumeRkey)
 	return err
 }
 

@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
+	"github.com/dimsonson/pswmanager/internal/userclient/client/clientgrpc"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/internal/userclient/services"
 	"github.com/dimsonson/pswmanager/internal/userclient/storage"
@@ -35,7 +36,13 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 		log.Print("storage new error:", err)
 	}
 
-	srvusers := services.NewUsers(sl, init.cfg)
+	clientGRPC, err := clientgrpc.NewClientGRPC(&init.cfg.GRPC)
+	if err != nil {
+		log.Printf("new gRPC client error: %s", err)
+		return
+	}
+
+	srvusers := services.NewUsers(sl, clientGRPC, init.cfg)
 
 	// init.cfg.UserConfig, err = srvusers.ReadUser(ctx)
 	// if err != nil {
@@ -66,6 +73,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	log.Print(init.cfg.UserLogin)
 	log.Print(init.cfg.UserPsw)
+
 
 	ui := ui.NewUI(ctx, init.cfg, srvusers, srvtext, srvlogin, srvbinary, srvcard)
 	ui.Init(uiLog)

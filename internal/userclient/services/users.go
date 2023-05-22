@@ -4,12 +4,14 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
+	"errors"
 	"io"
 
+	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type UsersStorageProviver interface {
@@ -21,22 +23,30 @@ type UsersStorageProviver interface {
 
 // Services структура конструктора бизнес логики.
 type UserServices struct {
-	cfg *config.ServiceConfig
-	sl  UsersStorageProviver
-	c   CryptProvider
+	cfg        *config.ServiceConfig
+	clientGRPC ClientGRPCProvider
+	sl         UsersStorageProviver
+	c          CryptProvider
 }
 
 // NewUsers.
-func NewUsers(s UsersStorageProviver, cfg *config.ServiceConfig) *UserServices {
+func NewUsers(s UsersStorageProviver, clientGRPC ClientGRPCProvider, cfg *config.ServiceConfig) *UserServices {
 	return &UserServices{
-		sl:  s,
-		cfg: cfg,
-		c:   &Crypt{},
+		sl:         s,
+		clientGRPC: clientGRPC,
+		cfg:        cfg,
+		c:          &Crypt{},
 	}
 }
 
 // CreateUser метод создания профиля пользователя из данных конфигурации.
 func (sr *UserServices) CreateUser(ctx context.Context) error {
+	if !sr.clientGRPC.IsOnline() {
+		log.Print("clientGRPC status: ", sr.cfg.GRPC.ClientConn.GetState().String())
+		err := errors.New("clien gRPC status is not online")
+		return err
+	}
+
 	// генереация ключа шифрования данных
 	key := make([]byte, 32)
 	if _, err := io.ReadFull(rand.Reader, key); err != nil {
@@ -53,14 +63,63 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 		log.Print("create keyDB error: ", err)
 	}
 	// создание хеша пароля пользователя для хранения в базе данных
-	passHex, err := bcrypt.GenerateFromPassword([]byte(sr.cfg.UserPsw), bcrypt.DefaultCost)
-	if err != nil {
-		log.Print("generate hex error: ", err)
-		return err
-	}
+
+	psw512 := sha512.Sum512([]byte(sr.cfg.UserPsw))
+	passHex := hex.EncodeToString(psw512[:])
+
+	// passHex, err := bcrypt.GenerateFromPassword([]byte(sr.cfg.UserPsw), bcrypt.DefaultCost)
+	// if err != nil {
+	// 	log.Print("generate hex error: ", err)
+	// 	return err
+	// }
+
 	// сохранение ключа шифрования и пароля в БД
 	sr.cfg.UserPsw = string(passHex)
+	log.Printf("string(passHex) %s already exist", sr.cfg.UserPsw)
 	sr.cfg.Key = keyDB
+
+	uConfig, err := sr.clientGRPC.NewUser(ctx, &pb.CreateUserRequest{
+		Login: sr.cfg.UserLogin,
+		Psw:   sr.cfg.UserPsw,
+	})
+	if err != nil {
+		log.Print("gRPC call NewUser error: ", err)
+		return err
+	}
+	l := len(uConfig.Apps) - 1
+	if l < 0 {
+		sr.cfg.UserID = uConfig.UserID
+		log.Printf("userid %s already exist", sr.cfg.UserID)
+		log.Printf("passw %s already exist", sr.cfg.UserPsw)
+
+		log.Printf("login %s already exist", sr.cfg.UserLogin)
+		uConfigApp, err := sr.clientGRPC.NewApp(ctx, &pb.CreateAppRequest{
+			Uid: sr.cfg.UserID,
+			Psw: sr.cfg.UserPsw,
+		})
+		if err != nil {
+			log.Print("gRPC call NewUser error: ", err)
+			return err
+		}
+		lApp := len(uConfigApp.Apps) - 1
+		//sr.cfg.UserID = uConfig.UserID
+		sr.cfg.AppID = uConfigApp.Apps[lApp].AppID
+		sr.cfg.ExchName = uConfigApp.ExchangeName
+		sr.cfg.RoutingKey = uConfigApp.Apps[lApp].RoutingKey
+		sr.cfg.ConsumeQueue = uConfigApp.Apps[lApp].ConsumeQueue
+		sr.cfg.ConsumeRkey = uConfigApp.UserID + ".*.*"
+
+	}
+	if l >= 0 {
+		sr.cfg.UserID = uConfig.UserID
+		sr.cfg.AppID = uConfig.Apps[l].AppID
+		sr.cfg.ExchName = uConfig.ExchangeName
+		sr.cfg.RoutingKey = uConfig.Apps[l].RoutingKey
+		sr.cfg.ConsumeQueue = uConfig.Apps[l].ConsumeQueue
+		sr.cfg.ConsumeRkey = uConfig.UserID + ".*.*"
+	}
+	log.Print(sr.cfg.UserConfig)
+
 	err = sr.sl.CreateUser(ctx, sr.cfg.UserConfig)
 	if err != nil {
 		log.Print("create user error: ", err)
@@ -90,9 +149,17 @@ func (sr *UserServices) CheckUser(ctx context.Context, ulogin, upsw string) erro
 	if err != nil {
 		log.Print("check user cfg error: ", err)
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(passwDB), []byte(upsw))
-	if err != nil {
-		log.Print("check psw error: ", err)
+
+	psw512 := sha512.Sum512([]byte(upsw))
+	passHex := hex.EncodeToString(psw512[:])
+
+	if passHex != passwDB {
+		return errors.New("wrong password or login")
 	}
-	return err
+
+	// err = bcrypt.CompareHashAndPassword([]byte(passwDB), []byte(upsw))
+	// if err != nil {
+	// 	log.Print("check psw error: ", err)
+	// }
+	return nil
 }

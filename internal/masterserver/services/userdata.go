@@ -16,7 +16,7 @@ type UserStorageProviver interface {
 	ReadUserCfg(ctx context.Context, uid string) (config.UserConfig, error)
 	UpdateUser(ctx context.Context, uid string, usercfg config.UserConfig) error
 	CheckPsw(ctx context.Context, uid string, psw string) (bool, error)
-	IsUserLoginExist(ctx context.Context, login string) (bool, error)
+	IsUserLoginExist(ctx context.Context, login string) (string, bool, error)
 }
 
 type ClientRMQProvider interface {
@@ -46,13 +46,11 @@ func NewUserData(s UserStorageProviver, clientrmq ClientRMQProvider, cfg config.
 
 // CreateUser.
 func (s *UserServices) CreateUser(ctx context.Context, login string, psw string) (config.UserConfig, error) {
-	log.Print("TEST USER C")
-
 	// проверка существования пользователя
-	ok, err := s.storage.IsUserLoginExist(ctx, login)
+	uid, ok, err := s.storage.IsUserLoginExist(ctx, login)
 	if ok {
 		log.Printf("login \"%s\" already exist:", login)
-		return config.UserConfig{}, err
+		return config.UserConfig{UserID: uid}, err
 	}
 	if err != nil {
 		log.Print("check login error: ", err)

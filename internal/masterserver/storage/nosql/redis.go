@@ -125,15 +125,15 @@ func (rdb *StorageNoSQL) UpdateUser(ctx context.Context, uid string, usercfg con
 	return err
 }
 
-func (rdb *StorageNoSQL) IsUserLoginExist(ctx context.Context, login string) (bool, error) {
-	_, err := rdb.RedisNoSQL.HGet(ctx, "login", login).Result()
+func (rdb *StorageNoSQL) IsUserLoginExist(ctx context.Context, login string) (string, bool, error) {
+	uid, err := rdb.RedisNoSQL.HGet(ctx, "login", login).Result()
 	if err != nil {
 		if err == redis.Nil {
 			log.Print("login key doenst exist: ", err)
-			return false, nil
+			return uid, false, nil
 		}
 		log.Print("login check redis error: ", err)
-		return true, err
+		return uid, true, err
 	}
-	return true, err
+	return uid, true, err
 }

@@ -85,7 +85,11 @@ func New(dsn string) (*SQLite, error) {
 		"upsw" TEXT,
 		"uid" TEXT,
 		"appid" TEXT,
-		"key" TEXT		
+		"key" TEXT,
+		"exchname" TEXT,
+		"routingkey" TEXT,
+		"consumeq" TEXT,
+		"consumerk" TEXT 	
 	);
 
 	`

@@ -8,13 +8,7 @@ import (
 	"sync"
 
 	"github.com/dimsonson/pswmanager/pkg/log"
-)
-
-// Константы по умолчанию.
-const (
-	defServAddr = "localhost:8080"
-	//defDBlink   = "postgres://postgres:1818@localhost:5432/dbo"
-	defTLS = false
+	"google.golang.org/grpc"
 )
 
 // ServiceConfig структура конфигурации сервиса, при запуске сервиса с флагом -c/config
@@ -30,11 +24,12 @@ type ServiceConfig struct {
 	UserConfig                    //`json:"ucfg"`
 }
 
-
 // GRPC.
 type GRPC struct {
-	Network string
-	Port    string
+	ServerNetwork string
+	ServerPort    string
+	ClientConn    *grpc.ClientConn
+	GatewayAddres string
 }
 
 type SQLight struct {
@@ -44,12 +39,38 @@ type SQLight struct {
 
 // UserConfig .
 type UserConfig struct {
-	UserID    string
-	AppID     string
-	UserLogin string
-	UserPsw   string
-	Key       string
+	UserID       string
+	AppID        string
+	UserLogin    string
+	UserPsw      string
+	Key          string
+	ExchName     string
+	RoutingKey   string
+	ConsumeQueue string
+	ConsumeRkey  string
+	//UConfig      UConfig
 }
+
+// // UConfig.
+// type UConfig struct {
+// 	UserID       string
+// 	RmqHost      string
+// 	RmqPort      string
+// 	RmqUID       string
+// 	RmqPsw       string
+// 	ExchangeName string
+// 	ExchangeKind string
+// 	Apps         []App
+// }
+
+// // App .
+// type App struct {
+// 	AppID            string
+// 	RoutingKey       string
+// 	ConsumeQueue     string
+// 	ConsumerName     string
+// 	ExchangeBindings []string
+// }
 
 // NewConfig конструктор создания конфигурации сервера из переменных оружения,
 // флагов, конфиг файла, а так же значений по умолчанию.
@@ -60,6 +81,8 @@ func New() *ServiceConfig {
 // Parse метод парсинга и получения значений из переменных оружения, флагов,
 // конфиг файла, а так же значений по умолчанию.
 func (cfg *ServiceConfig) Parse() {
+
+	cfg.GRPC.GatewayAddres = "localhost:8081"
 
 	// описываем флаги
 	cfgFlag := flag.String("c", "", "config json path")
@@ -82,7 +105,7 @@ func (cfg *ServiceConfig) Parse() {
 		}
 	}
 	cfg.SQLight.Dsn = "./base.db" // "file:./db?_auth&_auth_user=admin&_auth_pass=admin&_auth_crypt=sha1"
-	
+
 	//сохранение congig.json
 	// configFile, err := json.MarshalIndent(cfg, "", "  ")
 	// if err != nil {
