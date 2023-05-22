@@ -146,6 +146,8 @@ func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error)
 
 	log.Print("psw256string", psw256string)
 
+	log.Print("ucfg.Key bsfore decrypt", ucfg.Key)
+
 	// сохранение в память расшифрованного ключа пользователя
 	ucfg.Key, err = sr.c.DecryptAES(psw256string, ucfg.Key)
 	if err != nil {

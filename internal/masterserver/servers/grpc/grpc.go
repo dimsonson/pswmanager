@@ -132,6 +132,7 @@ func (s *UserServices) CreateApp(ctx context.Context, in *pb.CreateAppRequest) (
 	appid, usercfg, err := s.user.CreateApp(ctx, in.Uid, in.Psw)
 	out.Appid = appid
 	out.UserID = usercfg.UserID
+	out.CKey = usercfg.CryptoKey
 	out.RmqHost = usercfg.RmqHost
 	out.RmqPort = usercfg.RmqPort
 	out.RmqUID = usercfg.RmqUID
