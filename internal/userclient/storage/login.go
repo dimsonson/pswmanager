@@ -82,3 +82,14 @@ func (sl *SQLite) SearchLogin(ctx context.Context, searchInput string) ([]models
 	}
 	return *loginRecords, err
 }
+
+// MarkLoginSent.
+func (sl *SQLite) MarkLoginSent(ctx context.Context, record models.LoginRecord) error {
+	// создаем текст запроса
+	q := `UPDATE login_records
+	SET  sent = 1
+	WHERE recordid = $1
+	AND uid = $2`
+	_, err := sl.db.ExecContext(ctx, q, record.RecordID, record.UID)
+	return err
+}

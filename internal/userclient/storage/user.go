@@ -53,7 +53,7 @@ func (sl *SQLite) ReadUser(ctx context.Context) (config.UserConfig, error) {
 	return ucfg, err
 }
 
-// проверка наличия нового пользователя в хранилище - авторизация
+// CheckUser проверка наличия нового пользователя в хранилище - авторизация
 func (sl *SQLite) CheckUser(ctx context.Context, login string) (string, error) {
 	var passwDB string
 	// создаем текст запроса
@@ -66,4 +66,18 @@ func (sl *SQLite) CheckUser(ctx context.Context, login string) (string, error) {
 	}
 
 	return passwDB, err
+}
+
+
+func (sl *SQLite) AppLogin(ctx context.Context) (string, error) {
+	var ulogin string
+	// создаем текст запроса
+	q := `SELECT ulogin FROM ucfg`
+	// делаем запрос в SQL, получаем строку и пишем результат запроса в пременную
+	err := sl.db.QueryRowContext(ctx, q).Scan(&ulogin)
+	if err != nil {
+		log.Printf("select CheckUser request scan error: %s", err)
+		return "", err
+	}
+	return ulogin, err
 }

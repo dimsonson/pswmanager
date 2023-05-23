@@ -14,13 +14,15 @@ type TextStorageProviver interface {
 	UpdateText(ctx context.Context, record models.TextRecord) error
 	DeleteText(ctx context.Context, record models.TextRecord) error
 	SearchText(ctx context.Context, searchInput string) ([]models.TextRecord, error)
+	MarkTextSent(ctx context.Context, record models.TextRecord) error
 }
 
 // TextServices структура конструктора бизнес логики.
 type TextServices struct {
 	cfg *config.ServiceConfig
 	sl  TextStorageProviver
-	c   CryptProvider
+	//c   CryptProvider
+	Crypt
 }
 
 // NewText конструктор сервиса текстовых записей.
@@ -28,28 +30,36 @@ func NewText(s TextStorageProviver, cfg *config.ServiceConfig) *TextServices {
 	return &TextServices{
 		sl:  s,
 		cfg: cfg,
-		c:   &Crypt{},
+
+		//c:   c, //&Crypt{},
 	}
 }
 
 // ProcessingText метод обратботки данных в хранилище в зависимости от типа операции.
-func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRecord) error {
+func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRecord, key string) error {
 	var err error
 
-	log.Print("ProcessingText ucfg.Key", sr.cfg.Key)
+	log.Print("record", record)
 
-	record.Text, err = sr.c.EncryptAES(sr.cfg.Key, record.Text)
+	log.Print("sr :", sr) // nil
+
+	//log.Print("ProcessingText ucfg.Key", key)
+
+	record.Text, err = sr.EncryptAES(sr.cfg.Key, record.Text)
 	if err != nil {
 		log.Print("encrypt error: ", err)
 		return err
 	}
+
+	log.Print("ProcessingText record.Text", record.Text)
 	switch record.Operation {
 	case models.Create:
-		err := sr.sl.CreateText(ctx, record)
+		//err = sr.sl.CreateText(ctx, record)
 		if err != nil {
 			log.Print("create text record error: ", err)
+			return err
 		}
-		return err
+
 	case models.Update:
 		err := sr.sl.UpdateText(ctx, record)
 		if err != nil {
@@ -73,7 +83,7 @@ func (sr *TextServices) SearchText(ctx context.Context, searchInput string) ([]m
 		log.Print("rearch text record error: ", err)
 	}
 	for i := range textRecords {
-		textRecords[i].Text, err = sr.c.DecryptAES(sr.cfg.Key, textRecords[i].Text)
+		textRecords[i].Text, err = sr.DecryptAES(sr.cfg.Key, textRecords[i].Text)
 		if err != nil {
 			log.Print("decrypt error: ", err)
 			return nil, err

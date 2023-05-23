@@ -14,6 +14,7 @@ type CardStorageProviver interface {
 	UpdateCard(ctx context.Context, record models.CardRecord) error
 	DeleteCard(ctx context.Context, record models.CardRecord) error
 	SearchCard(ctx context.Context, searchInput string) ([]models.CardRecord, error)
+	MarkCardSent(ctx context.Context, record models.CardRecord) error
 }
 
 // Services структура конструктора бизнес логики.

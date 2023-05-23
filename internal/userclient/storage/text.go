@@ -19,9 +19,20 @@ func (sl *SQLite) CreateText(ctx context.Context, record models.TextRecord) erro
 			$4,
 			$5, 
 			$6,
-			$7
+			$7,
+			$8
 			)`
-	_, err := sl.db.ExecContext(ctx, q, record.Metadata, record.Text, record.UID, record.AppID, record.RecordID, record.ChngTime, false)
+	_, err := sl.db.ExecContext(
+		ctx, 
+		q, 
+		record.Metadata, 
+		record.Text, 
+		record.UID, 
+		record.AppID, 
+		record.RecordID, 
+		record.ChngTime, 
+		false,
+		false)
 	return err
 }
 
@@ -91,4 +102,15 @@ func (sl *SQLite) SearchText(ctx context.Context, searchInput string) ([]models.
 		log.Print("request text_records iteration scan error:", err)
 	}
 	return *textRecords, err
+}
+
+// MarkTextSent.
+func (sl *SQLite) MarkTextSent(ctx context.Context, record models.TextRecord) error {
+	// создаем текст запроса
+	q := `UPDATE text_records
+	SET  sent = 1
+	WHERE recordid = $1
+	AND uid = $2`
+	_, err := sl.db.ExecContext(ctx, q, record.RecordID, record.UID)
+	return err
 }

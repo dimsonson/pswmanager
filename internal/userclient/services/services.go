@@ -1,24 +1,18 @@
 package services
 
-// type StorageProvider interface {
-// 	CardStorageProviver
-// 	TextStorageProviver
-// 	BinaryStorageProviver
-// 	LoginStorageProviver
-// 	UsersStorageProviver
-// }
+import (
+	"context"
 
-// type Services struct{
-// 	TextServices
-// 	LoginServices
-// 	CardServices
-// 	BinaryServices
-// }
+	"github.com/dimsonson/pswmanager/internal/masterserver/models"
+)
 
-// func NewServices(s StorageProvider, cfg *config.ServiceConfig) *Services {
-//  	return &Services{
-//  		sl:  s,
-//  		cfg: cfg,
-//  		c:   &Crypt{},
-//  	}
-//  }
+type ServicesProvider interface {
+	ProcessingText(ctx context.Context, record models.TextRecord, key string) error
+	ProcessingLogin(ctx context.Context, record models.LoginRecord) error
+	ProcessingBinary(ctx context.Context, record models.BinaryRecord) error
+	ProcessingCard(ctx context.Context, record models.CardRecord) error
+	MarkTextSent(ctx context.Context, record models.TextRecord) error
+	MarkLoginSent(ctx context.Context, record models.LoginRecord) error
+	MarkCardSent(ctx context.Context, record models.CardRecord) error
+	MarkBinarySent(ctx context.Context, record models.BinaryRecord) error
+}

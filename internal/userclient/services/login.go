@@ -14,6 +14,7 @@ type LoginStorageProviver interface {
 	UpdateLogin(ctx context.Context, record models.LoginRecord) error
 	DeleteLogin(ctx context.Context, record models.LoginRecord) error
 	SearchLogin(ctx context.Context, searchInput string) ([]models.LoginRecord, error)
+	MarkLoginSent(ctx context.Context, record models.LoginRecord) error
 }
 
 // Services структура конструктора бизнес логики.

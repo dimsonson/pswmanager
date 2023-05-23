@@ -127,3 +127,14 @@ func (sl *SQLite) SearchCard(ctx context.Context, searchInput string) ([]models.
 	}
 	return *cardRecords, err
 }
+
+// MarkCardSent.
+func (sl *SQLite) MarkCardSent(ctx context.Context, record models.CardRecord) error {
+	// создаем текст запроса
+	q := `UPDATE card_records
+	SET  sent = 1
+	WHERE recordid = $1
+	AND uid = $2`
+	_, err := sl.db.ExecContext(ctx, q, record.RecordID, record.UID)
+	return err
+}

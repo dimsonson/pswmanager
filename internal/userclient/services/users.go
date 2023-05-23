@@ -9,6 +9,7 @@ import (
 	"io"
 
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
+	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
 )
@@ -18,6 +19,10 @@ type UsersStorageProviver interface {
 	CreateUser(ctx context.Context, ucfg config.UserConfig) error
 	ReadUser(ctx context.Context) (config.UserConfig, error)
 	CheckUser(ctx context.Context, login string) (string, error)
+	AppLogin(ctx context.Context) (string, error)
+
+	MarkTextSent(ctx context.Context, record models.TextRecord) error
+	CreateText(ctx context.Context, record models.TextRecord) error
 }
 
 type ClientGRPCProvider interface {
@@ -33,6 +38,9 @@ type UserServices struct {
 	clientGRPC ClientGRPCProvider
 	sl         UsersStorageProviver
 	c          CryptProvider
+	//ServicesProvider
+	txt TextServices
+	Crypt
 }
 
 // NewUsers.
@@ -52,7 +60,6 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 		err := errors.New("clien gRPC status is not online")
 		return err
 	}
-
 	// генереация ключа шифрования данных
 	key := make([]byte, 32)
 	if _, err := io.ReadFull(rand.Reader, key); err != nil {
@@ -70,8 +77,8 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 	}
 	// создание хеша пароля пользователя для хранения в базе данных
 
-	psw512 := sha256.Sum256([]byte(sr.cfg.UserPsw))
-	passHex := hex.EncodeToString(psw512[:])
+	psw := sha256.Sum256([]byte(sr.cfg.UserPsw))
+	passHex := hex.EncodeToString(psw[:])
 
 	// passHex, err := bcrypt.GenerateFromPassword([]byte(sr.cfg.UserPsw), bcrypt.DefaultCost)
 	// if err != nil {
@@ -92,6 +99,9 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 		log.Print("gRPC call NewUser error: ", err)
 		return err
 	}
+
+	log.Print("uConfig: ", uConfig)
+
 	l := len(uConfig.Apps) - 1
 	if l < 0 {
 		sr.cfg.UserID = uConfig.UserID
@@ -114,6 +124,125 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 		sr.cfg.ConsumeQueue = uConfigApp.Apps[lApp].ConsumeQueue
 		sr.cfg.ConsumeRkey = uConfigApp.UserID + ".*.*"
 
+		log.Print("sr.cfg.UserID: ", sr.cfg.UserID)
+
+		recordsApp, err := sr.clientGRPC.ReadUser(ctx, &pb.ReadUserRequest{
+			Uid: sr.cfg.UserID,
+		})
+		if err != nil {
+			log.Print("gRPC call ReadUser error: ", err)
+			return err
+		}
+
+		log.Print("recordsApp: ", recordsApp)
+
+		log.Print("sr.cfg.Key: ", sr.cfg.Key)
+
+		textRecord := models.TextRecord{}
+		for i := range recordsApp.SetTextRec {
+			textRecord.RecordID = recordsApp.SetTextRec[i].RecordID
+			textRecord.ChngTime = recordsApp.SetTextRec[i].ChngTime.AsTime()
+			textRecord.UID = recordsApp.SetTextRec[i].UID
+			textRecord.AppID = recordsApp.SetTextRec[i].AppID
+			textRecord.Text = recordsApp.SetTextRec[i].Text
+			textRecord.Metadata = recordsApp.SetTextRec[i].Metadata
+			textRecord.Operation = models.Create
+
+			log.Print("textRecord  ", textRecord)
+
+			// err = sr.txt.ProcessingText(ctx, textRecord, sr.cfg.Key)
+			// if err != nil {
+			// 	log.Print("processing Text to DB for new App error: ", err)
+			// 	return err
+			// }
+			textRecord.Text, err = sr.EncryptAES(keyString, textRecord.Text)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+
+			log.Print("ProcessingText record.Text", textRecord.Text)
+
+			err = sr.sl.CreateText(ctx, textRecord)
+			if err != nil {
+				log.Print("create text record error: ", err)
+				return err
+			}
+
+			err = sr.sl.MarkTextSent(ctx, textRecord)
+			if err != nil {
+				log.Print("mark Text sent for new App error: ", err)
+				return err
+			}
+		}
+
+		// 	loginRecord := models.LoginRecord{}
+		// 	for i := range recordsApp.SetLoginRec {
+		// 		loginRecord.RecordID = recordsApp.SetLoginRec[i].RecordID
+		// 		loginRecord.ChngTime = recordsApp.SetLoginRec[i].ChngTime.AsTime()
+		// 		loginRecord.UID = recordsApp.SetLoginRec[i].UID
+		// 		loginRecord.AppID = recordsApp.SetLoginRec[i].AppID
+		// 		loginRecord.Login = recordsApp.SetLoginRec[i].Login
+		// 		loginRecord.Psw = recordsApp.SetLoginRec[i].Psw
+		// 		loginRecord.Metadata = recordsApp.SetLoginRec[i].Metadata
+		// 		loginRecord.Operation = models.Create
+		// 		err = sr.ProcessingLogin(ctx, loginRecord)
+		// 		if err != nil {
+		// 			log.Print("processing Login to DB for new App error: ", err)
+		// 			return err
+		// 		}
+		// 		err = sr.sl.MarkLoginSent(ctx, loginRecord)
+		// 		if err != nil {
+		// 			log.Print("mark Logins sent for new App error: ", err)
+		// 			return err
+		// 		}
+		// 	}
+
+		// 	binaryRecord := models.BinaryRecord{}
+		// 	for i := range recordsApp.SetBinaryRec {
+		// 		binaryRecord.RecordID = recordsApp.SetBinaryRec[i].RecordID
+		// 		binaryRecord.ChngTime = recordsApp.SetBinaryRec[i].ChngTime.AsTime()
+		// 		binaryRecord.UID = recordsApp.SetBinaryRec[i].UID
+		// 		binaryRecord.AppID = recordsApp.SetBinaryRec[i].AppID
+		// 		binaryRecord.Binary = recordsApp.SetBinaryRec[i].Binary
+		// 		binaryRecord.Metadata = recordsApp.SetBinaryRec[i].Metadata
+		// 		binaryRecord.Operation = models.Create
+		// 		err = sr.ProcessingBinary(ctx, binaryRecord)
+		// 		if err != nil {
+		// 			log.Print("processing Binary to DB for new App error: ", err)
+		// 			return err
+		// 		}
+		// 		err = sr.sl.MarkBinarySent(ctx, binaryRecord)
+		// 		if err != nil {
+		// 			log.Print("mark Binary sent for new App error: ", err)
+		// 			return err
+		// 		}
+		// 	}
+
+		// 	cardRecord := models.CardRecord{}
+		// 	for i := range recordsApp.SetCardRec {
+		// 		cardRecord.RecordID = recordsApp.SetCardRec[i].RecordID
+		// 		cardRecord.ChngTime = recordsApp.SetCardRec[i].ChngTime.AsTime()
+		// 		cardRecord.UID = recordsApp.SetCardRec[i].UID
+		// 		cardRecord.AppID = recordsApp.SetCardRec[i].AppID
+		// 		cardRecord.Brand = recordsApp.SetCardRec[i].Brand
+		// 		cardRecord.Number = recordsApp.SetCardRec[i].Number
+		// 		cardRecord.ValidDate = recordsApp.SetCardRec[i].ValidDate
+		// 		cardRecord.Code = recordsApp.SetCardRec[i].Code
+		// 		cardRecord.Holder = recordsApp.SetCardRec[i].Holder
+		// 		cardRecord.Metadata = recordsApp.SetCardRec[i].Metadata
+		// 		cardRecord.Operation = models.Create
+		// 		err = sr.ProcessingCard(ctx, cardRecord)
+		// 		if err != nil {
+		// 			log.Print("processing Card to DB for new App error: ", err)
+		// 			return err
+		// 		}
+		// 		err = sr.sl.MarkCardSent(ctx, cardRecord)
+		// 		if err != nil {
+		// 			log.Print("mark Card sent for new App error: ", err)
+		// 			return err
+		// 		}
+		// 	}
 	}
 	if l >= 0 {
 		sr.cfg.UserID = uConfig.UserID
@@ -178,4 +307,16 @@ func (sr *UserServices) CheckUser(ctx context.Context, ulogin, upsw string) erro
 	// 	log.Print("check psw error: ", err)
 	// }
 	return nil
+}
+
+// IsAppRegistered.
+func (sr *UserServices) IsAppRegistered(ctx context.Context) (bool, error) {
+	ulogin, err := sr.sl.AppLogin(ctx)
+	if err != nil {
+		log.Print("check app registration error: ", err)
+	}
+	if ulogin == "" {
+		return false, err
+	}
+	return true, err
 }

@@ -15,7 +15,7 @@ import (
 )
 
 type TextServicesProvider interface {
-	ProcessingText(ctx context.Context, record models.TextRecord) error
+	ProcessingText(ctx context.Context, record models.TextRecord, key string) error
 	SearchText(ctx context.Context, searchInput string) ([]models.TextRecord, error)
 }
 
@@ -75,7 +75,7 @@ func (ui *UI) createTextFrm() *tview.Form {
 		textRecord.Operation = models.Create
 		textRecord.ChngTime = time.Now()
 		textRecord.RecordID = uuid.NewString()
-		err := ui.t.ProcessingText(ui.ctx, textRecord)
+		err := ui.t.ProcessingText(ui.ctx, textRecord, ui.cfg.Key)
 		if err != nil {
 			log.Print("save text data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",

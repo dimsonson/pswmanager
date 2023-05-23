@@ -43,7 +43,8 @@ func New(dsn string) (*SQLite, error) {
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
 	"chng_time" DATETIME,
-	"deleted" INTEGER DEFAULT 0
+	"deleted" INTEGER DEFAULT 0,
+	"sent"  INTEGER DEFAULT 0
 	);
 
 	CREATE TABLE IF NOT EXISTS text_records (
@@ -53,7 +54,8 @@ func New(dsn string) (*SQLite, error) {
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
 	"chng_time" DATETIME,
-	"deleted" BOOLEAN DEFAULT 'false' 
+	"deleted" BOOLEAN DEFAULT 'false',
+	"sent"  INTEGER DEFAULT 0 
 	);
 
 	CREATE TABLE IF NOT EXISTS binary_records (
@@ -63,7 +65,8 @@ func New(dsn string) (*SQLite, error) {
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
 	"chng_time" DATETIME,
-	"deleted" BOOLEAN DEFAULT 'false'
+	"deleted" BOOLEAN DEFAULT 'false',
+	"sent"  INTEGER DEFAULT 0
 	);
 
 	CREATE TABLE IF NOT EXISTS card_records (
@@ -77,7 +80,8 @@ func New(dsn string) (*SQLite, error) {
 	"appid" TEXT NOT NULL,
 	"recordid" TEXT NOT NULL UNIQUE,
 	"chng_time" DATETIME,
-	"deleted" BOOLEAN DEFAULT 'false'
+	"deleted" BOOLEAN DEFAULT 'false',
+	"sent"  INTEGER DEFAULT 0
 	);
 
 	CREATE TABLE IF NOT EXISTS ucfg (

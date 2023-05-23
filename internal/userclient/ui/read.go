@@ -180,7 +180,7 @@ func (ui *UI) readTextFrm(item models.TextRecord) *tview.Form {
 	})
 	ui.readTextForm.AddButton("Update Item", func() {
 		item.Operation = models.Update
-		err := ui.t.ProcessingText(ui.ctx, item)
+		err := ui.t.ProcessingText(ui.ctx, item, ui.cfg.Key)
 		if err != nil {
 			log.Print("save text data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",
@@ -200,7 +200,7 @@ func (ui *UI) readTextFrm(item models.TextRecord) *tview.Form {
 	})
 	ui.readTextForm.AddButton("Delete Item", func() {
 		item.Operation = models.Delete
-		err := ui.t.ProcessingText(ui.ctx, item)
+		err := ui.t.ProcessingText(ui.ctx, item, ui.cfg.Key)
 		if err != nil {
 			log.Print("save text data error:", err)
 			ui.ShowConfirm("Error record to database", "Do you like try again?",

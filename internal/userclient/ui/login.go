@@ -17,6 +17,7 @@ type UsersServicesProvider interface {
 	CreateUser(ctx context.Context) error
 	ReadUser(ctx context.Context) (config.UserConfig, error)
 	CheckUser(ctx context.Context, login string, passwHex string) error
+	IsAppRegistered(ctx context.Context) (bool, error)
 }
 
 type LoginServicesProvider interface {
@@ -50,12 +51,16 @@ func (ui *UI) ListLogin() {
 		AddItem("Registration", "", 'b', func() {
 			ui.regform.Clear(true)
 			ui.registerFrm()
-			if ui.cfg.UserLogin != "" {
+            registered, err :=  ui.u.IsAppRegistered(ui.ctx)
+			if err != nil {
+				log.Print("check app registration error: ", err)
+			}
+			if registered {
 				ui.ShowOk("App already registered for user. Please login to App.", func() {
 					ui.pages.SwitchToPage(LoginPage)
 				})
 			}
-			if ui.cfg.UserLogin == "" {
+			if !registered {
 				ui.pages.SwitchToPage(RegisterForm)
 			}
 		}).

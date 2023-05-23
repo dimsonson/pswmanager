@@ -14,6 +14,7 @@ type BinaryStorageProviver interface {
 	UpdateBinary(ctx context.Context, record models.BinaryRecord) error
 	DeleteBinary(ctx context.Context, record models.BinaryRecord) error
 	SearchBinary(ctx context.Context, searchInput string) ([]models.BinaryRecord, error)
+	MarkBinarySent(ctx context.Context, record models.BinaryRecord) error
 }
 
 // Services структура конструктора бизнес логики.

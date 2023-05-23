@@ -90,3 +90,14 @@ func (sl *SQLite) SearchBinary(ctx context.Context, searchInput string) ([]model
 	}
 	return *binaryRecords, err
 }
+
+// MarkBinarySent.
+func (sl *SQLite) MarkBinarySent(ctx context.Context, record models.BinaryRecord) error {
+	// создаем текст запроса
+	q := `UPDATE binary_records
+	SET  sent = 1
+	WHERE recordid = $1
+	AND uid = $2`
+	_, err := sl.db.ExecContext(ctx, q, record.RecordID, record.UID)
+	return err
+}
