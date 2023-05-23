@@ -94,3 +94,12 @@ func (cl *ClientGRPC) IsOnline() bool {
 	// проверка соединения gRPC
 	return cl.Cfg.ClientConn.GetState() == connectivity.Ready
 }
+
+func (cl *ClientGRPC) CreateText(ctx context.Context, in *pbpub.PublishTextRequest) error {
+	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
+	_, err := cl.PublishPBconn.PublishText(ctx, in)
+	if err != nil {
+		log.Print("create user error: ", err)
+	}
+	return err
+}

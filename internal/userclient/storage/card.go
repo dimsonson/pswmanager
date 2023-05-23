@@ -23,7 +23,8 @@ func (sl *SQLite) CreateCard(ctx context.Context, record models.CardRecord) erro
 			$8,
 			$9,
 			$10,
-			$11			
+			$11,
+			$12			
 			)`
 	_, err := sl.db.ExecContext(
 		ctx,
@@ -38,6 +39,7 @@ func (sl *SQLite) CreateCard(ctx context.Context, record models.CardRecord) erro
 		record.AppID,
 		record.RecordID,
 		record.ChngTime,
+		false,
 		false)
 	return err
 }

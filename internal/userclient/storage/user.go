@@ -10,7 +10,7 @@ import (
 
 // добавление нового пользователя в хранилище, запись в две таблицы в транзакции
 func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig) error {
-//func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig, keyDB string) error {
+	//func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig, keyDB string) error {
 	// создаем текст запроса
 	q := `INSERT INTO ucfg
 			VALUES (
@@ -25,12 +25,12 @@ func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig) error 
 			$9		
 			)`
 	_, err := sl.db.ExecContext(
-		ctx, 
-		q, 
-		ucfg.UserLogin, 
-		ucfg.UserPsw, 
-		ucfg.UserID, 
-		ucfg.AppID, 
+		ctx,
+		q,
+		ucfg.UserLogin,
+		ucfg.UserPsw,
+		ucfg.UserID,
+		ucfg.AppID,
 		ucfg.Key,
 		ucfg.ExchName,
 		ucfg.RoutingKey,
@@ -43,9 +43,18 @@ func (sl *SQLite) CreateUser(ctx context.Context, ucfg config.UserConfig) error 
 func (sl *SQLite) ReadUser(ctx context.Context) (config.UserConfig, error) {
 	ucfg := config.UserConfig{}
 	// создаем текст запроса
-	q := `SELECT ulogin, upsw, uid, appid, key FROM ucfg`
+	q := `SELECT ulogin, upsw, uid, appid, key, exchname, routingkey, consumeq, consumerk FROM ucfg`
 	// делаем запрос в SQL, получаем строку и пишем результат запроса в пременную
-	err := sl.db.QueryRowContext(ctx, q).Scan(&ucfg.UserLogin, &ucfg.UserPsw, &ucfg.UserID, &ucfg.AppID, &ucfg.Key)
+	err := sl.db.QueryRowContext(ctx, q).Scan(
+		&ucfg.UserLogin,
+		&ucfg.UserPsw,
+		&ucfg.UserID,
+		&ucfg.AppID,
+		&ucfg.Key,
+		&ucfg.ExchName,
+		&ucfg.RoutingKey,
+		&ucfg.ConsumeQueue,
+		&ucfg.ConsumeRkey)
 	if err != nil {
 		log.Printf("select SQL request scan error: %s", err)
 		return ucfg, err
@@ -68,8 +77,7 @@ func (sl *SQLite) CheckUser(ctx context.Context, login string) (string, error) {
 	return passwDB, err
 }
 
-
-func (sl *SQLite) AppLogin(ctx context.Context) (string, error) {
+func (sl *SQLite) ReadAppLogin(ctx context.Context) (string, error) {
 	var ulogin string
 	// создаем текст запроса
 	q := `SELECT ulogin FROM ucfg`

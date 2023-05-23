@@ -95,6 +95,7 @@ func (r *ClientRMQ) QueueBind(queueName string, routingKey string) error {
 func (r *ClientRMQ) UserInit() (config.UserConfig, *config.App) {
 	usercfg := config.UserConfig{}
 	usercfg.UserID = uuid.New().String()
+	usercfg.ExchangeName = r.Cfg.Exchange.Name
 	userapp := new(config.App)
 	userapp.AppID = uuid.New().String()
 	userapp.RoutingKey = fmt.Sprintf("%s%s.%s", settings.MasterQueue, usercfg.UserID, userapp.AppID)

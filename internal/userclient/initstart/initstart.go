@@ -46,7 +46,7 @@ func (init *Init) InitAndStart(ctx context.Context, stop context.CancelFunc, wg 
 
 	log.Print(string(init.cfg.UserConfig.Key))
 
-	srvtext := services.NewText(sl, init.cfg)
+	srvtext := services.NewText(sl, clientGRPC, init.cfg)
 	srvlogin := services.NewLogin(sl, init.cfg)
 	srvbinary := services.NewBinary(sl, init.cfg)
 	srvcard := services.NewCard(sl, init.cfg)

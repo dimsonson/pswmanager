@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+
 	"github.com/dimsonson/pswmanager/pkg/log"
 
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
@@ -19,9 +20,20 @@ func (sl *SQLite) CreateLogin(ctx context.Context, record models.LoginRecord) er
 			$5,
 			$6,
 			$7,
-			$8			
+			$8,
+			$9			
 			)`
-	_, err := sl.db.ExecContext(ctx, q, record.Metadata, record.Login, record.Psw, record.UID, record.AppID, record.RecordID, record.ChngTime, false)
+	_, err := sl.db.ExecContext(ctx,
+		q,
+		record.Metadata,
+		record.Login,
+		record.Psw,
+		record.UID,
+		record.AppID,
+		record.RecordID,
+		record.ChngTime,
+		false,
+		false)
 	return err
 }
 
@@ -49,7 +61,7 @@ func (sl *SQLite) DeleteLogin(ctx context.Context, record models.LoginRecord) er
 
 func (sl *SQLite) SearchLogin(ctx context.Context, searchInput string) ([]models.LoginRecord, error) {
 	loginRecords := new([]models.LoginRecord)
-	searchInput = "%"+searchInput+"%"
+	searchInput = "%" + searchInput + "%"
 	// создаем текст запроса
 	q := `SELECT metadata, login, psw, uid, appid, recordid, chng_time FROM login_records WHERE metadata LIKE $1 AND deleted <> 1`
 	// делаем запрос в SQL, получаем строку

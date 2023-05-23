@@ -19,7 +19,8 @@ func (sl *SQLite) CreateBinary(ctx context.Context, record models.BinaryRecord) 
 			$4,
 			$5,
 			$6,
-			$7			
+			$7,
+			$8			
 			)`
 	_, err := sl.db.ExecContext(
 		ctx,
@@ -30,6 +31,7 @@ func (sl *SQLite) CreateBinary(ctx context.Context, record models.BinaryRecord) 
 		record.AppID,
 		record.RecordID,
 		record.ChngTime,
+		false,
 		false)
 	return err
 }

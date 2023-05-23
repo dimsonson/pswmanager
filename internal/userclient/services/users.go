@@ -9,6 +9,7 @@ import (
 	"io"
 
 	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
+	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protopub"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
@@ -19,10 +20,19 @@ type UsersStorageProviver interface {
 	CreateUser(ctx context.Context, ucfg config.UserConfig) error
 	ReadUser(ctx context.Context) (config.UserConfig, error)
 	CheckUser(ctx context.Context, login string) (string, error)
-	AppLogin(ctx context.Context) (string, error)
+	ReadAppLogin(ctx context.Context) (string, error)
 
 	MarkTextSent(ctx context.Context, record models.TextRecord) error
 	CreateText(ctx context.Context, record models.TextRecord) error
+
+	MarkLoginSent(ctx context.Context, record models.LoginRecord) error
+	CreateLogin(ctx context.Context, record models.LoginRecord) error
+
+	MarkBinarySent(ctx context.Context, record models.BinaryRecord) error
+	CreateBinary(ctx context.Context, record models.BinaryRecord) error
+
+	MarkCardSent(ctx context.Context, record models.CardRecord) error
+	CreateCard(ctx context.Context, record models.CardRecord) error
 }
 
 type ClientGRPCProvider interface {
@@ -30,6 +40,7 @@ type ClientGRPCProvider interface {
 	NewApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error)
 	ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error)
 	IsOnline() bool
+	CreateText(ctx context.Context, in *pbpub.PublishTextRequest) error
 }
 
 // Services структура конструктора бизнес логики.
@@ -37,9 +48,6 @@ type UserServices struct {
 	cfg        *config.ServiceConfig
 	clientGRPC ClientGRPCProvider
 	sl         UsersStorageProviver
-	c          CryptProvider
-	//ServicesProvider
-	txt TextServices
 	Crypt
 }
 
@@ -49,7 +57,6 @@ func NewUsers(s UsersStorageProviver, clientGRPC ClientGRPCProvider, cfg *config
 		sl:         s,
 		clientGRPC: clientGRPC,
 		cfg:        cfg,
-		c:          &Crypt{},
 	}
 }
 
@@ -71,7 +78,7 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 	psw256 := sha256.Sum256([]byte(sr.cfg.UserPsw))
 	psw256string := hex.EncodeToString(psw256[:])
 	// шифрование ключа шифрования данных для хранения в базе
-	keyDB, err := sr.c.EncryptAES(psw256string, keyString)
+	keyDB, err := sr.EncryptAES(psw256string, keyString)
 	if err != nil {
 		log.Print("create keyDB error: ", err)
 	}
@@ -150,25 +157,16 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 
 			log.Print("textRecord  ", textRecord)
 
-			// err = sr.txt.ProcessingText(ctx, textRecord, sr.cfg.Key)
-			// if err != nil {
-			// 	log.Print("processing Text to DB for new App error: ", err)
-			// 	return err
-			// }
 			textRecord.Text, err = sr.EncryptAES(keyString, textRecord.Text)
 			if err != nil {
 				log.Print("encrypt error: ", err)
 				return err
 			}
-
-			log.Print("ProcessingText record.Text", textRecord.Text)
-
 			err = sr.sl.CreateText(ctx, textRecord)
 			if err != nil {
 				log.Print("create text record error: ", err)
 				return err
 			}
-
 			err = sr.sl.MarkTextSent(ctx, textRecord)
 			if err != nil {
 				log.Print("mark Text sent for new App error: ", err)
@@ -176,73 +174,113 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 			}
 		}
 
-		// 	loginRecord := models.LoginRecord{}
-		// 	for i := range recordsApp.SetLoginRec {
-		// 		loginRecord.RecordID = recordsApp.SetLoginRec[i].RecordID
-		// 		loginRecord.ChngTime = recordsApp.SetLoginRec[i].ChngTime.AsTime()
-		// 		loginRecord.UID = recordsApp.SetLoginRec[i].UID
-		// 		loginRecord.AppID = recordsApp.SetLoginRec[i].AppID
-		// 		loginRecord.Login = recordsApp.SetLoginRec[i].Login
-		// 		loginRecord.Psw = recordsApp.SetLoginRec[i].Psw
-		// 		loginRecord.Metadata = recordsApp.SetLoginRec[i].Metadata
-		// 		loginRecord.Operation = models.Create
-		// 		err = sr.ProcessingLogin(ctx, loginRecord)
-		// 		if err != nil {
-		// 			log.Print("processing Login to DB for new App error: ", err)
-		// 			return err
-		// 		}
-		// 		err = sr.sl.MarkLoginSent(ctx, loginRecord)
-		// 		if err != nil {
-		// 			log.Print("mark Logins sent for new App error: ", err)
-		// 			return err
-		// 		}
-		// 	}
+		loginRecord := models.LoginRecord{}
+		for i := range recordsApp.SetLoginRec {
+			loginRecord.RecordID = recordsApp.SetLoginRec[i].RecordID
+			loginRecord.ChngTime = recordsApp.SetLoginRec[i].ChngTime.AsTime()
+			loginRecord.UID = recordsApp.SetLoginRec[i].UID
+			loginRecord.AppID = recordsApp.SetLoginRec[i].AppID
+			loginRecord.Login = recordsApp.SetLoginRec[i].Login
+			loginRecord.Psw = recordsApp.SetLoginRec[i].Psw
+			loginRecord.Metadata = recordsApp.SetLoginRec[i].Metadata
+			loginRecord.Operation = models.Create
+			loginRecord.Login, err = sr.EncryptAES(keyString, loginRecord.Login)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+			loginRecord.Psw, err = sr.EncryptAES(keyString, loginRecord.Psw)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+			err = sr.sl.CreateLogin(ctx, loginRecord)
+			if err != nil {
+				log.Print("create text record error: ", err)
+				return err
+			}
+			err = sr.sl.MarkLoginSent(ctx, loginRecord)
+			if err != nil {
+				log.Print("mark Text sent for new App error: ", err)
+				return err
+			}
+		}
 
-		// 	binaryRecord := models.BinaryRecord{}
-		// 	for i := range recordsApp.SetBinaryRec {
-		// 		binaryRecord.RecordID = recordsApp.SetBinaryRec[i].RecordID
-		// 		binaryRecord.ChngTime = recordsApp.SetBinaryRec[i].ChngTime.AsTime()
-		// 		binaryRecord.UID = recordsApp.SetBinaryRec[i].UID
-		// 		binaryRecord.AppID = recordsApp.SetBinaryRec[i].AppID
-		// 		binaryRecord.Binary = recordsApp.SetBinaryRec[i].Binary
-		// 		binaryRecord.Metadata = recordsApp.SetBinaryRec[i].Metadata
-		// 		binaryRecord.Operation = models.Create
-		// 		err = sr.ProcessingBinary(ctx, binaryRecord)
-		// 		if err != nil {
-		// 			log.Print("processing Binary to DB for new App error: ", err)
-		// 			return err
-		// 		}
-		// 		err = sr.sl.MarkBinarySent(ctx, binaryRecord)
-		// 		if err != nil {
-		// 			log.Print("mark Binary sent for new App error: ", err)
-		// 			return err
-		// 		}
-		// 	}
+		binaryRecord := models.BinaryRecord{}
+		for i := range recordsApp.SetBinaryRec {
+			binaryRecord.RecordID = recordsApp.SetBinaryRec[i].RecordID
+			binaryRecord.ChngTime = recordsApp.SetBinaryRec[i].ChngTime.AsTime()
+			binaryRecord.UID = recordsApp.SetBinaryRec[i].UID
+			binaryRecord.AppID = recordsApp.SetBinaryRec[i].AppID
+			binaryRecord.Binary = recordsApp.SetBinaryRec[i].Binary
+			binaryRecord.Metadata = recordsApp.SetBinaryRec[i].Metadata
+			binaryRecord.Operation = models.Create
+			binaryRecord.Binary, err = sr.EncryptAES(keyString, binaryRecord.Binary)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+			err = sr.sl.CreateBinary(ctx, binaryRecord)
+			if err != nil {
+				log.Print("create text record error: ", err)
+				return err
+			}
+			err = sr.sl.MarkBinarySent(ctx, binaryRecord)
+			if err != nil {
+				log.Print("mark Text sent for new App error: ", err)
+				return err
+			}
+		}
 
-		// 	cardRecord := models.CardRecord{}
-		// 	for i := range recordsApp.SetCardRec {
-		// 		cardRecord.RecordID = recordsApp.SetCardRec[i].RecordID
-		// 		cardRecord.ChngTime = recordsApp.SetCardRec[i].ChngTime.AsTime()
-		// 		cardRecord.UID = recordsApp.SetCardRec[i].UID
-		// 		cardRecord.AppID = recordsApp.SetCardRec[i].AppID
-		// 		cardRecord.Brand = recordsApp.SetCardRec[i].Brand
-		// 		cardRecord.Number = recordsApp.SetCardRec[i].Number
-		// 		cardRecord.ValidDate = recordsApp.SetCardRec[i].ValidDate
-		// 		cardRecord.Code = recordsApp.SetCardRec[i].Code
-		// 		cardRecord.Holder = recordsApp.SetCardRec[i].Holder
-		// 		cardRecord.Metadata = recordsApp.SetCardRec[i].Metadata
-		// 		cardRecord.Operation = models.Create
-		// 		err = sr.ProcessingCard(ctx, cardRecord)
-		// 		if err != nil {
-		// 			log.Print("processing Card to DB for new App error: ", err)
-		// 			return err
-		// 		}
-		// 		err = sr.sl.MarkCardSent(ctx, cardRecord)
-		// 		if err != nil {
-		// 			log.Print("mark Card sent for new App error: ", err)
-		// 			return err
-		// 		}
-		// 	}
+		cardRecord := models.CardRecord{}
+		for i := range recordsApp.SetCardRec {
+			cardRecord.RecordID = recordsApp.SetCardRec[i].RecordID
+			cardRecord.ChngTime = recordsApp.SetCardRec[i].ChngTime.AsTime()
+			cardRecord.UID = recordsApp.SetCardRec[i].UID
+			cardRecord.AppID = recordsApp.SetCardRec[i].AppID
+			cardRecord.Brand = recordsApp.SetCardRec[i].Brand
+			cardRecord.Number = recordsApp.SetCardRec[i].Number
+			cardRecord.ValidDate = recordsApp.SetCardRec[i].ValidDate
+			cardRecord.Code = recordsApp.SetCardRec[i].Code
+			cardRecord.Holder = recordsApp.SetCardRec[i].Holder
+			cardRecord.Metadata = recordsApp.SetCardRec[i].Metadata
+			cardRecord.Operation = models.Create
+			cardRecord.Brand, err = sr.EncryptAES(keyString, cardRecord.Brand)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+			cardRecord.Number, err = sr.EncryptAES(keyString, cardRecord.Number)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+			cardRecord.ValidDate, err = sr.EncryptAES(keyString, cardRecord.ValidDate)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+			cardRecord.Code, err = sr.EncryptAES(keyString, cardRecord.Code)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+			cardRecord.Holder, err = sr.EncryptAES(keyString, cardRecord.Holder)
+			if err != nil {
+				log.Print("encrypt error: ", err)
+				return err
+			}
+			err = sr.sl.CreateCard(ctx, cardRecord)
+			if err != nil {
+				log.Print("create text record error: ", err)
+				return err
+			}
+			err = sr.sl.MarkCardSent(ctx, cardRecord)
+			if err != nil {
+				log.Print("mark Text sent for new App error: ", err)
+				return err
+			}
+		}
 	}
 	if l >= 0 {
 		sr.cfg.UserID = uConfig.UserID
@@ -278,7 +316,7 @@ func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error)
 	log.Print("ucfg.Key bsfore decrypt", ucfg.Key)
 
 	// сохранение в память расшифрованного ключа пользователя
-	ucfg.Key, err = sr.c.DecryptAES(psw256string, ucfg.Key)
+	ucfg.Key, err = sr.DecryptAES(psw256string, ucfg.Key)
 	if err != nil {
 		log.Print("dicrypt user key error: ", err)
 	}
@@ -311,7 +349,7 @@ func (sr *UserServices) CheckUser(ctx context.Context, ulogin, upsw string) erro
 
 // IsAppRegistered.
 func (sr *UserServices) IsAppRegistered(ctx context.Context) (bool, error) {
-	ulogin, err := sr.sl.AppLogin(ctx)
+	ulogin, err := sr.sl.ReadAppLogin(ctx)
 	if err != nil {
 		log.Print("check app registration error: ", err)
 	}

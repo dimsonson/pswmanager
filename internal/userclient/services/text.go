@@ -5,8 +5,10 @@ import (
 
 	"github.com/dimsonson/pswmanager/pkg/log"
 
+	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protopub"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type TextStorageProviver interface {
@@ -19,19 +21,18 @@ type TextStorageProviver interface {
 
 // TextServices структура конструктора бизнес логики.
 type TextServices struct {
-	cfg *config.ServiceConfig
-	sl  TextStorageProviver
-	//c   CryptProvider
+	cfg        *config.ServiceConfig
+	sl         TextStorageProviver
+	clientGRPC ClientGRPCProvider
 	Crypt
 }
 
 // NewText конструктор сервиса текстовых записей.
-func NewText(s TextStorageProviver, cfg *config.ServiceConfig) *TextServices {
+func NewText(s TextStorageProviver, clientGRPC ClientGRPCProvider, cfg *config.ServiceConfig) *TextServices {
 	return &TextServices{
-		sl:  s,
-		cfg: cfg,
-
-		//c:   c, //&Crypt{},
+		sl:         s,
+		cfg:        cfg,
+		clientGRPC: clientGRPC,
 	}
 }
 
@@ -54,12 +55,28 @@ func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRe
 	log.Print("ProcessingText record.Text", record.Text)
 	switch record.Operation {
 	case models.Create:
-		//err = sr.sl.CreateText(ctx, record)
+		err = sr.sl.CreateText(ctx, record)
 		if err != nil {
 			log.Print("create text record error: ", err)
 			return err
 		}
-
+		err := sr.clientGRPC.CreateText(ctx, &pbpub.PublishTextRequest{
+			ExchName:   sr.cfg.ExchName,
+			RoutingKey: sr.cfg.RoutingKey + ".text",
+			TextRecord: &pbpub.TextRecord{
+				RecordID:  record.RecordID,
+				ChngTime:  timestamppb.New(record.ChngTime),
+				UID:       record.UID,
+				AppID:     record.AppID,
+				Text:      record.Text,
+				Metadata:  record.Metadata,
+				Operation: int64(record.Operation),
+			},
+		})
+		if err != nil {
+			log.Print("publishing text record error: ", err)
+			return err
+		}
 	case models.Update:
 		err := sr.sl.UpdateText(ctx, record)
 		if err != nil {
