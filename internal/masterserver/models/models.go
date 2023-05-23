@@ -85,11 +85,13 @@ type CardRecord struct {
 	ChngTime  time.Time
 	UID       string
 	AppID     string
+
 	Brand     string
 	Number    string
 	ValidDate string
 	Code      string
 	Holder    string
+	
 	Metadata  string
 	Operation MsgType
 }

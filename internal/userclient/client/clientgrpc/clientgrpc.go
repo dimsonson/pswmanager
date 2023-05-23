@@ -95,11 +95,39 @@ func (cl *ClientGRPC) IsOnline() bool {
 	return cl.Cfg.ClientConn.GetState() == connectivity.Ready
 }
 
-func (cl *ClientGRPC) CreateText(ctx context.Context, in *pbpub.PublishTextRequest) error {
+func (cl *ClientGRPC) PublishText(ctx context.Context, in *pbpub.PublishTextRequest) error {
 	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
 	_, err := cl.PublishPBconn.PublishText(ctx, in)
 	if err != nil {
-		log.Print("create user error: ", err)
+		log.Print("publish text error: ", err)
+	}
+	return err
+}
+
+func (cl *ClientGRPC) PublishLogins(ctx context.Context, in *pbpub.PublishLoginsRequest) error {
+	log.Print("in", in)
+	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
+	_, err := cl.PublishPBconn.PublishLogins(ctx, in)
+	if err != nil {
+		log.Print("publish logins error: ", err)
+	}
+	return err
+}
+
+func (cl *ClientGRPC) PublishBinary(ctx context.Context, in *pbpub.PublishBinaryRequest) error {
+	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
+	_, err := cl.PublishPBconn.PublishBinary(ctx, in)
+	if err != nil {
+		log.Print("publish binary error: ", err)
+	}
+	return err
+}
+
+func (cl *ClientGRPC) PublishCard(ctx context.Context, in *pbpub.PublishCardRequest) error {
+	// получаем переменную интерфейсного типа UsersClient, через которую будем отправлять сообщения
+	_, err := cl.PublishPBconn.PublishCard(ctx, in)
+	if err != nil {
+		log.Print("publish card error: ", err)
 	}
 	return err
 }

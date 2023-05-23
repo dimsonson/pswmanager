@@ -39,20 +39,24 @@ func NewText(s TextStorageProviver, clientGRPC ClientGRPCProvider, cfg *config.S
 // ProcessingText метод обратботки данных в хранилище в зависимости от типа операции.
 func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRecord, key string) error {
 	var err error
-
-	log.Print("record", record)
-
-	log.Print("sr :", sr) // nil
-
-	//log.Print("ProcessingText ucfg.Key", key)
-
 	record.Text, err = sr.EncryptAES(sr.cfg.Key, record.Text)
 	if err != nil {
 		log.Print("encrypt error: ", err)
 		return err
 	}
+	textRecord := &pbpub.PublishTextRequest{
+		ExchName:   sr.cfg.ExchName,
+		RoutingKey: sr.cfg.RoutingKey + ".text",
+		TextRecord: &pbpub.TextRecord{
+			RecordID:  record.RecordID,
+			ChngTime:  timestamppb.New(record.ChngTime),
+			UID:       record.UID,
+			AppID:     record.AppID,
+			Text:      record.Text,
+			Metadata:  record.Metadata,
+			Operation: int64(record.Operation),
+		}}
 
-	log.Print("ProcessingText record.Text", record.Text)
 	switch record.Operation {
 	case models.Create:
 		err = sr.sl.CreateText(ctx, record)
@@ -60,34 +64,27 @@ func (sr *TextServices) ProcessingText(ctx context.Context, record models.TextRe
 			log.Print("create text record error: ", err)
 			return err
 		}
-		err := sr.clientGRPC.CreateText(ctx, &pbpub.PublishTextRequest{
-			ExchName:   sr.cfg.ExchName,
-			RoutingKey: sr.cfg.RoutingKey + ".text",
-			TextRecord: &pbpub.TextRecord{
-				RecordID:  record.RecordID,
-				ChngTime:  timestamppb.New(record.ChngTime),
-				UID:       record.UID,
-				AppID:     record.AppID,
-				Text:      record.Text,
-				Metadata:  record.Metadata,
-				Operation: int64(record.Operation),
-			},
-		})
-		if err != nil {
-			log.Print("publishing text record error: ", err)
-			return err
-		}
 	case models.Update:
 		err := sr.sl.UpdateText(ctx, record)
 		if err != nil {
 			log.Print("update text record error: ", err)
+			return err
 		}
-		return err
 	case models.Delete:
 		err := sr.sl.DeleteText(ctx, record)
 		if err != nil {
 			log.Print("delete text record error: ", err)
+			return err
 		}
+	}
+	err = sr.clientGRPC.PublishText(ctx, textRecord)
+	if err != nil {
+		log.Print("publishing text record error: ", err)
+		return err
+	}
+	err = sr.sl.MarkTextSent(ctx, record)
+	if err != nil {
+		log.Print("marking text record error: ", err)
 		return err
 	}
 	return err

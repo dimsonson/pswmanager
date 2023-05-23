@@ -40,7 +40,11 @@ type ClientGRPCProvider interface {
 	NewApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error)
 	ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error)
 	IsOnline() bool
-	CreateText(ctx context.Context, in *pbpub.PublishTextRequest) error
+	
+	PublishText(ctx context.Context, in *pbpub.PublishTextRequest) error
+	PublishLogins(ctx context.Context, in *pbpub.PublishLoginsRequest) error
+	PublishBinary(ctx context.Context, in *pbpub.PublishBinaryRequest) error
+	PublishCard(ctx context.Context, in *pbpub.PublishCardRequest) error
 }
 
 // Services структура конструктора бизнес логики.
