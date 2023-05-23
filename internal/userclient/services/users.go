@@ -116,7 +116,6 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 	l := len(uConfig.Apps) - 1
 	if l < 0 {
 		sr.cfg.UserID = uConfig.UserID
-
 		log.Printf("login %s already exist", sr.cfg.UserLogin)
 		uConfigApp, err := sr.clientGRPC.NewApp(ctx, &pb.CreateAppRequest{
 			Uid: sr.cfg.UserID,
@@ -127,16 +126,12 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 			return err
 		}
 		lApp := len(uConfigApp.Apps) - 1
-		//sr.cfg.UserID = uConfig.UserID
 		sr.cfg.Key = uConfigApp.CKey
 		sr.cfg.AppID = uConfigApp.Apps[lApp].AppID
 		sr.cfg.ExchName = uConfigApp.ExchangeName
 		sr.cfg.RoutingKey = uConfigApp.Apps[lApp].RoutingKey
 		sr.cfg.ConsumeQueue = uConfigApp.Apps[lApp].ConsumeQueue
 		sr.cfg.ConsumeRkey = uConfigApp.UserID + ".*.*"
-
-		log.Print("sr.cfg.UserID: ", sr.cfg.UserID)
-
 		recordsApp, err := sr.clientGRPC.ReadUser(ctx, &pb.ReadUserRequest{
 			Uid: sr.cfg.UserID,
 		})
@@ -144,11 +139,6 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 			log.Print("gRPC call ReadUser error: ", err)
 			return err
 		}
-
-		log.Print("recordsApp: ", recordsApp)
-
-		log.Print("sr.cfg.Key: ", sr.cfg.Key)
-
 		textRecord := models.TextRecord{}
 		for i := range recordsApp.SetTextRec {
 			textRecord.RecordID = recordsApp.SetTextRec[i].RecordID
@@ -158,14 +148,6 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 			textRecord.Text = recordsApp.SetTextRec[i].Text
 			textRecord.Metadata = recordsApp.SetTextRec[i].Metadata
 			textRecord.Operation = models.Create
-
-			log.Print("textRecord  ", textRecord)
-
-			textRecord.Text, err = sr.EncryptAES(keyString, textRecord.Text)
-			if err != nil {
-				log.Print("encrypt error: ", err)
-				return err
-			}
 			err = sr.sl.CreateText(ctx, textRecord)
 			if err != nil {
 				log.Print("create text record error: ", err)
@@ -193,11 +175,6 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 				log.Print("encrypt error: ", err)
 				return err
 			}
-			loginRecord.Psw, err = sr.EncryptAES(keyString, loginRecord.Psw)
-			if err != nil {
-				log.Print("encrypt error: ", err)
-				return err
-			}
 			err = sr.sl.CreateLogin(ctx, loginRecord)
 			if err != nil {
 				log.Print("create text record error: ", err)
@@ -219,11 +196,6 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 			binaryRecord.Binary = recordsApp.SetBinaryRec[i].Binary
 			binaryRecord.Metadata = recordsApp.SetBinaryRec[i].Metadata
 			binaryRecord.Operation = models.Create
-			binaryRecord.Binary, err = sr.EncryptAES(keyString, binaryRecord.Binary)
-			if err != nil {
-				log.Print("encrypt error: ", err)
-				return err
-			}
 			err = sr.sl.CreateBinary(ctx, binaryRecord)
 			if err != nil {
 				log.Print("create text record error: ", err)
@@ -249,31 +221,6 @@ func (sr *UserServices) CreateUser(ctx context.Context) error {
 			cardRecord.Holder = recordsApp.SetCardRec[i].Holder
 			cardRecord.Metadata = recordsApp.SetCardRec[i].Metadata
 			cardRecord.Operation = models.Create
-			cardRecord.Brand, err = sr.EncryptAES(keyString, cardRecord.Brand)
-			if err != nil {
-				log.Print("encrypt error: ", err)
-				return err
-			}
-			cardRecord.Number, err = sr.EncryptAES(keyString, cardRecord.Number)
-			if err != nil {
-				log.Print("encrypt error: ", err)
-				return err
-			}
-			cardRecord.ValidDate, err = sr.EncryptAES(keyString, cardRecord.ValidDate)
-			if err != nil {
-				log.Print("encrypt error: ", err)
-				return err
-			}
-			cardRecord.Code, err = sr.EncryptAES(keyString, cardRecord.Code)
-			if err != nil {
-				log.Print("encrypt error: ", err)
-				return err
-			}
-			cardRecord.Holder, err = sr.EncryptAES(keyString, cardRecord.Holder)
-			if err != nil {
-				log.Print("encrypt error: ", err)
-				return err
-			}
 			err = sr.sl.CreateCard(ctx, cardRecord)
 			if err != nil {
 				log.Print("create text record error: ", err)
@@ -324,9 +271,6 @@ func (sr *UserServices) ReadUser(ctx context.Context) (config.UserConfig, error)
 	if err != nil {
 		log.Print("dicrypt user key error: ", err)
 	}
-
-	log.Print("Read User ucfg.Key", ucfg.Key)
-
 	return ucfg, err
 }
 
@@ -336,18 +280,11 @@ func (sr *UserServices) CheckUser(ctx context.Context, ulogin, upsw string) erro
 	if err != nil {
 		log.Print("check user cfg error: ", err)
 	}
-
 	psw512 := sha256.Sum256([]byte(upsw))
 	passHex := hex.EncodeToString(psw512[:])
-
 	if passHex != passwDB {
 		return errors.New("wrong password or login")
 	}
-
-	// err = bcrypt.CompareHashAndPassword([]byte(passwDB), []byte(upsw))
-	// if err != nil {
-	// 	log.Print("check psw error: ", err)
-	// }
 	return nil
 }
 
