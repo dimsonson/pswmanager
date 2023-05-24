@@ -12,7 +12,7 @@
 *.out
 
 # Binaries
-cmd/pswm
+# cmd/pswm
 
 # Dependency directories (remove the comment below to include it)
 vendor/
@@ -23,3 +23,6 @@ vendor/
 notes.txt
 cmd/pswm/.DS_Store
 .DS_Store
+internal/userclient/config/config.go
+cmd/userclient/db
+cmd/userclient/base.db

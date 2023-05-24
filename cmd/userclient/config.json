@@ -1,0 +1,13 @@
+{
+  "server_address": "",
+  "enable_tls": false,
+  "sqlite": {
+    "sqlite_dsn": "db"
+  },
+  "grpc": {
+    "Network": "",
+    "Port": ""
+  },
+  "UserID": "",
+  "AppID": ""
+}
