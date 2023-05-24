@@ -4,7 +4,9 @@
 
 # Описание сервиса
 
+Верхнеуровневая диаграмма проекта:
 
+![alt text](https://github.com/dimsonson/doc/highleveldiagram.png?raw=true)
 
 
 
