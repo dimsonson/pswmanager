@@ -4,7 +4,7 @@
 
 # Описание сервиса
 
-Стек: Go, RabbitMQ, Redis, PostgreeSQL, Docker
+## Стек: Go, RabbitMQ, Redis, PostgreeSQL, Docker
 
 Верхнеуровневая диаграмма проекта:
 
