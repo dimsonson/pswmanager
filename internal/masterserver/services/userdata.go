@@ -117,7 +117,7 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 		}
 	}
 	userapp.ExchangeBindings = append(userapp.ExchangeBindings, usercfg.Apps[0].ConsumeQueue)
-	err = s.clientRMQ.QueueBind(q.Name, usercfg.Apps[0].ConsumeQueue)
+	err = s.clientRMQ.QueueBind(q.Name, usercfg.Apps[0].ConsumeQueue+".*")
 	if err != nil {
 		log.Print("rabbitmq queue bindings error: ", err)
 		return "", config.UserConfig{}, err
@@ -128,7 +128,7 @@ func (s *UserServices) CreateApp(ctx context.Context, uid string, psw string) (s
 		usercfg.Apps[i].ExchangeBindings = append(usercfg.Apps[i].ExchangeBindings, userapp.RoutingKey)
 		err = s.clientRMQ.QueueBind(
 			usercfg.Apps[i].ConsumeQueue, // queue name
-			userapp.RoutingKey)          // routing key
+			userapp.RoutingKey+".*")          // routing key
 			if err != nil {
 			log.Print("rabbitmq queue bindings error: ", err)
 			return "", config.UserConfig{}, err

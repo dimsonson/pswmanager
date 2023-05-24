@@ -86,20 +86,6 @@ type ControllerParams struct {
 	Controller rabbitmq.ControllerFunc `json:"-"`
 }
 
-// type Redis struct {
-// 	Username  string
-// 	Password  string
-// 	Network   string
-// 	Addr      string // host:port address.
-// 	DB        int
-// 	TLSConfig *tls.Config `json:"-"`
-// }
-
-// type PostgreSQL struct {
-// 	Dsn  string  `json:"postgre_dsn"`
-// 	Conn *sql.DB `json:"-"`
-// }
-
 type ClientRMQ struct {
 	Conn *amqp.Connection `json:"-"`
 	Ch   *amqp.Channel    `json:"-"`

@@ -131,3 +131,34 @@ func (cl *ClientGRPC) PublishCard(ctx context.Context, in *pbpub.PublishCardRequ
 	}
 	return err
 }
+
+func (cl *ClientGRPC) ConsumeFromStream(ctx context.Context, in *pbconsume.ConsumeRequest) (pbconsume.ServerRMQhandlers_ConsumeClient, error) { //(*pbconsume.ConsumeResponse, error) {
+	//out := pbconsume.ConsumeResponse{}
+
+	stream, err := cl.ConsumePBconn.Consume(ctx, in)
+	if err != nil {
+		log.Print("publish card error: ", err)
+	}
+	// for {
+	// 	select {
+	// 	case <-ctx.Done():
+	// 		log.Print(ctx.Err()) // prints "context deadline exceeded"
+	// 		return
+	// 	default:
+	// 		log.Print("overslept")
+	// 		rec, err := stream.Recv()
+	// 		if err != nil {
+	// 			log.Print("stream error: ", err)
+	// 			return
+	// 		}
+	// 		log.Print(rec)
+	// 	}
+	// }
+	// out.RecordType
+	// out.Record
+	// out.Error
+
+	// stream.Recv()
+
+	return stream, err
+}

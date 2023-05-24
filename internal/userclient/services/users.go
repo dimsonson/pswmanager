@@ -5,11 +5,13 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"io"
 
-	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
+	pbconsume "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protoconsume"
 	pbpub "github.com/dimsonson/pswmanager/internal/gateway/handlers/grpc_handlers/protopub"
+	pb "github.com/dimsonson/pswmanager/internal/masterserver/handlers/protobuf"
 	"github.com/dimsonson/pswmanager/internal/masterserver/models"
 	"github.com/dimsonson/pswmanager/internal/userclient/config"
 	"github.com/dimsonson/pswmanager/pkg/log"
@@ -24,15 +26,23 @@ type UsersStorageProviver interface {
 
 	MarkTextSent(ctx context.Context, record models.TextRecord) error
 	CreateText(ctx context.Context, record models.TextRecord) error
+	UpdateText(ctx context.Context, record models.TextRecord) error
+	DeleteText(ctx context.Context, record models.TextRecord) error
 
 	MarkLoginSent(ctx context.Context, record models.LoginRecord) error
 	CreateLogin(ctx context.Context, record models.LoginRecord) error
+	UpdateLogin(ctx context.Context, record models.LoginRecord) error
+	DeleteLogin(ctx context.Context, record models.LoginRecord) error
 
 	MarkBinarySent(ctx context.Context, record models.BinaryRecord) error
 	CreateBinary(ctx context.Context, record models.BinaryRecord) error
+	UpdateBinary(ctx context.Context, record models.BinaryRecord) error
+	DeleteBinary(ctx context.Context, record models.BinaryRecord) error
 
 	MarkCardSent(ctx context.Context, record models.CardRecord) error
 	CreateCard(ctx context.Context, record models.CardRecord) error
+	UpdateCard(ctx context.Context, record models.CardRecord) error
+	DeleteCard(ctx context.Context, record models.CardRecord) error
 }
 
 type ClientGRPCProvider interface {
@@ -40,11 +50,13 @@ type ClientGRPCProvider interface {
 	NewApp(ctx context.Context, in *pb.CreateAppRequest) (*pb.CreateAppResponse, error)
 	ReadUser(ctx context.Context, in *pb.ReadUserRequest) (*pb.ReadUserResponse, error)
 	IsOnline() bool
-	
+
 	PublishText(ctx context.Context, in *pbpub.PublishTextRequest) error
 	PublishLogins(ctx context.Context, in *pbpub.PublishLoginsRequest) error
 	PublishBinary(ctx context.Context, in *pbpub.PublishBinaryRequest) error
 	PublishCard(ctx context.Context, in *pbpub.PublishCardRequest) error
+
+	ConsumeFromStream(ctx context.Context, in *pbconsume.ConsumeRequest) (pbconsume.ServerRMQhandlers_ConsumeClient, error)
 }
 
 // Services структура конструктора бизнес логики.
@@ -298,4 +310,171 @@ func (sr *UserServices) IsAppRegistered(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	return true, err
+}
+
+// ConsumeFromStream.
+func (sr *UserServices) ConsumeFromStream(ctx context.Context) {
+	log.Print(sr.cfg.ExchName, "\n", sr.cfg.ConsumeQueue, "\n", sr.cfg.ConsumeRkey)
+	stream, err := sr.clientGRPC.ConsumeFromStream(ctx, &pbconsume.ConsumeRequest{
+		ExchName:      sr.cfg.ExchName,
+		ConsumerQname: sr.cfg.ConsumeQueue,
+		RoutingKey:    "all." + sr.cfg.ConsumeRkey,
+	})
+
+	log.Print(sr.cfg.ExchName, sr.cfg.ConsumeQueue, sr.cfg.RoutingKey)
+	if err != nil {
+		log.Print("stream error: ", err)
+	}
+	var rec *pbconsume.ConsumeResponse
+	for {
+		select {
+		case <-ctx.Done():
+			log.Print(ctx.Err()) // prints "context deadline exceeded"
+			return
+		default:
+			log.Print("starting consume worker...")
+			rec, err = stream.Recv()
+			if err != nil {
+				log.Print("stream error: ", err)
+				return
+			}
+			//log.Print(rec)
+			err := sr.StreamDataProcessing(ctx, int(rec.RecordType), rec.Record)
+			if err != nil {
+				log.Print("stream peocessing error: ", err)
+				stream.SendMsg(err)
+			}
+		}
+	}
+}
+
+// StreamDataProcessing.
+func (sr *UserServices) StreamDataProcessing(ctx context.Context, typeOfRecord int, record []byte) error {
+	var err error
+	
+	switch typeOfRecord {
+	case int(models.TextType):
+		var textrec models.TextRecord
+		err = json.Unmarshal(record, &textrec)
+		if err != nil {
+			log.Print("unmarshal error: ", err)
+			return err
+		}
+		switch textrec.Operation {
+		case models.Create:
+			err = sr.sl.CreateText(ctx, textrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		case models.Update:
+			err = sr.sl.UpdateText(ctx, textrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		case models.Delete:
+			err = sr.sl.DeleteText(ctx, textrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		default:
+			log.Print("unknown operation type for stream data processing", err)
+			return errors.New("unknown type for stream data processing")
+		}
+	case int(models.LoginsType):
+		var loginrec models.LoginRecord
+		err = json.Unmarshal(record, &loginrec)
+		if err != nil {
+			log.Print("unmarshal error: ", err)
+			return err
+		}
+		switch loginrec.Operation {
+		case models.Create:
+			err = sr.sl.CreateLogin(ctx, loginrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		case models.Update:
+			err = sr.sl.UpdateLogin(ctx, loginrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		case models.Delete:
+			err = sr.sl.DeleteLogin(ctx, loginrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		default:
+			log.Print("unknown operation type for stream data processing", err)
+			return errors.New("unknown type for stream data processing")
+		}
+	case int(models.BinaryType):
+		var binaryrec models.BinaryRecord
+		err = json.Unmarshal(record, &binaryrec)
+		if err != nil {
+			log.Print("unmarshal error: ", err)
+			return err
+		}
+		switch binaryrec.Operation {
+		case models.Create:
+			err = sr.sl.CreateBinary(ctx, binaryrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		case models.Update:
+			err = sr.sl.UpdateBinary(ctx, binaryrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		case models.Delete:
+			err = sr.sl.DeleteBinary(ctx, binaryrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		default:
+			log.Print("unknown operation type for stream data processing", err)
+			return errors.New("unknown type for stream data processing")
+		}
+	case int(models.CardType):
+		var cardrec models.CardRecord
+		err = json.Unmarshal(record, &cardrec)
+		if err != nil {
+			log.Print("unmarshal error: ", err)
+			return err
+		}
+		switch cardrec.Operation {
+		case models.Create:
+			err = sr.sl.CreateCard(ctx, cardrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		case models.Update:
+			err = sr.sl.UpdateCard(ctx, cardrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		case models.Delete:
+			err = sr.sl.DeleteCard(ctx, cardrec)
+			if err != nil {
+				log.Print("processing error: ", err)
+				return err
+			}
+		default:
+			log.Print("unknown operation type for stream data processing", err)
+			return errors.New("unknown type for stream data processing")
+		}
+	default:
+		return errors.New("unknown type for stream data processing")
+	}
+	return err
 }

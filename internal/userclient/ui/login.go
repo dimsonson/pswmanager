@@ -18,6 +18,7 @@ type UsersServicesProvider interface {
 	ReadUser(ctx context.Context) (config.UserConfig, error)
 	CheckUser(ctx context.Context, login string, passwHex string) error
 	IsAppRegistered(ctx context.Context) (bool, error)
+	ConsumeFromStream(ctx context.Context)
 }
 
 type LoginServicesProvider interface {
@@ -108,6 +109,7 @@ func (ui *UI) loginFrm() *tview.Form {
 			if err != nil {
 				log.Print("no user data exist:", err)
 			}
+			go ui.u.ConsumeFromStream(ui.ctx)
 			ui.pages.SwitchToPage(MainPage)
 		}
 	})
