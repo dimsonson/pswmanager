@@ -8,7 +8,7 @@
 
 Верхнеуровневая диаграмма проекта:
 
-![alt text](https://github.com/dimsonson/doc/highleveldiagram.png?raw=true)
+![alt text](https://github.com/dimsonson/pswmanager/blob/master/doc/highleveldiagram.png?raw=true)
 
 
 
